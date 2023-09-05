@@ -4,6 +4,7 @@ import {gfm} from "turndown-plugin-gfm";
 
 export async function md2html(md: string) {
   const value: string = await invoke('to_html', { md });
+  console.log(value);
   const parser = new DOMParser();
   const doc = parser.parseFromString(value, 'text/html');
   // console.log(doc);
@@ -11,28 +12,28 @@ export async function md2html(md: string) {
   for (let i = 0; i < taskItems.length; i++) {
     const taskItem = taskItems[i];
     console.log(taskItem);
-    // taskItem.removeAttribute('disabled');
+    taskItem.removeAttribute('disabled');
 
     const li = taskItem.parentElement;
     li?.parentElement?.setAttribute('data-type', 'taskList');
 
-    // li?.setAttribute('data-checked', taskItem.getAttribute('checked') || 'false');
-    // const label = document.createElement('label');
-    // label.contentEditable = 'false';
-    // const span = document.createElement('span');
+    li?.setAttribute('data-checked', taskItem.getAttribute('checked') || 'false');
+    const label = document.createElement('label');
+    label.contentEditable = 'false';
+    const span = document.createElement('span');
 
-    // const content = document.createElement('div');
-    // li?.appendChild(label);
+    const content = document.createElement('div');
+    li?.appendChild(label);
 
-    // li?.childNodes.forEach(node => {
-    //   if (node.nodeType === 3) {
-    //     content.appendChild(node);
-    //   }
-    // })
+    li?.childNodes.forEach(node => {
+      if (node.nodeType === 3) {
+        content.appendChild(node);
+      }
+    })
 
-    // label.appendChild(taskItem);
-    // label.appendChild(span);
-    // li?.appendChild(content);
+    label.appendChild(taskItem);
+    label.appendChild(span);
+    li?.appendChild(content);
   }
   return doc.body.innerHTML;
 }
@@ -57,6 +58,31 @@ export function html2md(html:string):string{
         }
       }
       return '``` '+lang+'\n'+ content + '\n```'
+    }
+  });
+  turndownService.addRule('table', {
+    filter: ['table'],
+    replacement: function (content:string,node:HTMLElement) {
+      console.log(node,content);
+      var md='';
+      const trs=node.querySelectorAll('tr');
+      for (let i = 0; i < trs.length; i++) {
+        const tr = trs[i];
+        md+='|';
+        var head='|';
+        for (let j = 0; j < tr.children.length; j++) {
+          const td = tr.children[j];
+          md+=td.textContent+'|';
+          head+='-|';
+        }
+        md+='\n';
+        if(i===0){
+          md+=head+'\n';
+        }
+        
+        
+      }
+      return md//'``` '+lang+'\n'+ content + '\n```'
     }
   });
 

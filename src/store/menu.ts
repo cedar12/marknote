@@ -64,5 +64,8 @@ const events={
       }
     }).catch(e=>console.error(e));
     
+  },
+  preferences(){
+    invoke('open_preferences');
   }
 }

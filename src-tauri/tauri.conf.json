@@ -62,8 +62,10 @@
         "title": "marknote",
         "width": 800,
         "height": 600,
-        "decorations": false,
-        "center": true
+        "decorations": true,
+        "center": true,
+        "hiddenTitle": true,
+        "titleBarStyle": "Overlay"
       }
     ]
   }

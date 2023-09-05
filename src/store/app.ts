@@ -7,7 +7,7 @@ export const useAppStore = defineStore('app', {
     filepath:string|null,
     isSave:boolean,
   }=>({
-    title:'Marknote',
+    title:'marknote',
     filepath: null,
     isSave:false,
   }),

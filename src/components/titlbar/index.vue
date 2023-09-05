@@ -14,6 +14,7 @@ const platformName = ref<'linux'| 'darwin'| 'ios'| 'freebsd'| 'dragonfly'| 'netb
 onBeforeMount(async()=>{
   try{
     platformName.value=await platform();
+    document.body.classList.add(platformName.value);
   }catch(e){
     console.error(e);
   }

@@ -95,13 +95,21 @@ onMounted(async ()=>{
   # marknote
   2. 1
   3. 2
-  * [x] a\n
+  * [x] a
+  
   * [x] b
   \`\`\` javascript
   console.log(123);
   \`\`\`
 
-  > abc`);
+  > a~bc~
+
+  ~abc~
+
+  |a |b |
+  |:-|:-|
+  |1 |2 |
+  `);
   editor.value?.commands.setContent(content)
 });
 
