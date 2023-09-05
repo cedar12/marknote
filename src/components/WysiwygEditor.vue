@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted} from 'vue'
+import {onMounted,watch} from 'vue'
 import { useEditor, EditorContent ,BubbleMenu } from '@tiptap/vue-3'
 import {  wrappingInputRule } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
@@ -35,7 +35,9 @@ import 'highlight.js/scss/github.scss'
 
 import {md2html,html2md} from '../utils/parser'
 
+import {useEditorStore} from '../store/editor';
 
+const editorStore=useEditorStore();
 
 
 const shouldShowText= (props:any) => {
@@ -93,7 +95,7 @@ onMounted(async ()=>{
   # marknote
   2. 1
   3. 2
-  * [x] a
+  * [x] a\n
   * [x] b
   \`\`\` javascript
   console.log(123);
@@ -108,7 +110,12 @@ const onPrint=()=>{
   if(editor.value){
     var md=html2md(editor.value?.getHTML());
     console.log(md);
+    console.log(editor.value.getJSON());
   }
 }
 
+
+watch(()=>editorStore.content,()=>{
+  editor.value?.commands.setContent(editorStore.content);
+})
 </script>

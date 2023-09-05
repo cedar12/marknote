@@ -16,12 +16,34 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "os": {
+        "all": true
+      },
+      "window": {
+        "all": false,
+        "close": true,
+        "hide": true,
+        "show": true,
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true,
+        "create": true,
+        "setDecorations": false
+      },
+      "dialog": {
+        "all": true
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "com.github.marknote",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -39,7 +61,9 @@
         "resizable": true,
         "title": "marknote",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "decorations": false,
+        "center": true
       }
     ]
   }

@@ -16,23 +16,23 @@ export async function md2html(md: string) {
     const li = taskItem.parentElement;
     li?.parentElement?.setAttribute('data-type', 'taskList');
 
-    li?.setAttribute('data-checked', taskItem.getAttribute('checked') || 'false');
-    const label = document.createElement('label');
-    label.contentEditable = 'false';
-    const span = document.createElement('span');
+    // li?.setAttribute('data-checked', taskItem.getAttribute('checked') || 'false');
+    // const label = document.createElement('label');
+    // label.contentEditable = 'false';
+    // const span = document.createElement('span');
 
-    const content = document.createElement('div');
-    li?.appendChild(label);
+    // const content = document.createElement('div');
+    // li?.appendChild(label);
 
-    li?.childNodes.forEach(node => {
-      if (node.nodeType === 3) {
-        content.appendChild(node);
-      }
-    })
+    // li?.childNodes.forEach(node => {
+    //   if (node.nodeType === 3) {
+    //     content.appendChild(node);
+    //   }
+    // })
 
-    label.appendChild(taskItem);
-    label.appendChild(span);
-    li?.appendChild(content);
+    // label.appendChild(taskItem);
+    // label.appendChild(span);
+    // li?.appendChild(content);
   }
   return doc.body.innerHTML;
 }
