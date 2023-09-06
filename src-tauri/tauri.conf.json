@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "marknote",
-    "version": "0.0.0"
+    "version": "0.0.1"
   },
   "tauri": {
     "allowlist": {
@@ -20,6 +20,12 @@
       "os": {
         "all": true
       },
+      "process": {
+        "all": false,
+        "exit": true,
+        "relaunch": false,
+        "relaunchDangerousAllowSymlinkMacos": false
+      },
       "window": {
         "all": false,
         "close": true,
@@ -30,8 +36,10 @@
         "unmaximize": true,
         "unminimize": true,
         "startDragging": true,
-        "create": true,
-        "setDecorations": false
+        "create": false,
+        "setDecorations": false,
+        "setTitle": true,
+        "setAlwaysOnTop": true
       },
       "dialog": {
         "all": true
@@ -60,12 +68,15 @@
         "fullscreen": false,
         "resizable": true,
         "title": "marknote",
-        "width": 800,
-        "height": 600,
+        "width": 500,
+        "height": 570,
+        "minWidth": 400,
+        "minHeight": 400,
         "decorations": true,
         "center": true,
         "hiddenTitle": true,
-        "titleBarStyle": "Overlay"
+        "titleBarStyle": "Overlay",
+        "visible": false
       }
     ]
   }

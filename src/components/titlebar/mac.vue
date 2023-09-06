@@ -1,25 +1,13 @@
 <template>
     <div data-tauri-drag-region class="titlebar-bg macos" os="macos">
         <div data-tauri-drag-region class="titlebar">
-            <!-- <div class="titlebar-buttons">
-                <div class="titlebar-button" @click="appWindow.minimize()">
-                    <Minus></Minus>
-                </div>
-                <div class="titlebar-button" @click="appWindow.toggleMaximize()">
-                    <Square theme="outline" />
-                </div>
-                <div class="titlebar-button" @click="appWindow.close()">
-                    <Close></Close>
-                </div>
-            </div> -->
-
             <div data-tauri-drag-region class="titlebar-info">
                 <span data-tauri-drag-region class="marknote-title" :class="{ 'not-save': appStore.isSave !== true }"
                     :title="appStore.filepath || ''">{{ appStore.title || 'marknote' }}</span>
             </div>
             
             <div class="titlebar-toolbar">
-                <div class="titlebar-tool" :class="{ open: menuStore.visible }" @click="menuStore.visible = !menuStore.visible">
+                <div class="titlebar-tool"  :class="{ open: menuStore.visible }" @click="menuStore.visible = !menuStore.visible">
                     <HamburgerButton theme="filled" />
                 </div>
 
@@ -29,9 +17,9 @@
 </template>
 <script lang="ts" setup>
 import { HamburgerButton } from '@icon-park/vue-next';
-// import { appWindow } from '@tauri-apps/api/window';
 import { useMenuStore } from '../../store/menu';
 import { useAppStore } from '../../store/app';
+
 
 const menuStore = useMenuStore();
 const appStore = useAppStore();

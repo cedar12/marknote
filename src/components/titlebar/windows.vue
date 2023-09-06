@@ -31,6 +31,7 @@ import { appWindow } from '@tauri-apps/api/window';
 import {useMenuStore} from '../../store/menu';
 import {useAppStore} from '../../store/app';
 
+
 const menuStore=useMenuStore();
 const appStore=useAppStore();
 

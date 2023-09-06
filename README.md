@@ -1,16 +1,65 @@
-# Tauri + Vue 3 + TypeScript
+# markote
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+🎉A simple `WYSIWYG` markdown editor, available for Linux, macOS and Windows.
 
-## Recommended IDE Setup
+# **Keyboard Shortcuts**
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+### **Essentials**
 
-## Type Support For `.vue` Imports in TS
+| **Command** | **Windows/Linux** | **macOS** |
+| --- | --- | --- |
+| Copy | `Control` `C` | `Cmd` `C` |
+| Cut | `Control` `X` | `Cmd` `X` |
+| Paste | `Control` `V` | `Cmd` `V` |
+| Paste without formatting | `Control` `Shift` `V` | `Cmd` `Shift` `V` |
+| Undo | `Control` `Z` | `Cmd` `Z` |
+| Redo | `Control` `Shift` `Z` | `Cmd` `Shift` `Z` |
+| Add a line break | `Shift` `Enter` \
+`Control` `Enter` | `Shift` `Enter` \
+`Cmd` `Enter` |
 
-Since TypeScript cannot handle type information for `.vue` imports, they are shimmed to be a generic Vue component type by default. In most cases this is fine if you don't really care about component prop types outside of templates. However, if you wish to get actual prop types in `.vue` imports (for example to get props validation when using manual `h(...)` calls), you can enable Volar's Take Over mode by following these steps:
+### **Text Formatting**
 
-1. Run `Extensions: Show Built-in Extensions` from VS Code's command palette, look for `TypeScript and JavaScript Language Features`, then right click and select `Disable (Workspace)`. By default, Take Over mode will enable itself if the default TypeScript extension is disabled.
-2. Reload the VS Code window by running `Developer: Reload Window` from the command palette.
+| **Command** | **Windows/Linux** | **macOS** |
+| --- | --- | --- |
+| Bold | `Control` `B` | `Cmd` `B` |
+| Italicize | `Control` `I` | `Cmd` `I` |
+| Underline | `Control` `U` | `Cmd` `U` |
+| Strikethrough | `Control` `Shift` `X` | `Cmd` `Shift` `X` |
+| Highlight | `Control` `Shift` `H` | `Cmd` `Shift` `H` |
+| Code | `Control` `E` | `Cmd` `E` |
 
-You can learn more about Take Over mode [here](https://github.com/johnsoncodehk/volar/discussions/471).
+### **Paragraph Formatting**
+
+| **Command** | **Windows/Linux** | **macOS** |
+| --- | --- | --- |
+| Apply normal text style | `Control` `Alt` `0` | `Cmd` `Alt` `0` |
+| Apply heading style 1 | `Control` `Alt` `1` | `Cmd` `Alt` `1` |
+| Apply heading style 2 | `Control` `Alt` `2` | `Cmd` `Alt` `2` |
+| Apply heading style 3 | `Control` `Alt` `3` | `Cmd` `Alt` `3` |
+| Apply heading style 4 | `Control` `Alt` `4` | `Cmd` `Alt` `4` |
+| Apply heading style 5 | `Control` `Alt` `5` | `Cmd` `Alt` `5` |
+| Apply heading style 6 | `Control` `Alt` `6` | `Cmd` `Alt` `6` |
+| Ordered list | `Control` `Shift` `7` | `Cmd` `Shift` `7` |
+| Bullet list | `Control` `Shift` `8` | `Cmd` `Shift` `8` |
+| Task list | `Control` `Shift` `9` | `Cmd` `Shift` `9` |
+| Blockquote | `Control` `Shift` `B` | `Cmd` `Shift` `B` |
+| Left align | `Control` `Shift` `L` | `Cmd` `Shift` `L` |
+| Center align | `Control` `Shift` `E` | `Cmd` `Shift` `E` |
+| Right align | `Control` `Shift` `R` | `Cmd` `Shift` `R` |
+| Justify | `Control` `Shift` `J` | `Cmd` `Shift` `J` |
+| Code block | `Control` `Alt` `C` | `Cmd` `Alt` `C` |
+| Subscript | `Control` `,` | `Cmd` `,` |
+| Superscript | `Control` `.` | `Cmd` `.` |
+
+### **Essentials**
+
+| **Command** | **Windows/Linux** | **macOS** |
+| --- | --- | --- |
+| Select all | `Control` `A` | `Cmd` `A` |
+| Extend selection one character to left | `Shift` `←` | `Shift` `←` |
+| Extend selection one character to right | `Shift` `→` | `Shift` `→` |
+| Extend selection one line up | `Shift` `↑` | `Shift` `↑` |
+| Extend selection one line down | `Shift` `↓` | `Shift` `↓` |
+| Extend selection to the beginning of the document | `Control` `Shift` `↑` | `Cmd` `Shift` `↑` |
+| Extend selection to the end of the document | `Control` `Shift` `↓` | `Cmd` `Shift` `↓` |

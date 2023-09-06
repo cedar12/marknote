@@ -1,5 +1,8 @@
 
 
+
+
+
 export function getUrlParams(url:string) {
 	if(url.indexOf('?')==-1){
 		return {};
@@ -13,3 +16,5 @@ export function getUrlParams(url:string) {
 	}
 	return obj
 }
+
+export const isPreferences=getUrlParams(window.location.href)?.preferences==='open';

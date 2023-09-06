@@ -2,8 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use std::{fs, sync::atomic::{AtomicUsize, Ordering}};
 
-use pulldown_cmark::{html, Options, Parser};
 
+use pulldown_cmark::Options;
 use tauri::{Manager, Window, WindowUrl};
 
 mod resp;
@@ -37,7 +37,15 @@ fn to_html(md: &str) -> String {
 #[tauri::command]
 fn read_md(path: &str) -> resp::Resp<String> {
     match fs::read_to_string(path) {
-        Ok(data) => resp::data(Some(to_html(data.as_str()))),
+        Ok(data) => resp::data(Some(data)),
+        Err(e) => resp::err(e.to_string()),
+    }
+}
+
+#[tauri::command]
+fn save_md(path: &str,md:&str) -> resp::Resp<String> {
+    match fs::write(path, md) {
+        Ok(_) => resp::data(None),
         Err(e) => resp::err(e.to_string()),
     }
 }
@@ -49,31 +57,69 @@ fn set_shadow(win: Window) {
         window_shadows::set_shadow(&win, true).expect("Unsupported platform!");
     }
 }
+#[cfg(not(target_os="macos"))]
 #[tauri::command]
 async fn open_window(handle: tauri::AppHandle) {
-    // let main_window=handle.get_window("main").unwrap();
-    // println!("url->{}",main_window.url());
     let window_id=WINDOW_ID.fetch_add(1, Ordering::SeqCst);
     
     let win = tauri::WindowBuilder::new(
         &handle,
         format!("window_{}",window_id), /* the unique window label */
-        WindowUrl::App("index.html".into())//WindowUrl::External("https://tauri.app/".parse().unwrap())
-      ).decorations(IS_MACOS).title_bar_style(tauri::TitleBarStyle::Overlay).hidden_title(true).build().unwrap();
+        WindowUrl::App("index.html".into())
+      ).decorations(IS_MACOS).inner_size(500f64, 600f64).min_inner_size(400f64, 400f64).build().unwrap();
+    
+    set_shadow(win);
+}
+#[cfg(target_os="macos")]
+#[tauri::command]
+async fn open_window(handle: tauri::AppHandle) {
+    let window_id=WINDOW_ID.fetch_add(1, Ordering::SeqCst);
+    
+    let win = tauri::WindowBuilder::new(
+        &handle,
+        format!("window_{}",window_id), /* the unique window label */
+        WindowUrl::App("index.html".into())
+      ).decorations(IS_MACOS).inner_size(500f64, 600f64).min_inner_size(400f64, 400f64).title_bar_style(tauri::TitleBarStyle::Overlay).hidden_title(true).build().unwrap();
     set_shadow(win);
 }
 
+#[cfg(not(target_os="macos"))]
 #[tauri::command]
 async fn open_preferences(handle: tauri::AppHandle) {
-    // let main_window=handle.get_window("main").unwrap();
+   match handle.get_window("preferences"){
+    Some(window)=>{
+        window.set_focus().unwrap();
+    },
+    None=>{
+        let win = tauri::WindowBuilder::new(
+            &handle,
+            "preferences", /* the unique window label */
+            WindowUrl::App("index.html?preferences=open".into())
+            ).decorations(IS_MACOS).min_inner_size(600f64, 400f64).build().unwrap();
+        set_shadow(win);
+    }
+   }
+    
+    
+}
 
-    // let window_id=WINDOW_ID.fetch_add(1, Ordering::SeqCst);
-    let win = tauri::WindowBuilder::new(
-        &handle,
-        "preferences", /* the unique window label */
-        WindowUrl::App("index.html?preferences=open".into())//WindowUrl::External("https://tauri.app/".parse().unwrap())
-      ).decorations(IS_MACOS).title_bar_style(tauri::TitleBarStyle::Overlay).hidden_title(true).build().unwrap();
-    set_shadow(win);
+#[cfg(target_os="macos")]
+#[tauri::command]
+async fn open_preferences(handle: tauri::AppHandle) {
+    match handle.get_window("preferences"){
+        Some(window)=>{
+            window.set_focus().unwrap();
+        },
+        None=>{
+            let win = tauri::WindowBuilder::new(
+                &handle,
+                "preferences", /* the unique window label */
+                WindowUrl::App("index.html?preferences=open".into())
+            ).decorations(IS_MACOS).min_inner_size(600f64, 400f64).title_bar_style(tauri::TitleBarStyle::Overlay).hidden_title(true).build().unwrap();
+        }
+    }
+    
+    
 }
 
 fn main() {
@@ -85,7 +131,7 @@ fn main() {
             set_shadow(app.get_window("main").unwrap());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet, to_html, read_md,open_window,open_preferences])
+        .invoke_handler(tauri::generate_handler![greet, to_html,save_md, read_md,open_window,open_preferences])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

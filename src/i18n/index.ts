@@ -8,9 +8,9 @@ export default function i18n(){
   for(let locale in localeFiles){
     messages[locale.replace('./locale/','').replace('.js','')]=(localeFiles[locale] as any).default;
   }
-  console.log(messages);
+  // console.log(messages);
   return createI18n({
-    locale: 'cn',
+    locale: localStorage.getItem("lang")||'cn',
     fallbackLocale: 'en',
     messages,
     legacy: false,

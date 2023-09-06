@@ -8,7 +8,8 @@ body{
 }
 
 #app{
-  height: calc(100vh - var(--titleBarHeight));
+  height: calc(100vh);
+  margin-top: calc(0px - var(--titleBarHeight));
   overflow: auto;
 }
 
@@ -18,4 +19,5 @@ body{
   left: 0;
   right: 0;
   height: var(--titleBarHeight);
+  z-index: 990;
 }
