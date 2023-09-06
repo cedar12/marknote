@@ -1,6 +1,6 @@
 <template>
   <div>
-    <button @click="onPrint">print</button>
+    <!-- <button @click="onPrint">print</button> -->
    <!-- <BubbleTable v-if="editorStore.editor" :editor="editorStore.editor"></BubbleTable> 
     <BubbleMenu v-if="editorStore.editor" :editor="editorStore.editor" :should-show="shouldShowText">
       <button @click="editorStore.editor.chain().focus().toggleBold().run()">加粗</button>
@@ -37,7 +37,6 @@ onMounted(()=>{
   2. 1
   3. 2
   * [x] a
-  
   * [x] b
   \`\`\` javascript
   console.log(123);

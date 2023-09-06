@@ -1,6 +1,6 @@
 .marknote {
     outline: none;
-    margin: 1rem 0;
+    // margin: 1rem 0;
     padding: 1rem;
     >*+* {
         margin-top: 0.75em;
@@ -9,6 +9,13 @@
     ul,
     ol {
         padding: 0 1rem;
+    }
+    ul{
+        margin-left: .3em;
+        
+    }
+    ol{
+        margin-left: 0.5em;
     }
 
     h1,
@@ -48,7 +55,11 @@
 
     blockquote {
         padding-left: 1rem;
+        margin: 0;
         border-left: 2px solid rgba(#0D0D0D, 0.1);
+        background-color: #f6f8fa;
+        border-top-right-radius: 0.5rem; 
+        border-bottom-right-radius: 0.5rem;
     }
 
     hr {
@@ -114,7 +125,7 @@
     ul[data-type="taskList"] {
         list-style: none;
         padding: 0;
-
+        margin: 0;
         p {
             margin: 0;
         }
