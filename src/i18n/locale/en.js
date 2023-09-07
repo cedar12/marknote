@@ -19,7 +19,8 @@ export default {
   quit:'Quit',
 
   edit:'Edit',
-
+  copy:'Copy',
+  paste:'Paste',
 
   language:'Language',
 }

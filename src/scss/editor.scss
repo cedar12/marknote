@@ -1,7 +1,7 @@
 .marknote {
     outline: none;
     // margin: 1rem 0;
-    padding: 1rem;
+    padding: 1rem 4rem;
     >*+* {
         margin-top: 0.75em;
     }
@@ -39,6 +39,29 @@
         padding: 0.75rem 1rem;
         border-radius: 0.5rem;
         position: relative;
+        .codeblock-copy{
+            position: absolute;
+            // width: 1rem;
+            // height: 1rem;
+            right: 0;
+            top: 0;
+            cursor: pointer;
+            svg{
+                stroke: #616161;
+                path{
+                    stroke: #616161;
+                }
+            }
+            &:hover{
+                svg{
+                    stroke: #00c4ff;
+                    path{
+                        stroke: #00c4ff;
+                    }
+                }
+            }
+        }
+
         code {
             color: inherit;
             padding: 0;
@@ -67,13 +90,57 @@
         border-top: 2px solid rgba(#0D0D0D, 0.1);
         margin: 2rem 0;
     }
+    // .tableWrapper>.scrollWrapper{
+    //     width: 100%;
+    //     overflow-x: auto;
+    //     overflow-y: hidden;
+    // }
 
     table {
         border-collapse: collapse;
         table-layout: fixed;
         width: 100%;
         margin: 0;
-        overflow: hidden;
+        --gripWidth: 8px;
+        --gripColor: #ced4da;
+        --gripColorActive: #0375fb;
+        .grip-table,.grip-row,.grip-column{
+            display: inline-block;
+            position: absolute;
+            cursor: pointer;
+            &.selected{
+                background-color: var(--gripColorActive);
+            }
+        }
+        .grip-table{
+            top: calc(0px - (var(--gripWidth) + 2px));
+            left:  calc(0px - (var(--gripWidth) + 2px));
+            width: var(--gripWidth);
+            height: var(--gripWidth);
+            background-color: var(--gripColor);
+        }
+        .grip-row{
+            top: 0;
+            left: calc(0px - (var(--gripWidth) + 2px));
+            width: var(--gripWidth);
+            height: 100%;
+            background-color:var(--gripColor);
+            &.first{
+                top: 2px;
+                height: calc(100% - var(--gripWidth) / 2);
+            }
+        }
+        .grip-column{
+            top: calc(0px - (var(--gripWidth) + 2px));
+            left: 0;
+            width: 100%;
+            height: var(--gripWidth);
+            background-color: var(--gripColor);
+            &.first{
+                left: 2px;
+                width: calc(100% - var(--gripWidth) / 2);
+            }
+        }
 
         td,
         th {
@@ -125,18 +192,51 @@
     ul[data-type="taskList"] {
         list-style: none;
         padding: 0;
+        padding-left: .2rem;
         margin: 0;
+        --bgColor:#0375FB;
+        --borderColor: #fff;
         p {
             margin: 0;
         }
 
         li {
             display: flex;
-
             >label {
                 flex: 0 0 auto;
                 margin-right: 0.5rem;
                 user-select: none;
+                cursor: pointer;
+                position: relative;
+                width: 14px;
+                height: 14px;
+                border: 2px solid var(--bgColor);
+                // border-radius: 50%;
+                input[type="checkbox"]{
+                    opacity: 0;
+                    &:checked+span{
+                        width: 14px;
+                        height: 14px;
+                        display: inline-block;
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        background-color: var(--bgColor);
+                        &::after{
+                            content: '';
+                            display: inline-block;
+                            width: 5px;
+                            height: 10px;
+                            border-top: 2px solid var(--borderColor);
+                            border-left: 2px solid var(--borderColor);
+                            background-color: var(--bgColor);
+                            transform: rotate(230deg);
+                            position: absolute;
+                            left: 3px;
+                            top: -1px;
+                        }
+                    }
+                }
             }
 
             >div {
@@ -155,4 +255,20 @@
     }
     
 
+}
+
+.table-cell-tooltip{
+    // position: fixed;
+    // top: var(--tooltipTop);
+    // left: var(--tooltipLeft);
+    
+    display: flex;
+    flex-direction: column;
+    &>div,button{
+        cursor: pointer;
+        pointer-events: all; 
+        &:hover{
+            background-color: #868b92;
+        }
+    }
 }

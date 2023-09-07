@@ -5,7 +5,7 @@
             <Transition @beforeEnter="handleBeforeEnter" @enter="handleEnter" @afterEnter="handleAfterEnter">
                 <div v-if="showMenu" class="context-menu" :style="{ left: x + 'px', top: y + 'px' }">
                     <div class="menu-list">
-                        <div @click="handleClick(item)" class="menu-item" :class="{'disabled':item.disabled===true,'split':item.split===true}" v-for="item in props.menu" :key="item.label">
+                        <div @click="handleClick($event,item)" class="menu-item" :class="{'disabled':disabled(item),'split':item.split===true}" v-for="item in props.menu" :key="item.label">
                             {{ item.label }}
                         </div>
                     </div>
@@ -27,9 +27,32 @@ const containerRef = ref<HTMLElement>();
 const emit = defineEmits(['select']);
 const { x, y, showMenu } = useContextMenu(containerRef);
 
-function handleClick(item:ContextMenuItem) {
+function disabled(item:ContextMenuItem){
+    if(item.disabled!==undefined){
+        if(item.disabled===true){
+            return true;
+        }
+        const result=item.disabled();
+        if(result===true){
+            return true;
+        }
+    }
+    return false;
+}
+
+function handleClick(e:MouseEvent,item:ContextMenuItem) {
+    e.preventDefault();
+    e.stopPropagation();
+    if(disabled(item)){
+        return;
+    }
     showMenu.value = false;
-    emit('select', item);
+    if(item.onClick){
+        item.onClick(item);
+    }else{
+        emit('select', item);
+    }
+    
 }
 
 function handleBeforeEnter(el:Element) {

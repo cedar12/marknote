@@ -20,6 +20,11 @@
       "os": {
         "all": true
       },
+      "clipboard": {
+        "all": false,
+        "readText": true,
+        "writeText": true
+      },
       "process": {
         "all": false,
         "exit": true,

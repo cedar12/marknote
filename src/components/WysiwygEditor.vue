@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="editor-container">
     <!-- <button @click="onPrint">print</button> -->
    <!-- <BubbleTable v-if="editorStore.editor" :editor="editorStore.editor"></BubbleTable> 
     <BubbleMenu v-if="editorStore.editor" :editor="editorStore.editor" :should-show="shouldShowText">
@@ -9,7 +9,15 @@
       <button @click="editorStore.editor.chain().focus().toggleCode().run()">代码</button>
     </BubbleMenu>
     <editor-content :editor="editorStore.editor" ></editor-content> -->
-    <div ref="editorRef">
+    <div class="bubbel-table" ref="bubbleTableRef">
+      <button @click="editorStore.chain()?.focus().addColumnAfter().run()">增加列</button>
+      <button @click="editorStore.chain()?.focus().deleteColumn().run()">删除列</button>
+      <button @click="editorStore.chain()?.focus().addRowAfter().run()">增加行</button>
+      <button @click="editorStore.chain()?.focus().deleteRow().run()">删除行</button>
+      <button @click="editorStore.chain()?.focus().mergeOrSplit().run()">合并单元格</button>
+      <button @click="editorStore.chain()?.focus().toggleHeaderRow().run()">表头</button>
+    </div>
+    <div ref="editorRef" @contextmenu.prevent="">
 
     </div>
   </div>
@@ -24,10 +32,12 @@ import 'highlight.js/scss/github.scss'
 // import {md2html} from '../utils/parser'
 
 import {useEditorStore} from '../store/editor';
+import BubbleMenu from '@tiptap/extension-bubble-menu'
 
 const editorStore=useEditorStore();
 
 const editorRef=ref<HTMLElement>();
+const bubbleTableRef=ref<HTMLElement>();
 
 
 
@@ -51,24 +61,16 @@ onMounted(()=>{
   |1 |2 |
   `;
   if(editorRef.value)
-  editorStore.create(editorRef.value);
+  editorStore.create(editorRef.value,[
+    BubbleMenu.configure({
+      shouldShow: ({ editor }) => {
+        return false;//editor.isActive('table')
+      },
+      element:bubbleTableRef.value
+    })
+  ]);
   editorStore.setContent(content);
 
 });
 
-
-const onPrint=()=>{
-  // if(editorStore.editor){
-  //   // var md=html2md(editor.value?.getHTML());
-  //   var md=editorStore.editor.storage.markdown.getMarkdown();
-  //   console.log(md);
-  //   console.log(editorStore.editor.getJSON());
-  // }
-  console.log(editorStore.getMarkdown());
-}
-
-
-// watch(()=>editorStore.content,()=>{
-//   editorStore.editor?.commands.setContent(editorStore.content);
-// })
 </script>

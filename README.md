@@ -2,21 +2,15 @@
 
 🎉A simple `WYSIWYG` markdown editor, available for Linux, macOS and Windows.
 
+---
+
 # **Keyboard Shortcuts**
 
 ### **Essentials**
 
-| **Command** | **Windows/Linux** | **macOS** |
-| --- | --- | --- |
-| Copy | `Control` `C` | `Cmd` `C` |
-| Cut | `Control` `X` | `Cmd` `X` |
-| Paste | `Control` `V` | `Cmd` `V` |
-| Paste without formatting | `Control` `Shift` `V` | `Cmd` `Shift` `V` |
-| Undo | `Control` `Z` | `Cmd` `Z` |
-| Redo | `Control` `Shift` `Z` | `Cmd` `Shift` `Z` |
-| Add a line break | `Shift` `Enter` \
-`Control` `Enter` | `Shift` `Enter` \
-`Cmd` `Enter` |
+<table class="marknote-table">
+<tbody><tr><th colspan="1" rowspan="1"><p><strong>Command</strong></p></th><th colspan="1" rowspan="1"><p><strong>Windows/Linux</strong></p></th><th colspan="1" rowspan="1"><p><strong>macOS</strong></p></th></tr><tr><td colspan="1" rowspan="1"><p>Copy</p></td><td colspan="1" rowspan="1"><p><code>Control</code>&nbsp;<code>C</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code>&nbsp;<code>C</code></p></td></tr><tr><td colspan="1" rowspan="1"><p>Cut</p></td><td colspan="1" rowspan="1"><p><code>Control</code>&nbsp;<code>X</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code>&nbsp;<code>X</code></p></td></tr><tr><td colspan="1" rowspan="1"><p>Paste</p></td><td colspan="1" rowspan="1"><p><code>Control</code>&nbsp;<code>V</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code>&nbsp;<code>V</code></p></td></tr><tr><td colspan="1" rowspan="1"><p>Paste without formatting</p></td><td colspan="1" rowspan="1"><p><code>Control</code>&nbsp;<code>Shift</code>&nbsp;<code>V</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code>&nbsp;<code>Shift</code>&nbsp;<code>V</code></p></td></tr><tr><td colspan="1" rowspan="1"><p>Undo</p></td><td colspan="1" rowspan="1"><p><code>Control</code>&nbsp;<code>Z</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code>&nbsp;<code>Z</code></p></td></tr><tr><td colspan="1" rowspan="1"><p>Redo</p></td><td colspan="1" rowspan="1"><p><code>Control</code>&nbsp;<code>Shift</code>&nbsp;<code>Z</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code>&nbsp;<code>Shift</code>&nbsp;<code>Z</code></p></td></tr><tr><td colspan="1" rowspan="2"><p>Add a line break</p></td><td colspan="1" rowspan="1"><p><code>Shift</code>&nbsp;<code>Enter</code></p></td><td colspan="1" rowspan="1"><p><code>Shift</code>&nbsp;<code>Enter</code> </p></td></tr><tr><td colspan="1" rowspan="1"><p><code>Control</code> <code>Enter</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code> <code>Enter</code></p></td></tr></tbody>
+</table>
 
 ### **Text Formatting**
 
