@@ -202,6 +202,7 @@
 
         li {
             display: flex;
+            padding: 0.2em 0;
             >label {
                 flex: 0 0 auto;
                 margin-right: 0.5rem;
@@ -250,6 +251,7 @@
 
             ul[data-type="taskList"]>li {
                 display: flex;
+                
             }
         }
     }

@@ -29,6 +29,8 @@ const appStore = useAppStore();
 <style lang="scss">
 //--titlebarBgHover --titleBarHeight --editorBgColor
 .titlebar-bg.macos{
+    --editorBgColor: var(--contentBackgroundColor);
+    --titlebarBgHover: var(--menuBackgroundColor);
     --barHeight: var(--titleBarHeight, 30px);
     height: var(--barHeight);
     background: var(--editorBgColor, #ffffff);

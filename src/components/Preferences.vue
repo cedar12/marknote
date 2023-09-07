@@ -78,8 +78,9 @@ watch(()=>locale.value,()=>{
         height: 100vh;
         &>.left{
             flex-basis: 200px;
-            background-color: #ccc;
+            background-color: var(--primaryBackgroundColor);
             padding-top: var(--titleBarHeight);
+            color: var(--primaryTextColor);
         }
         &>.right{
             flex: 1;
@@ -95,26 +96,35 @@ watch(()=>locale.value,()=>{
             .preferences-router{
                 padding-top: 1rem;
                 .router-item{
-                    padding: 0.8rem;
-                    font-size: 1.8rem;
+                    padding: 0.5rem 1rem;
+                    font-size: 1.4rem;
                     position: relative;
-                    &:hover::before{
-                        content: '';
-                        position: absolute;
-                        width: 2px;
-                        height: 100%;
-                        left: 0;
-                        top: 0;
-                        border-left: 4px solid rgb(9, 112, 73);
+                    &:hover{
+                        background-color: var(--primaryBackgroundColorHover);
+                        background-image: linear-gradient(to right,var(--primaryBackgroundColor),var(--primaryBackgroundColorActive));
+                        color: var(--primaryTextColorHover);
+                        &::before{
+                            content: '';
+                            position: absolute;
+                            width: 2px;
+                            height: 100%;
+                            left: 0;
+                            top: 0;
+                            border-left: 4px solid var(--primaryBorderColor);
+                        }
                     }
-                    &.active::before{
-                        content: '';
-                        position: absolute;
-                        width: 2px;
-                        height: 100%;
-                        left: 0;
-                        top: 0;
-                        border-left: 4px solid rgb(19, 111, 165);
+                    &.active{
+                        background-color: var(--primaryBackgroundColorActive);
+                        color: var(--primaryTextColorActive);
+                        &::before{
+                            content: '';
+                            position: absolute;
+                            width: 2px;
+                            height: 100%;
+                            left: 0;
+                            top: 0;
+                            border-left: 4px solid var(--primaryBorderColor);
+                        }
                     }
                 }
             }

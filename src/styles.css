@@ -1,11 +1,30 @@
 :root{
   --titleBarHeight:30px;
+
+  --primaryBackgroundColor: #2e3a62;
+  --primaryBackgroundColorHover: #30364a;
+  --primaryBackgroundColorActive: #1f294a;
+  --contentBackgroundColor: #ffffff;
+  --primaryTextColor: #74bcd4;
+  --primaryTextColorHover: #4fb8db;
+  --primaryTextColorActive: #1e9fca;
+  --primaryTextColorHover: #74bcd4;
+  --contentTextColor: #3e3e3e;
+  --primaryBorderColor: #52b5f9;
+
+
+  --menuBackgroundColor: var(--contentBackgroundColor);
+  --menuShadowColor: #b8b8b8;
+  --menuBorderColor: #dfdfdf;
+  --menuBackgroundColorHover: #e8e8e9;
 }
 
 body{
   padding: 0;
   margin: 0;
   overflow: hidden;
+  background-color: var(--contentBackgroundColor);
+  color: var(--contentTextColor);
 }
 
 #app{

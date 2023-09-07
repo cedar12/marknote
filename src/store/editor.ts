@@ -134,6 +134,7 @@ export const useEditorStore = defineStore('editor', {
               
             //   editorStore.contextmenuEvent=e;
             // },true);
+            editor.view.dom.oncontextmenu='' as any;
         },
         onUpdate({editor,transaction}) {
           const {state} = editor;

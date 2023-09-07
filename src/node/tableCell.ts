@@ -161,17 +161,18 @@ export const TableCell = Node.create<TableCellOptions, { clearCallbacks: Array<(
                       placement:'left',
                       theme:'light',
                       trigger:'mouseenter click',
+                      offset:[0,0],
                     });
 
                     pre.onclick=(e)=>{
                       addRowBefore(this.editor.state, this.editor.view.dispatch);
                     };
                     del.onclick=(e)=>{
-                      console.log(e,'click',this.editor.state);
+                      // console.log(e,'click',this.editor.state);
                       this.editor.commands.deleteRow();
                     };
                     next.onclick=(e)=>{
-                      console.log(e,'click',this.editor.state);
+                      // console.log(e,'click',this.editor.state);
                       addRowAfter(this.editor.state, this.editor.view.dispatch);
                     };
 

@@ -1,7 +1,5 @@
 
 
-import { addCol } from './utils/table';
-
 import { mergeAttributes, Node } from '@tiptap/core';
 import { getCellsInRow, isColumnSelected, selectColumn } from './utils/table';
 
@@ -119,9 +117,6 @@ export const TableHeader = Node.create<TableHeaderOptions, { clearCallbacks: Arr
                     del.title='删除行';
                     next.title='向后插入一列';
 
-                    
-
-
                     const install=tippy(grip,{
                       content:tooltip,
                       allowHTML:true,
@@ -130,7 +125,8 @@ export const TableHeader = Node.create<TableHeaderOptions, { clearCallbacks: Arr
                       arrow:false,
                       placement:'top',
                       theme:'light',
-                      trigger:'click',
+                      trigger:'mouseenter click',
+                      offset:[0,0],
                     });
 
                     pre.onclick=(e)=>{
