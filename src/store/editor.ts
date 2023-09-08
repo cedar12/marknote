@@ -23,6 +23,10 @@ import {TableRow} from '../node/tableRow';
 import { lowlight } from '../utils/lowlight'
 import { Extensions } from '@tiptap/vue-3'
 
+// import {CodeBlock} from '../node/codeBlock';
+import {CodeBlock} from '../node/codeBlock2';
+
+
 
 
 const MarknoteCodeBlock=CodeBlockLowlight.extend({
@@ -119,7 +123,9 @@ export const useEditorStore = defineStore('editor', {
             },
             
           }),
-          MarknoteCodeBlock.configure({
+          // MarknoteCodeBlock.configure({
+          CodeBlock.configure({
+
             lowlight,
           }),
           Markdown,

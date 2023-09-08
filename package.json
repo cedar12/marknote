@@ -38,6 +38,7 @@
   "devDependencies": {
     "@tauri-apps/cli": "^1.4.0",
     "@vitejs/plugin-vue": "^4.2.3",
+    "naive-ui": "^2.34.4",
     "sass": "^1.66.1",
     "typescript": "^5.0.2",
     "vite": "^4.4.4",

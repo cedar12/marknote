@@ -5,6 +5,7 @@
       <!-- <ContextMenu :menu="menuItems" > -->
         <WysiwygEditor/>
       <!-- </ContextMenu> -->
+
     </div>
     
   </div>
@@ -12,7 +13,8 @@
 </template>
 <script lang="ts" setup>
 import {ref} from 'vue';
-import WysiwygEditor from "./WysiwygEditor.vue";
+// import WysiwygEditor from "./WysiwygEditor.vue";
+import WysiwygEditor from "../node/Editor.vue";
 import ContextMenu from "./contextMenu/index.vue";
 import {ContextMenuItem} from "./contextMenu/useContextMenu";
 import {useI18n} from 'vue-i18n';
