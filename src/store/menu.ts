@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { open } from '@tauri-apps/api/dialog';
 import { invoke } from '@tauri-apps/api/tauri';
-import { useEditorStore } from './editor';
+import { useEditorStore } from './editor2';
 import { useAppStore } from './app';
 import { appWindow } from '@tauri-apps/api/window';
 import { exit } from '@tauri-apps/api/process';
+import { listen } from '@tauri-apps/api/event';
 
 export interface Menu {
   label: string,
@@ -49,6 +50,7 @@ const events = {
     appWindow.close();
   },
   openFile() {
+    /*
     open({
       multiple: false,
       filters: [{
@@ -69,18 +71,27 @@ const events = {
           appStore.setFilepath(selected);
           const editorStore = useEditorStore();
           // editorStore.content = resp.data;
-          editorStore.setContent(resp.data);
+          editorStore.editor?.commands.setContent(resp.data);
         }
         // console.log(resp);
       }
     }).catch(e => console.error(e));
-
+    */
+   invoke('open_file',{title:'打开'}).then((resp:any)=>{
+    if (resp.code === 0) {
+      const appStore = useAppStore();
+      appStore.setFilepath(resp.info);
+      const editorStore = useEditorStore();
+      // editorStore.content = resp.data;
+      editorStore.editor?.commands.setContent(resp.data);
+    } 
+   });
   },
   save() {
     const editorStore = useEditorStore();
     const appStore = useAppStore();
     if (appStore.filepath) {
-      invoke('save_md', { path: appStore.filepath, md: editorStore.getMarkdown() }).then((res:any) => { 
+      invoke('save_md', { path: appStore.filepath, md: editorStore.editor?.storage.markdown.getMarkdown() }).then((res:any) => { 
         console.log('save',res);
         if(res.code===0){
           appStore.isSave=true;

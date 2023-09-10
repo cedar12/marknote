@@ -1,6 +1,7 @@
 import { findChildren } from '@tiptap/core';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
-import BuiltInCodeBlock, { CodeBlockOptions } from '@tiptap/extension-code-block';
+// import { CodeBlockOptions,CodeBlock as BuiltInCodeBlock } from '@tiptap/extension-code-block';//BuiltInCodeBlock
+import {CodeBlockLowlight,CodeBlockLowlightOptions} from '@tiptap/extension-code-block-lowlight';
 import { lowlight } from 'lowlight/lib/all';
 import { Node as ProsemirrorNode } from 'prosemirror-model';
 import { Plugin, PluginKey } from 'prosemirror-state';
@@ -155,12 +156,12 @@ export function LowlightPlugin({
   return lowlightPlugin;
 }
 
-export interface CodeBlockLowlightOptions extends CodeBlockOptions {
+export interface CodeBlockLowlightOptions extends CodeBlockLowlightOptions {
   lowlight: any;
   defaultLanguage: string | null | undefined;
 }
 
-export const CodeBlock = BuiltInCodeBlock.extend<CodeBlockLowlightOptions>({
+export const CodeBlock = CodeBlockLowlight.extend<CodeBlockLowlightOptions>({
   addOptions() {
     return {
       ...this.parent?.(),
@@ -170,23 +171,7 @@ export const CodeBlock = BuiltInCodeBlock.extend<CodeBlockLowlightOptions>({
   },
 
   addNodeView() {
-    
     return VueNodeViewRenderer(CodeBlockWrapper)
-    
-    // return ({
-    //   node, HTMLAttributes, getPos, editor,
-    // }) => {
-    //   // const vnode=createVNode(CodeBlockWrapper,{editor:this.editor,node:node});
-    //   const dom=document.createElement('div');
-    //   console.log('codeblock addNodeView');
-    //   createApp(CodeBlockWrapper,{editor:editor,node:node}).mount(dom);
-    //   const content=dom.querySelector('code');
-    //   console.log(content);
-    //   return {
-    //     dom:dom,
-    //     contentDOM:content,
-    //   }
-    // };
   },
 
   addProseMirrorPlugins() {
@@ -199,6 +184,102 @@ export const CodeBlock = BuiltInCodeBlock.extend<CodeBlockLowlightOptions>({
       }),
     ];
   },
+  // @ts-ignore
+  addKeyboardShortcuts(){
+    
+    return {
+      'Tab': () => {
+
+        this.editor.view.dispatch(this.editor.state.tr.insertText('\t'));
+        // return this.editor.commands.indent();
+        return true;
+      },
+      'Mod-Alt-c': () => this.editor.commands.toggleCodeBlock(),
+
+      // remove code block when at start of document or code block is empty
+      Backspace: () => {
+        const { empty, $anchor } = this.editor.state.selection
+        const isAtStart = $anchor.pos === 1
+
+        if (!empty || $anchor.parent.type.name !== this.name) {
+          return false
+        }
+
+        if (isAtStart || !$anchor.parent.textContent.length) {
+          return this.editor.commands.clearNodes()
+        }
+
+        return false
+      },
+
+      // exit node on triple enter
+      Enter: ({ editor }) => {
+        if (!this.options.exitOnTripleEnter) {
+          return false
+        }
+
+        const { state } = editor
+        const { selection } = state
+        const { $from, empty } = selection
+
+        if (!empty || $from.parent.type !== this.type) {
+          return false
+        }
+
+        const isAtEnd = $from.parentOffset === $from.parent.nodeSize - 2
+        const endsWithDoubleNewline = $from.parent.textContent.endsWith('\n\n')
+
+        if (!isAtEnd || !endsWithDoubleNewline) {
+          return false
+        }
+
+        return editor
+          .chain()
+          .command(({ tr }) => {
+            tr.delete($from.pos - 2, $from.pos)
+
+            return true
+          })
+          .exitCode()
+          .run()
+      },
+
+      // exit node on arrow down
+      ArrowDown: ({ editor }) => {
+        if (!this.options.exitOnArrowDown) {
+          return false
+        }
+
+        const { state } = editor
+        const { selection, doc } = state
+        const { $from, empty } = selection
+
+        if (!empty || $from.parent.type !== this.type) {
+          return false
+        }
+
+        const isAtEnd = $from.parentOffset === $from.parent.nodeSize - 2
+
+        if (!isAtEnd) {
+          return false
+        }
+
+        const after = $from.after()
+
+        if (after === undefined) {
+          return false
+        }
+
+        const nodeAfter = doc.nodeAt(after)
+
+        if (nodeAfter) {
+          return false
+        }
+
+        return editor.commands.exitCode()
+      },
+    };
+  }
 }).configure({
   lowlight,
   defaultLanguage: 'auto',

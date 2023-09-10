@@ -41,8 +41,8 @@ function disabled(item:ContextMenuItem){
 }
 
 function handleClick(e:MouseEvent,item:ContextMenuItem) {
-    e.preventDefault();
-    e.stopPropagation();
+    // e.preventDefault();
+    // e.stopPropagation();
     if(disabled(item)){
         return;
     }

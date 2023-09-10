@@ -23,6 +23,12 @@ export function isListNode(node: Node): boolean {
   return isBulletListNode(node) || isOrderedListNode(node) || isTodoListNode(node);
 }
 
+export function getNode(state:EditorState){
+  const $anchor=state.selection.$anchor;
+
+  return getNodeAtPos(state,$anchor.pos);
+}
+
 export function getCurrentNode(state: EditorState): Node {
   const $head = state.selection.$head;
   let node = null;

@@ -11,6 +11,10 @@
         margin-top: 0.75em;
     }
 
+    a{
+        color:#00c4ff;
+    }
+
     ul,
     ol {
         padding: 0 1rem;
@@ -35,63 +39,29 @@
     code {
         background-color: rgba(#616161, 0.1);
         color: #616161;
+        padding: 0.2em 0.4em;
+        margin: 0 0.2em;
     }
 
     pre {
-        background: #f1f3f5;
-        color: #202328;
-        font-family: 'JetBrainsMono', monospace;
-        padding: 1rem 1rem;
-        border-radius: 0.5rem;
+        
+        
+        height: auto;
+        // border-radius: 0.5rem;
+        padding: 0;
+        margin: 0;
         position: relative;
-        .codeblock-tool{
-            z-index: 0;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
-            select{
-                user-select: none;
-                z-index: 3;
-                position: absolute;
-                left: 0;
-                top: -0.4rem;
-                background-color: transparent;
-                border: none;
-                outline: none;
-                color: #616161;
-            }
-        }
-        .codeblock-copy{
-            z-index: 3;
-            position: absolute;
-            // width: 1rem;
-            // height: 1rem;
-            right: 0;
-            top: 0;
-            cursor: pointer;
-            svg{
-                stroke: #616161;
-                path{
-                    stroke: #616161;
-                }
-            }
-            &:hover{
-                svg{
-                    stroke: #00c4ff;
-                    path{
-                        stroke: #00c4ff;
-                    }
-                }
-            }
-        }
+        margin-top: -1em;
+        margin-bottom: -2em;
+        box-sizing: border-box;
 
         code {
+            display: block;
+            background: #f1f3f5;
+            color: #202328;
+            font-family: 'JetBrainsMono', monospace;
+            padding: 1rem 1rem;
             z-index: 1;
-            color: inherit;
-            padding: 0;
-            background: none;
             font-size: 0.8rem;
             
         }
@@ -103,12 +73,18 @@
     }
 
     blockquote {
+        margin-top: 0.75em !important;
         padding-left: 1rem;
         margin: 0;
-        border-left: 2px solid rgba(#0D0D0D, 0.1);
+        border-left: 0.4em solid rgba(#1b3954, 0.2);
         background-color: #f1f3f5;
-        border-top-right-radius: 0.5rem; 
-        border-bottom-right-radius: 0.5rem;
+        // border-top-right-radius: 0.5rem; 
+        // border-bottom-right-radius: 0.5rem;
+        p{
+            box-sizing: border-box;
+            margin: 0;
+            padding: .4em;
+        }
     }
 
     hr {

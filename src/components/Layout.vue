@@ -1,10 +1,12 @@
 <template>
   <div class="marknote-layout">
-    
+    <div class="layout-outliner">
+      <Outliner></Outliner>
+    </div>
     <div class="layout-content">
       <!-- <ContextMenu :menu="menuItems" > -->
         <WysiwygEditor/>
-      <!-- </ContextMenu> -->
+      <!-- </ContextMenu>s -->
 
     </div>
     
@@ -19,6 +21,7 @@ import ContextMenu from "./contextMenu/index.vue";
 import {ContextMenuItem} from "./contextMenu/useContextMenu";
 import {useI18n} from 'vue-i18n';
 import {useEditorStore} from '../store/editor';
+import Outliner from './Outliner.vue';
 // import {readText,writeText} from '@tauri-apps/api/clipboard';
 
 const {t} = useI18n();
@@ -34,8 +37,9 @@ const menuItems=ref<ContextMenuItem[]>([
     },
     split:true,
     onClick() {
-      // const node=editor.ref()?.view.domSelectionRange().anchorNode;
-      // console.log(node);
+      
+      const node=editor.ref()?.view.domSelectionRange().anchorNode;
+      console.log(node);
       // if(str)
       // writeText(str);
     },
@@ -53,7 +57,13 @@ const menuItems=ref<ContextMenuItem[]>([
 <style lang="scss">
 .marknote-layout{
   overflow: hidden;
+  display: flex;
+  .layout-outliner{
+    flex-basis: 200px;
+    height: 100vh;
+  }
   .layout-content{
+    flex: 1;
     overflow: hidden;
     padding-top: var(--titleBarHeight);
     &>div{

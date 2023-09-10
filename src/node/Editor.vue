@@ -1,35 +1,48 @@
 <template>
+  <BubbleMenu v-if="editor" :editor="editor">
+    <LinkMenu :editor="editor"/>
+  </BubbleMenu>
   <EditorContent :editor="editor"/>
 </template>
 <script lang="ts" setup> 
 import {onMounted} from 'vue';
-import {EditorContent} from '@tiptap/vue-3';
+import {EditorContent,BubbleMenu} from '@tiptap/vue-3';
 import {useEditorStore} from '../store/editor2';
 import { storeToRefs } from 'pinia';
+import LinkMenu from './menu/link/index.vue';
 
 const editorStore=useEditorStore();
 
 const {editor} = storeToRefs(editorStore);
   
 onMounted(()=>{
-  const content=`所见即所得  🎉
-  # marknote
+  const content=`# marknote
+  所见即所得  🎉
+  
   2. 1
   3. 2
   * [x] a
   * [x] b
-import { storeToRefs } from 'pinia';
+  
   \`\`\` javascript
-  console.log(123);
+  console.log('marknote');
   \`\`\`
 
-  > a~bc~
+  > a~~bc~~
 
-  ~abc~
+  ~~abc~~ **bold**
 
   |a |b |
   |:-|:-|
   |1 |2 |
+
+
+  abc [baidu.com](https://www.baidu.com)
+  \`\`\`rust
+  fn main(){
+    println!("marknote");
+  }
+  \`\`\`
   `;
   console.log(editor);
   editor.value?.commands.setContent(content);

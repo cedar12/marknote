@@ -20,7 +20,10 @@
             </div>
             <div class="right">
                 <div class="preferences-content">
-                    <Language v-if="key==='language'"></Language>
+                    <div style="padding: 0 1rem;">
+                        <Language v-if="key==='language'"></Language>
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -89,6 +92,7 @@ watch(()=>locale.value,()=>{
         .preferences-content{
             height: calc(100vh - var(--titleBarHeight));
             overflow: auto;
+
             .window-title{
                 font-size: 1.4rem;
                 text-align: center;

@@ -3,13 +3,47 @@
 🎉A simple `WYSIWYG` markdown editor, available for Linux, macOS and Windows.
 
 ---
+1. 非electron
+2. 
+
+- [x] 多窗口
+
+- [ ] GFM语法
+
+- [x] 代码块多种语法高亮
+
+- [ ] 导入markdown文档
+
+- [ ] 导出markdown
+
+- [ ] 多主题
+
+```javascript
+console.log('marknote');
+```
+
+> a~~bc~~
+
+~~abc~~ **bold. *abc***
+
+| a | b |
+| --- | --- |
+| 1 | 2 |
+
+abc [baidu.com](https://www.baidu.com)
+
+```rust
+fn main(){
+  println!("marknote");
+}
+```
 
 # **Keyboard Shortcuts**
 
 ### **Essentials**
 
 <table class="marknote-table">
-<tbody><tr><th colspan="1" rowspan="1"><p><strong>Command</strong></p></th><th colspan="1" rowspan="1"><p><strong>Windows/Linux</strong></p></th><th colspan="1" rowspan="1"><p><strong>macOS</strong></p></th></tr><tr><td colspan="1" rowspan="1"><p>Copy</p></td><td colspan="1" rowspan="1"><p><code>Control</code>&nbsp;<code>C</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code>&nbsp;<code>C</code></p></td></tr><tr><td colspan="1" rowspan="1"><p>Cut</p></td><td colspan="1" rowspan="1"><p><code>Control</code>&nbsp;<code>X</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code>&nbsp;<code>X</code></p></td></tr><tr><td colspan="1" rowspan="1"><p>Paste</p></td><td colspan="1" rowspan="1"><p><code>Control</code>&nbsp;<code>V</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code>&nbsp;<code>V</code></p></td></tr><tr><td colspan="1" rowspan="1"><p>Paste without formatting</p></td><td colspan="1" rowspan="1"><p><code>Control</code>&nbsp;<code>Shift</code>&nbsp;<code>V</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code>&nbsp;<code>Shift</code>&nbsp;<code>V</code></p></td></tr><tr><td colspan="1" rowspan="1"><p>Undo</p></td><td colspan="1" rowspan="1"><p><code>Control</code>&nbsp;<code>Z</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code>&nbsp;<code>Z</code></p></td></tr><tr><td colspan="1" rowspan="1"><p>Redo</p></td><td colspan="1" rowspan="1"><p><code>Control</code>&nbsp;<code>Shift</code>&nbsp;<code>Z</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code>&nbsp;<code>Shift</code>&nbsp;<code>Z</code></p></td></tr><tr><td colspan="1" rowspan="2"><p>Add a line break</p></td><td colspan="1" rowspan="1"><p><code>Shift</code>&nbsp;<code>Enter</code></p></td><td colspan="1" rowspan="1"><p><code>Shift</code>&nbsp;<code>Enter</code> </p></td></tr><tr><td colspan="1" rowspan="1"><p><code>Control</code> <code>Enter</code></p></td><td colspan="1" rowspan="1"><p><code>Cmd</code> <code>Enter</code></p></td></tr></tbody>
+<tbody><tr><th colspan="1" rowspan="1" colwidth="100"><p><strong>Command</strong></p></th><th colspan="1" rowspan="1" colwidth="100"><p><strong>Windows/Linux</strong></p></th><th colspan="1" rowspan="1" colwidth="100"><p><strong>macOS</strong></p></th></tr><tr><td colspan="1" rowspan="1" colwidth="100"><p>Copy</p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Control</code>&nbsp;<code>C</code></p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Cmd</code>&nbsp;<code>C</code></p></td></tr><tr><td colspan="1" rowspan="1" colwidth="100"><p>Cut</p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Control</code>&nbsp;<code>X</code></p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Cmd</code>&nbsp;<code>X</code></p></td></tr><tr><td colspan="1" rowspan="1" colwidth="100"><p>Paste</p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Control</code>&nbsp;<code>V</code></p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Cmd</code>&nbsp;<code>V</code></p></td></tr><tr><td colspan="1" rowspan="1" colwidth="100"><p>Paste without formatting</p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Control</code>&nbsp;<code>Shift</code>&nbsp;<code>V</code></p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Cmd</code>&nbsp;<code>Shift</code>&nbsp;<code>V</code></p></td></tr><tr><td colspan="1" rowspan="1" colwidth="100"><p>Undo</p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Control</code>&nbsp;<code>Z</code></p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Cmd</code>&nbsp;<code>Z</code></p></td></tr><tr><td colspan="1" rowspan="1" colwidth="100"><p>Redo</p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Control</code>&nbsp;<code>Shift</code>&nbsp;<code>Z</code></p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Cmd</code>&nbsp;<code>Shift</code>&nbsp;<code>Z</code></p></td></tr><tr><td colspan="1" rowspan="2" colwidth="100"><p>Add a line break</p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Shift</code>&nbsp;<code>Enter</code></p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Shift</code>&nbsp;<code>Enter</code></p></td></tr><tr><td colspan="1" rowspan="1" colwidth="100"><p><code>Control</code> <code>Enter</code></p></td><td colspan="1" rowspan="1" colwidth="100"><p><code>Cmd</code> <code>Enter</code></p></td></tr></tbody>
 </table>
 
 ### **Text Formatting**

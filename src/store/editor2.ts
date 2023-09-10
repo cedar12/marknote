@@ -1,8 +1,10 @@
+import {ShallowRef} from 'vue';
 import { defineStore } from 'pinia';
-import {useEditor} from '@tiptap/vue-3';
+import {Editor, useEditor} from '@tiptap/vue-3';
 import { wrappingInputRule } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import TaskList from '@tiptap/extension-task-list';
+import {Strike} from '../node/strike';
 import TaskItem from '@tiptap/extension-task-item';
 import { Markdown } from 'tiptap-markdown';
 import {Table} from '../node/table';
@@ -11,6 +13,9 @@ import {TableCell} from '../node/tableCell';
 import {TableRow} from '../node/tableRow';
 import { lowlight } from '../utils/lowlight';
 import {CodeBlock} from '../node/codeBlock2';
+import {Heading} from '../node/heading';
+import {Link} from '../node/link';
+import {Focus} from '../node/focus';
 
 const MarknoteTable=Table.extend({
   addInputRules() {
@@ -35,8 +40,12 @@ Markdown.configure({
   transformCopiedText: false,  // Copied text is transformed to markdown
 })
 export const useEditorStore = defineStore('editor2', {
-  state() {
+  state():{
+    tree:NodeTree[],
+    editor:ShallowRef<Editor | undefined>,
+  }{
       return {
+        tree:[],
         editor:useEditor({
           content: '',
           editorProps:{
@@ -46,6 +55,10 @@ export const useEditorStore = defineStore('editor2', {
           },
           extensions:[
             StarterKit,
+            Link,
+            Heading,
+            Strike,
+            Focus,
             TaskItem,
             TaskList.configure({
               HTMLAttributes:{
@@ -68,9 +81,60 @@ export const useEditorStore = defineStore('editor2', {
               lowlight,
             }),
             Markdown,
-          ]
+          ],
+          onUpdate:()=>{
+            console.log('更新outliner data');
+            const editorStore=useEditorStore();
+            editorStore.tree=editorStore.getTree();
+          },
+          onCreate:()=>{
+            console.log('初始化outliner data');
+            const editorStore=useEditorStore();
+            editorStore.tree=editorStore.getTree();
+            console.log(editorStore.tree)
+          }
         })
       }
   },
+  
+  actions:{
+    getTree(){
+      const json=this.editor?.getJSON();
+      // console.log(json);
+      const tree:NodeTree[]=[];
+      for (let i = 0; json?.content && i < json?.content?.length; i++) {
+        const node = json?.content[i];
+        if(node.type=='heading'){
+          let text='';
+          if(node.content&&node.content.length>0){
+            text=node.content[0].text||'';
+          }
+          const item={label:text,children:[]};
+          if(node.attrs?.level===1){
+            tree.push(item);
+          }else if(node.attrs?.level===2){
+            tree[tree.length-1].children.push(item);
+          
+          }else if(node.attrs?.level===3){
+            const parent=tree[tree.length-1]
+            parent.children[parent.children.length-1].children.push(item);
+          }else if(node.attrs?.level===4){
+            const parent1=tree[tree.length-1]
+            const parent2=parent1.children[parent1.children.length-1];
+            const parent3=parent2.children[parent2.children.length-1];
+            parent3.children[parent3.children.length-1].children.push(item);
+          }
+          
+        }
+      }
+      return tree;
+    }
+  }
 
 });
+
+
+export interface NodeTree{
+  label:string,
+  children:NodeTree[],
+}
