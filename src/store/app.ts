@@ -12,11 +12,17 @@ export const useAppStore = defineStore('app', {
     filepath:string|null,
     isSave:boolean,
     platform:null|'linux'| 'darwin'| 'ios'| 'freebsd'| 'dragonfly'| 'netbsd'| 'openbsd'| 'solaris'| 'android'| 'win32',
+    visible:{
+      outliner:boolean,
+    }
   }=>({
     title:'marknote',
     filepath: null,
     isSave:false,
     platform:null,
+    visible:{
+      outliner:false,
+    }
   }),
   actions:{
     setFilepath(filepath:string|null){

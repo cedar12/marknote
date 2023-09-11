@@ -1,6 +1,6 @@
 <template>
   <div class="marknote-layout">
-    <div class="layout-outliner">
+    <div class="layout-outliner" v-if="appStore.visible.outliner">
       <Outliner></Outliner>
     </div>
     <div class="layout-content">
@@ -22,9 +22,11 @@ import { useI18n } from 'vue-i18n';
 import { useEditorStore } from '../store/editor2';
 import Outliner from './Outliner.vue';
 import { writeText } from '@tauri-apps/api/clipboard';
+import {useAppStore} from '../store/app';
 // import {readText,writeText} from '@tauri-apps/api/clipboard';
 
 const { t } = useI18n();
+const appStore=useAppStore();
 
 const editor = useEditorStore();
 

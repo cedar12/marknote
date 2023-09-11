@@ -106,6 +106,14 @@ const events = {
   alwaysOnTop(item:Menu){
     appWindow.setAlwaysOnTop(item.checked===true);
   },
+
+
+  outliner(item:Menu){
+    console.log(item)
+    const appStore=useAppStore();
+    appStore.visible.outliner=item.checked||false;
+  },
+
   quit() {
     exit();
   }

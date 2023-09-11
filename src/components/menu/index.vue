@@ -44,10 +44,13 @@
 <script setup lang="ts">
 import { ref, onBeforeMount,watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import {useAppStore} from '../../store/app';
 import { Menu, useMenuStore } from '../../store/menu';
 import { Check, Right } from '@icon-park/vue-next';
 import { platform } from '@tauri-apps/api/os';
 import '../../scss/menu.scss';
+
+const appStore=useAppStore();
 
 const platformName = ref<'linux' | 'darwin' | 'ios' | 'freebsd' | 'dragonfly' | 'netbsd' | 'openbsd' | 'solaris' | 'android' | 'win32'>();
 
