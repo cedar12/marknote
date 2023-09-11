@@ -16,6 +16,7 @@ import {CodeBlock} from '../node/codeBlock2';
 import {Heading} from '../node/heading';
 import {Link} from '../node/link';
 import {Focus} from '../node/focus';
+import { getNode, getNodeAtPos } from '../node/utils/node';
 
 const MarknoteTable=Table.extend({
   addInputRules() {
@@ -82,6 +83,17 @@ export const useEditorStore = defineStore('editor2', {
             }),
             Markdown,
           ],
+          onTransaction(props) {
+            const {view,state}=props.editor;
+            const selection=state.selection;
+            const node=getNode(state);
+            // const node=view.nodeDOM(selection.$anchor.pos);
+            const dom=view.nodeDOM(selection.$anchor.pos);
+            console.log('tr',props,node,dom);
+            
+            const editorStore=useEditorStore();
+            editorStore.tree=editorStore.getTree();
+          },
           onUpdate:()=>{
             console.log('更新outliner data');
             const editorStore=useEditorStore();
@@ -109,7 +121,7 @@ export const useEditorStore = defineStore('editor2', {
           if(node.content&&node.content.length>0){
             text=node.content[0].text||'';
           }
-          const item={label:text,children:[]};
+          const item={label:text,value:node.attrs?.id,children:[]};
           if(node.attrs?.level===1){
             tree.push(item);
           }else if(node.attrs?.level===2){
@@ -136,5 +148,6 @@ export const useEditorStore = defineStore('editor2', {
 
 export interface NodeTree{
   label:string,
+  value:string,
   children:NodeTree[],
 }

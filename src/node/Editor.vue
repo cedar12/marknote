@@ -44,8 +44,11 @@ onMounted(()=>{
   }
   \`\`\`
   `;
-  console.log(editor);
-  editor.value?.commands.setContent(content);
+  console.log('mount editor',editor);
+  setTimeout(() => {
+    editor.value?.commands.setContent(content);  
+  }, 500);
+  
 })
 
 </script>

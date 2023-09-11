@@ -2,48 +2,60 @@
     <div ref="containerRef">
         <slot></slot>
         <Teleport to="body">
-            <Transition @beforeEnter="handleBeforeEnter" @enter="handleEnter" @afterEnter="handleAfterEnter">
-                <div v-if="showMenu" class="context-menu" :style="{ left: x + 'px', top: y + 'px' }">
-                    <div class="menu-list">
-                        <div @click="handleClick($event,item)" class="menu-item" :class="{'disabled':disabled(item),'split':item.split===true}" v-for="item in props.menu" :key="item.label">
-                            {{ item.label }}
+            <div class="context-menu-wrapper"  v-if="showMenu">
+                <div class="context-menu-mask" @click="hide" @contextmenu="hide"></div>
+                <Transition @beforeEnter="handleBeforeEnter" @enter="handleEnter" @afterEnter="handleAfterEnter">
+                    <div class="context-menu" :style="{ left: x + 'px', top: y + 'px' }">
+                        <div class="menu-list">
+                            <div @click="handleClick($event,item)" class="menu-item" :class="{'disabled':disabled(item),'split':item.split===true}" v-for="item in props.menu" :key="item.label">
+                                {{ item.label }}
+                            </div>
                         </div>
                     </div>
-                </div>
-            </Transition>
+                </Transition>
+            </div>
         </Teleport>
     </div>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue';
+import {  ref } from 'vue';
 import {useContextMenu,ContextMenuItem} from './useContextMenu';
 const props = defineProps({
     menu: {
         type: Array<ContextMenuItem>,
         default: () => [],
-    },
+    }
 });
 const containerRef = ref<HTMLElement>();
 const emit = defineEmits(['select']);
 const { x, y, showMenu } = useContextMenu(containerRef);
 
+function hide(e:MouseEvent){
+    e.preventDefault();
+    showMenu.value=false;
+}
+
 function disabled(item:ContextMenuItem){
     if(item.disabled!==undefined){
-        if(item.disabled===true){
-            return true;
+        if(item instanceof Boolean){
+            if(item.disabled===true){
+                return true;
+            }
         }
+        // @ts-ignore
         const result=item.disabled();
         if(result===true){
             return true;
         }
+        
     }
     return false;
 }
 
 function handleClick(e:MouseEvent,item:ContextMenuItem) {
-    // e.preventDefault();
-    // e.stopPropagation();
-    if(disabled(item)){
+    e.preventDefault();
+    e.stopPropagation();
+    if((e.target as HTMLElement).classList.contains('disabled')){
         return;
     }
     showMenu.value = false;
@@ -76,29 +88,43 @@ function handleAfterEnter(e:Element) {
 }
 </script>
 <style lang="scss">
-.context-menu{
+.context-menu-wrapper{
+    width: 100vw;
+    height: 100vh;
     position: fixed;
-    min-width: 150px;
-    --borderRadius: 4px;
-    .menu-list{
-        z-index: 997;
-        font-size: 1rem;
-        
-        background-color: var(--menuBackgroundColor, #fff);
-        color: var(--menuColor,#202124);
-        box-shadow: 2px 2px 13px var(--menuShadow,#b8b8b8);
-        border-radius: var(--borderRadius);
-        .menu-item{
-            padding: .2rem 1rem;
-            cursor:pointer;
-            &:hover{
-                background-color: #e8e8e9;
-            }
-            &.disabled{
-                color: #dfdfdf;
-            }
-            &.split{
-                border-bottom: 1px solid #dfdfdf;
+    top: 0;
+    left: 0;
+    z-index: 980;
+    .context-menu-mask{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+    .context-menu{
+        position: absolute;
+        min-width: 150px;
+        --borderRadius: 4px;
+        user-select: none;
+        .menu-list{
+            z-index: 997;
+            font-size: 1rem;
+            
+            background-color: var(--menuBackgroundColor, #fff);
+            color: var(--menuColor,#202124);
+            box-shadow: 2px 2px 13px var(--menuShadow,#b8b8b8);
+            border-radius: var(--borderRadius);
+            .menu-item{
+                padding: .2rem 1rem;
+                cursor:pointer;
+                &:hover{
+                    background-color: #e8e8e9;
+                }
+                &.disabled{
+                    color: #dfdfdf;
+                }
+                &.split{
+                    border-bottom: 1px solid #dfdfdf;
+                }
             }
         }
     }

@@ -2,11 +2,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use std::{
     fs,
-    sync::{atomic::{AtomicUsize, Ordering}, mpsc::channel},
+    sync::{atomic::{AtomicUsize, Ordering}},
 };
 
-use pulldown_cmark::Options;
-use tauri::{ Manager, Window, WindowUrl, window, Runtime, api::dialog::blocking::FileDialogBuilder};
+use tauri::{ Manager, Window, WindowUrl, api::dialog::blocking::FileDialogBuilder};
 
 mod resp;
 
@@ -15,26 +14,7 @@ static WINDOW_ID: AtomicUsize = AtomicUsize::new(1);
 static IS_MACOS: bool = cfg!(target_os = "macos");
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
 
-#[tauri::command]
-fn to_html(md: &str) -> String {
-    let mut options = Options::empty();
-    options.insert(Options::ENABLE_TABLES);
-    options.insert(Options::ENABLE_FOOTNOTES);
-    options.insert(Options::ENABLE_STRIKETHROUGH);
-    options.insert(Options::ENABLE_TASKLISTS);
-    options.insert(Options::ENABLE_SMART_PUNCTUATION);
-    let parser = pulldown_cmark::Parser::new_ext(md, options);
-
-    // Write to a new String buffer.
-    let mut html_output = String::new();
-    pulldown_cmark::html::push_html(&mut html_output, parser);
-    return html_output;
-}
 
 #[tauri::command]
 fn read_md(path: &str) -> resp::Resp<String> {
@@ -163,13 +143,14 @@ fn main() {
         .setup(|app| {
             let window = app.get_window("main").unwrap();
             window.set_decorations(IS_MACOS).unwrap();
-
+            #[cfg(debug_assertions)]
+            {
+                window.open_devtools();
+            }
             set_shadow(app.get_window("main").unwrap());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            greet,
-            to_html,
             save_md,
             read_md,
             open_window,

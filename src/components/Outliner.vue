@@ -1,21 +1,18 @@
 <template>
     <div class="marknote-outliner" v-if="editorStore.editor">
         <button @click="handleClick">log</button>
-        <n-tree
-            block-line
+        <ElTree
             :data="editorStore.tree"
-            :default-expanded-keys="[]"
-            key-field="label"
-            label-field="label"
-            children-field="children"
             selectable
-            :on-update:selected-keys="onSelected"
+            @node-click="onSelected"
+            node-key="value"
+            empty-text=""
         />
     </div>
 </template>
 <script lang="ts" setup>
 import {useEditorStore} from '../store/editor2';
-import {NTree,TreeOption} from 'naive-ui';
+import {ElTree} from 'element-plus';
 // import {Right} from '@icon-park/vue-next';
 
 const editorStore=useEditorStore();
@@ -26,10 +23,10 @@ const handleClick=()=>{
     console.log(tree);
 }
 
-const onSelected=(keys:string[])=>{
-    console.log(keys);
-    if(keys[0]!=''){
-        location.hash=keys[0];
+const onSelected=(node:any)=>{
+    console.log(node);
+    if(node.label!=''){
+        location.hash=node.value;
     }
     
 }

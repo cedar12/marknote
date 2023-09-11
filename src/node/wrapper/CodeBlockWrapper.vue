@@ -1,48 +1,27 @@
 <template>
   <NodeViewWrapper class="marknote-codeblock" >
     <div class="codeblock-wrapper" contenteditable="false" v-if="props.editor.isActive('codeBlock')">
-      <NSelect filterable size="small" v-model:value="value" tabindex="-1"
-        :options="props.extension.options.lowlight.listLanguages().map((v: string) => ({ label: v, value: v }))"
-        :disabled="!isEditable" @update:value="props.updateAttributes({ language: value })"></NSelect>
-      <NButtonGroup>
-        <!-- <NTooltip size="small">
-          <template #trigger>
-            <NButton size="small" @click="handleTabClick" tabindex="-1">
-              <template #icon>
-                <n-icon>
-                  <IndentRight></IndentRight>
-                </n-icon>
-              </template>
-            </NButton>
-          </template>
-          <span>Tab</span>
-        </NTooltip> -->
-        <NTooltip size="small">
-          <template #trigger>
-            <NButton size="small" @click="handleClick" tabindex="-1">
-              <template #icon>
-                <n-icon>
-                  <Copy></Copy>
-                </n-icon>
-              </template>
-            </NButton>
-          </template>
-          <span>复制</span>
-        </NTooltip>
-      </NButtonGroup>
+      <ElSelect filterable size="small" v-model="value" placeholder=""
+        :disabled="!isEditable" @change="props.updateAttributes({ language: value })">
+        <ElOption v-for="item in props.extension.options.lowlight.listLanguages()" :key="item" :label="item" :value="item"></ElOption>
+      </ElSelect>
+      <div>
+        <ElTooltip size="small " content="复制">
+          <ElButton size="small" @click="handleClick" tabindex="-1">
+              <Copy></Copy>
+          </ElButton>
+        </ElTooltip>
+      </div>
     </div>
     <div ref="contentRef" >
       <NodeViewContent as="code" ></NodeViewContent>
     </div>
-    <!-- <pre class="codeblock-pre" ref="contentRef"> -->
-        
-    <!-- </pre> -->
   </NodeViewWrapper>
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { NSelect, NTooltip, NButton, NIcon ,NButtonGroup } from 'naive-ui';
-import { Copy,IndentRight } from '@icon-park/vue-next';
+import {ElSelect,ElOption,ElButton,ElTooltip} from 'element-plus';
+import { Copy } from '@icon-park/vue-next';
 import { NodeViewContent, NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3';
 import { writeText } from '@tauri-apps/api/clipboard';
 const props = defineProps(nodeViewProps);
@@ -58,14 +37,6 @@ const handleClick=()=>{
   console.log('copy',text);
   if(text)
   writeText(text);
-}
-
-const handleTabClick=()=>{
-  const state=props.editor.state;
-  const tr=state.tr.insertText('\t');
-  props.editor.view.dispatch(tr);
-  console.log('tab');
-  // props.editor.commands.insertContent('  ');
 }
 
 </script>

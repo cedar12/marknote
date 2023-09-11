@@ -1,5 +1,5 @@
 import { Icon } from "@icon-park/vue-next/lib/runtime";
-import { Ref, WatchStopHandle, onMounted, onUnmounted, ref, watch } from "vue";
+import { Ref,  onMounted, onUnmounted, ref } from "vue";
 
 export const useContextMenu = (containerRef: Ref<HTMLElement | undefined>) => {
     const showMenu = ref(false);
@@ -24,14 +24,14 @@ export const useContextMenu = (containerRef: Ref<HTMLElement | undefined>) => {
     onMounted(() => {
         const div = containerRef.value;
         div?.addEventListener("contextmenu", handleContextMenu);
-        window.addEventListener("click", closeMenu, true);
-        window.addEventListener("contextmenu", closeMenu, true);
+        // window.addEventListener("click", closeMenu, true);
+        // window.addEventListener("contextmenu", closeMenu, true);
     });
     onUnmounted(() => {
         const div = containerRef.value;
         div?.removeEventListener("contextmenu", handleContextMenu);
-        window.removeEventListener("click", closeMenu, true);
-        window.removeEventListener("contextmenu", closeMenu, true);
+        // window.removeEventListener("click", closeMenu, true);
+        // window.removeEventListener("contextmenu", closeMenu, true);
     });
     return {
         showMenu,

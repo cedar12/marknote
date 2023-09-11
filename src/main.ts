@@ -4,6 +4,7 @@ import App from "./App.vue";
 import Preferences from "./components/Preferences.vue";
 
 import  createI18n from "./i18n";
+import 'element-plus/dist/index.css';
 
 import "./scss/editor.scss";
 import { createPinia } from 'pinia'

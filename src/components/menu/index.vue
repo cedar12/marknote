@@ -80,11 +80,11 @@ const loadMenuData=()=>{
       label: t('file'),
       key: 'file',
       children: [
-        {
-          label: t('newTab'),
-          key: 'newTab',
-          type: 'checkbox'
-        },
+        // {
+        //   label: t('newTab'),
+        //   key: 'newTab',
+        //   type: 'checkbox'
+        // },
         {
           label: t('newWindow'),
           key: 'newWindow',
@@ -143,10 +143,10 @@ const loadMenuData=()=>{
           split: true,
           type:'checkbox'
         },
-        {
-          label: t('closeTab'),
-          key: 'closeTab',
-        },
+        // {
+        //   label: t('closeTab'),
+        //   key: 'closeTab',
+        // },
         {
           label: t('closeWindow'),
           key: 'closeWindow',
@@ -171,6 +171,22 @@ const loadMenuData=()=>{
           label: '重做',
           key: 'redo',
           shortcut: 'Mod y'
+        }
+      ]
+    },
+    {
+      label: t('view'),
+      key: 'view',
+      children: [
+        {
+          label: '大纲',
+          key: 'outliner',
+          type:'checkbox'
+        },
+        {
+          label: '文件夹',
+          key: 'olderView',
+          type:'checkbox'
         }
       ]
     }
