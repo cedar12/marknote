@@ -2,7 +2,7 @@
   <div data-tauri-drag-region class="titlebar-bg">
     <div data-tauri-drag-region class="titlebar">
       <div class="titlebar-toolbar">
-        <div class="titlebar-tool" :class="{open:menuStore.visible}" @click="menuStore.visible=!menuStore.visible">
+        <div class="titlebar-tool" :class="{open:menuStore.visible,'sidebar-visbile':appStore.visible.outliner}" @click="menuStore.visible=!menuStore.visible">
           <HamburgerButton theme="filled" />
         </div>
         
@@ -40,9 +40,10 @@ const appStore=useAppStore();
 <style lang="scss">
 //--titlebarBgHover --titleBarHeight --editorBgColor
 .titlebar-bg{
-  --barHeight:var(--titleBarHeight,30px);
-  height: var(--barHeight);
-  background: var(--editorBgColor,#ffffff);
+  --titlebarBgHover:var(--primaryBackgroundColorHover)
+  // --barHeight:var(--titleBarHeight,30px);
+  height: var(--titleBarHeight);
+  // background: var(--editorBgColor,#ffffff);
   position: relative;
   left: 0;
   top: 0;
@@ -51,7 +52,7 @@ const appStore=useAppStore();
     position:fixed;
     user-select: none;
     background: transparent;
-    height: var(--barHeight);
+    height: var(--titleBarHeight);
     box-sizing: border-box;
     left: 0;
     top: 0;
@@ -63,16 +64,20 @@ const appStore=useAppStore();
       position:absolute;
       left:0;
       top:0;
-      height: var(--barHeight);
-      width: var(--barHeight);
+      height: var(--titleBarHeight);
+      width: var(--titleBarHeight);
       &>.titlebar-tool{
         height: 100%;
         width: 100%;
-        line-height: var(--barHeight);
+        line-height: var(--titleBarHeight);
         text-align: center;
         cursor: pointer;
         z-index: 3;
+        
         transition: .4s ease-in-out;
+        &.sidebar-visbile{
+          color: var(--primaryTextColor);
+        }
         &:hover{
           transform: rotate(90deg);
           
@@ -87,13 +92,13 @@ const appStore=useAppStore();
 
     .titlebar-info{
       width:100%;
-      height: var(--barHeight);
-      line-height:  var(--barHeight);
+      height: var(--titleBarHeight);
+      line-height:  var(--titleBarHeight);
       text-align:center;
       z-index: 2;
       box-sizing: border-box;
       overflow: hidden;
-      padding: 0 calc(var(--barHeight) * 3);
+      padding: 0 calc(var(--titleBarHeight) * 3);
       .marknote-title{
         &.not-save::after{
           content: ' *';
@@ -106,8 +111,8 @@ const appStore=useAppStore();
       position:absolute;
       right:0;
       top:0;
-      height: var(--barHeight);
-      width:calc(var(--barHeight) * 3);
+      height: var(--titleBarHeight);
+      width:calc(var(--titleBarHeight) * 3);
       display: flex;
       flex-direction: row;
       z-index: 3;
@@ -115,8 +120,8 @@ const appStore=useAppStore();
         display: inline-flex;
         justify-content: center;
         align-items: center;
-        width: var(--barHeight);
-        height: var(--barHeight);
+        width: var(--titleBarHeight);
+        height: var(--titleBarHeight);
         cursor: pointer;
         &:hover {
           background: var(--titlebarBgHover,#dfdfdf);

@@ -16,7 +16,9 @@ import {CodeBlock} from '../node/codeBlock2';
 import {Heading} from '../node/heading';
 import {Link} from '../node/link';
 import {Focus} from '../node/focus';
-import { getNode, getNodeAtPos } from '../node/utils/node';
+import {Image} from '@tiptap/extension-image';
+import Dropcursor from '@tiptap/extension-dropcursor';
+import {Gapcursor} from '@tiptap/extension-gapcursor';
 
 const MarknoteTable=Table.extend({
   addInputRules() {
@@ -44,9 +46,13 @@ export const useEditorStore = defineStore('editor2', {
   state():{
     tree:NodeTree[],
     editor:ShallowRef<Editor | undefined>,
+    codeTheme:string,
+    loading:boolean,
   }{
       return {
         tree:[],
+        codeTheme:'github',
+        loading:false,
         editor:useEditor({
           content: '',
           editorProps:{
@@ -60,6 +66,9 @@ export const useEditorStore = defineStore('editor2', {
             Heading,
             Strike,
             Focus,
+            Image.configure({
+              inline:true
+            }),
             TaskItem,
             TaskList.configure({
               HTMLAttributes:{
@@ -76,20 +85,21 @@ export const useEditorStore = defineStore('editor2', {
               },
               
             }),
-            // MarknoteCodeBlock.configure({
+            Dropcursor,
+            Gapcursor,
             CodeBlock.configure({
         
               lowlight,
             }),
             Markdown,
           ],
-          onTransaction(props) {
-            const {view,state}=props.editor;
-            const selection=state.selection;
-            const node=getNode(state);
+          onTransaction(_props) {
+            // const {view,state}=props.editor;
+            // const selection=state.selection;
+            // const node=getNode(state);
             // const node=view.nodeDOM(selection.$anchor.pos);
-            const dom=view.nodeDOM(selection.$anchor.pos);
-            console.log('tr',props,node,dom);
+            // const dom=view.nodeDOM(selection.$anchor.pos);
+            // console.log('tr',props,node,dom);
             
             const editorStore=useEditorStore();
             editorStore.tree=editorStore.getTree();
@@ -110,6 +120,10 @@ export const useEditorStore = defineStore('editor2', {
   },
   
   actions:{
+    setContent(content:string){
+      this.editor?.commands.setContent(content);
+      this.tree=this.getTree();
+    },
     getTree(){
       const json=this.editor?.getJSON();
       // console.log(json);
@@ -125,14 +139,33 @@ export const useEditorStore = defineStore('editor2', {
           if(node.attrs?.level===1){
             tree.push(item);
           }else if(node.attrs?.level===2){
+            if(tree.length===0){
+              tree.push({label:'#',value:'',children:[]});
+            }
             tree[tree.length-1].children.push(item);
-          
           }else if(node.attrs?.level===3){
+            if(tree.length===0){
+              tree.push({label:'#',value:'',children:[]});
+            }
+            if(tree[tree.length-1].children.length===0){
+              tree[tree.length-1].children=[{label:'##',value:'',children:[]}];
+            }
             const parent=tree[tree.length-1]
             parent.children[parent.children.length-1].children.push(item);
           }else if(node.attrs?.level===4){
+            if(tree.length===0){
+              tree.push({label:'#',value:'',children:[]});
+            }
             const parent1=tree[tree.length-1]
+            if(parent1.children.length===0){
+              tree[tree.length-1].children=[{label:'##',value:'',children:[]}];
+            }
+            
             const parent2=parent1.children[parent1.children.length-1];
+            if(parent2.children.length===0){
+              tree[tree.length-1].children[parent1.children.length-1].children=[{label:'###',value:'',children:[]}];
+            }
+            
             const parent3=parent2.children[parent2.children.length-1];
             parent3.children[parent3.children.length-1].children.push(item);
           }

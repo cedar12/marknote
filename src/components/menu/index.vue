@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div class="marknote-menus" ref="menusRef" v-if="menuStore.visible">
       <div class="marknote-menu-mask" @click="onReset"></div>
-      <div class="menus" :class="{ 'right-menu': platformName === 'darwin' }">
+      <div class="menus" :class="{ 'right-menu': appStore.platform === 'darwin' }">
         <div class="menu-item" :class="{ split: item.split }" v-for="item in menus" :key="item.key">
           <div class="menu-content" :class="{ 'has-children': item.children && item.children.length > 0 }"
             @click="onClick($event, item, 1)">
@@ -11,7 +11,7 @@
               <Right v-if="item.children && item.children.length > 0"></Right>
             </i>
           </div>
-          <div class="menus2" :class="{ 'right-menu': platformName === 'darwin' }" v-if="key1 === item.key">
+          <div class="menus2" :class="{ 'right-menu': appStore.platform === 'darwin' }" v-if="key1 === item.key">
             <div class="menu-item" :class="{ split: item2.split }" v-for="item2 in item.children" :key="item2.key">
               <div class="menu-content" @click="onClick($event, item2, 2)">
                 <label class="menu-checkbox">
@@ -23,7 +23,7 @@
                   <Right v-if="item2.children && item2.children.length > 0"></Right>
                 </i>
               </div>
-              <div class="menus3" :class="{ 'right-menu': platformName === 'darwin' }" v-if="key2 === item2.key">
+              <div class="menus3" :class="{ 'right-menu': appStore.platform === 'darwin' }" v-if="key2 === item2.key">
                 <div class="menu-item" :class="{ split: item3.split }" v-for="item3 in item2.children" :key="item3.key">
                   <div class="menu-content" @click="onClick($event, item3, 3)">
                     <label class="menu-title">{{ item3.label }}</label>
@@ -44,17 +44,13 @@
 <script setup lang="ts">
 import { ref, onBeforeMount,watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {useAppStore} from '../../store/app';
 import { Menu, useMenuStore } from '../../store/menu';
+import {useAppStore} from '../../store/app';
 import { Check, Right } from '@icon-park/vue-next';
-import { platform } from '@tauri-apps/api/os';
 import '../../scss/menu.scss';
 
+
 const appStore=useAppStore();
-
-const platformName = ref<'linux' | 'darwin' | 'ios' | 'freebsd' | 'dragonfly' | 'netbsd' | 'openbsd' | 'solaris' | 'android' | 'win32'>();
-
-
 const menuStore = useMenuStore();
 const menusRef = ref<HTMLElement>();
 const { t, locale } = useI18n();
@@ -63,15 +59,7 @@ const { t, locale } = useI18n();
 const key1 = ref<string | null>(null);
 const key2 = ref<string | null>(null);
 
-
-
 onBeforeMount(async () => {
-  try {
-    platformName.value = await platform();
-    document.body.classList.add(platformName.value);
-  } catch (e) {
-    console.error(e);
-  }
   loadMenuData();
 });
 
@@ -104,7 +92,16 @@ const loadMenuData=()=>{
         {
           label: t('openRecent'),
           key: 'openRecent',
-          split: true
+          split: true,
+          children:[
+            {
+              label:t('clearRecent'),
+              key:'clearRecent',
+              split:true,
+            },
+            ...appStore.recentFiles.map((r:string)=>({label:r,key:'recent_'+r})),
+
+          ]
         },
         {
           label: t('save'),
@@ -166,14 +163,14 @@ const loadMenuData=()=>{
       key: 'edit',
       children: [
         {
-          label: '撤销',
+          label: t('undo'),
           key: 'undo',
-          shortcut: 'Mod z'
+          shortcut: 'Mod Z'
         },
         {
-          label: '重做',
+          label: t('redo'),
           key: 'redo',
-          shortcut: 'Mod y'
+          shortcut: 'Mod Y'
         }
       ]
     },
@@ -182,13 +179,14 @@ const loadMenuData=()=>{
       key: 'view',
       children: [
         {
-          label: '大纲',
+          label: t('outliner'),
           key: 'outliner',
-          type:'checkbox'
+          type:'checkbox',
+          checked:appStore.visible.outliner,
         },
         {
-          label: '文件夹',
-          key: 'olderView',
+          label: t('folder'),
+          key: 'folderView',
           type:'checkbox'
         }
       ]

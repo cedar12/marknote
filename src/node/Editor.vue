@@ -1,11 +1,11 @@
 <template>
   <BubbleMenu v-if="editor" :editor="editor">
-    <LinkMenu :editor="editor"/>
+    <LinkMenu :editor="editor"></LinkMenu>
   </BubbleMenu>
-  <EditorContent :editor="editor"/>
+  <EditorContent :editor="editor" v-loading="editorStore.loading"></EditorContent>
 </template>
 <script lang="ts" setup> 
-import {onMounted} from 'vue';
+import {onMounted,nextTick} from 'vue';
 import {EditorContent,BubbleMenu} from '@tiptap/vue-3';
 import {useEditorStore} from '../store/editor2';
 import { storeToRefs } from 'pinia';
@@ -45,9 +45,13 @@ onMounted(()=>{
   \`\`\`
   `;
   console.log('mount editor',editor);
-  setTimeout(() => {
-    editor.value?.commands.setContent(content);  
-  }, 500);
+
+  // setTimeout(() => {
+    
+  // }, 500);
+  nextTick(()=>{
+    editorStore.setContent(content);
+  })
   
 })
 

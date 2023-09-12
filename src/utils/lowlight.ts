@@ -38,7 +38,7 @@ import cmake from 'highlight.js/lib/languages/cmake'
 // load all highlight.js languages
 import { lowlight } from 'lowlight'
 
-import 'highlight.js/scss/github.scss'
+// import 'highlight.js/scss/github.scss'
 
 lowlight.registerLanguage('html', html)
 lowlight.registerLanguage('css', css)

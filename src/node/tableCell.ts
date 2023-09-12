@@ -164,14 +164,14 @@ export const TableCell = Node.create<TableCellOptions, { clearCallbacks: Array<(
                       offset:[0,0],
                     });
 
-                    pre.onclick=(e)=>{
+                    pre.onclick=()=>{
                       addRowBefore(this.editor.state, this.editor.view.dispatch);
                     };
-                    del.onclick=(e)=>{
+                    del.onclick=()=>{
                       // console.log(e,'click',this.editor.state);
                       this.editor.commands.deleteRow();
                     };
-                    next.onclick=(e)=>{
+                    next.onclick=()=>{
                       // console.log(e,'click',this.editor.state);
                       addRowAfter(this.editor.state, this.editor.view.dispatch);
                     };

@@ -118,7 +118,7 @@ export function readonlyTableView({ cellMinWidth = 25, View = TableView } = {}) 
           new View(node, cellMinWidth);
         return {};
       },
-      apply(tr, prev) {
+      apply(_tr, prev) {
         return prev;
       },
     },

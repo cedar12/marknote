@@ -1,5 +1,5 @@
 .marknote-menus {
-  
+  --menuShadowColor:var(--menuShadowColor);
   position: absolute;;
   top: 0;
   left: 0;
@@ -27,7 +27,7 @@
     color: var(--menuColor,#202124);
     box-shadow: 2px 2px 13px var(--menuShadowColor,#b8b8b8);
     border-radius: var(--borderRadius);
-
+    border: 1px solid var(--menuBorderColor);
     .menu-title{
       user-select: none;
       --webkit-user-select: none;
@@ -44,7 +44,9 @@
         padding: .2rem .4rem .2rem .6rem;
         display: flex;
         justify-content: space-between;
-
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         user-select: none;
         &:hover {
           background-color: var(--menuBackgroundColorHover, #e8e8e9);
@@ -66,6 +68,7 @@
       background-color: var(--menuBackgroundColor, #fff);
       box-shadow: 2px 2px 13px var(--menuShadowColor,#b8b8b8);
       border-radius: var(--borderRadius);
+      border: 1px solid var(--menuBorderColor);
       &.right-menu{
         left: auto;
         right: 100px;
@@ -98,6 +101,7 @@
 
         &>span {
           flex: 1;
+          color: #ccc;
           text-align: right;
         }
         &>i{
@@ -115,6 +119,7 @@
         background-color: var(--menuBackgroundColor, #fff);
         box-shadow: 2px 2px 13px var(--menuShadowColor,#b8b8b8);
         border-radius: var(--borderRadius);
+        border: 1px solid var(--menuBorderColor);
       }
 
     }

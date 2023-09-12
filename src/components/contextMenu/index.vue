@@ -26,9 +26,11 @@ const props = defineProps({
         default: () => [],
     }
 });
+
+const menus=ref(props.menu);
 const containerRef = ref<HTMLElement>();
 const emit = defineEmits(['select']);
-const { x, y, showMenu } = useContextMenu(containerRef);
+const { x, y, showMenu } = useContextMenu(containerRef,menus);
 
 function hide(e:MouseEvent){
     e.preventDefault();
@@ -37,16 +39,17 @@ function hide(e:MouseEvent){
 
 function disabled(item:ContextMenuItem){
     if(item.disabled!==undefined){
-        if(item instanceof Boolean){
-            if(item.disabled===true){
+        if(item.disabled===true){
+            return true;
+        }
+
+        if(typeof item.disabled==='function'){
+            const result=item.disabled();
+            if(result===true){
                 return true;
             }
         }
-        // @ts-ignore
-        const result=item.disabled();
-        if(result===true){
-            return true;
-        }
+        
         
     }
     return false;
@@ -68,17 +71,17 @@ function handleClick(e:MouseEvent,item:ContextMenuItem) {
 }
 
 function handleBeforeEnter(el:Element) {
-    (el as HTMLElement).style.height = '0';
+    (el as HTMLElement).style.height = '0px';
 }
 
 function handleEnter(e:Element) {
     const el=e as HTMLElement;
     el.style.height = 'auto';
     const h = el.clientHeight;
-    el.style.height = '0';
+    el.style.height = '0px';
     requestAnimationFrame(() => {
         el.style.height = h + 'px';
-        el.style.transition = '.5s';
+        el.style.transition = '5s';
     });
 }
 
@@ -103,13 +106,14 @@ function handleAfterEnter(e:Element) {
     .context-menu{
         position: absolute;
         min-width: 150px;
-        --borderRadius: 4px;
+        --borderRadius: 2px;
         user-select: none;
+        -webkit-user-select: none;
         .menu-list{
             z-index: 997;
-            font-size: 1rem;
-            
+            font-size: 14px;
             background-color: var(--menuBackgroundColor, #fff);
+            
             color: var(--menuColor,#202124);
             box-shadow: 2px 2px 13px var(--menuShadow,#b8b8b8);
             border-radius: var(--borderRadius);

@@ -33,7 +33,7 @@ const appStore = useAppStore();
     --titlebarBgHover: var(--menuBackgroundColor);
     --barHeight: var(--titleBarHeight, 30px);
     height: var(--barHeight);
-    background: var(--editorBgColor, #ffffff);
+    // background: var(--editorBgColor, #ffffff);
     position: fixed;
     left: 0;
     top: 0;

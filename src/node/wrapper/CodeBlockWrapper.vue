@@ -1,7 +1,7 @@
 <template>
-  <NodeViewWrapper class="marknote-codeblock" >
-    <div class="codeblock-wrapper" contenteditable="false" v-if="props.editor.isActive('codeBlock')">
-      <ElSelect filterable size="small" v-model="value" placeholder=""
+  <NodeViewWrapper class="marknote-codeblock" ref="wrapperRef">
+    <div class="codeblock-wrapper" contenteditable="false" v-if="props.editor.isActive('codeBlock')&&isFocus()">
+      <ElSelect filterable size="small" v-model="value" placeholder=" "
         :disabled="!isEditable" @change="props.updateAttributes({ language: value })">
         <ElOption v-for="item in props.extension.options.lowlight.listLanguages()" :key="item" :label="item" :value="item"></ElOption>
       </ElSelect>
@@ -13,8 +13,8 @@
         </ElTooltip>
       </div>
     </div>
-    <div ref="contentRef" >
-      <NodeViewContent as="code" ></NodeViewContent>
+    <div ref="contentRef" class="hljs">
+      <NodeViewContent as="code"></NodeViewContent>
     </div>
   </NodeViewWrapper>
 </template>
@@ -30,6 +30,14 @@ const isEditable = ref(props.editor.isEditable);
 const value = ref(props.node.attrs.language || '');
 
 const contentRef=ref<HTMLElement>();
+const wrapperRef=ref<HTMLElement>();
+
+const isFocus=()=>{
+  const {anchor}=props.editor.state.selection;
+  const node=props.node;
+  const pos=props.getPos();
+  return anchor >= pos && anchor <= pos + node.nodeSize - 1;
+}
 
 const handleClick=()=>{
   
@@ -49,8 +57,8 @@ const handleClick=()=>{
     display: flex;
     justify-content: space-between;
 
-    .n-select {
-      width: 150px;
+    .el-select {
+      width: 110px;
     }
 
     .n-button {}
@@ -61,7 +69,7 @@ const handleClick=()=>{
       padding: 1em;
       margin: 0;
       pointer-events: all;
-      background-color: #f1f3f5;
+      // background-color: #f1f3f5;
       display: block;
     }
   }

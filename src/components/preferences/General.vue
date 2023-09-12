@@ -1,8 +1,16 @@
 <template>
-  <div class="preferences-language">
-    <ElSelect v-model="value" @change="onChange">
-      <ElOption v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></ElOption>
-    </ElSelect>
+  <div class="preferences-general">
+    <div class="preferences-item">
+      <div class="header">
+        <span>{{ t('language') }}</span>
+      </div>
+      <div class="content">
+        <ElSelect v-model="value" @change="onChange">
+          <ElOption v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></ElOption>
+        </ElSelect>
+      </div>
+    </div>
+    
   </div>
 </template>
 <script lang="ts" setup>
@@ -12,7 +20,7 @@ import {useI18n} from 'vue-i18n';
 import {ElSelect,ElOption} from 'element-plus';
 
 const appStore=useAppStore();
-const {locale} = useI18n();
+const {t,locale} = useI18n();
 
 const value=ref(locale.value);
 

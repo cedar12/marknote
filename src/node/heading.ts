@@ -1,11 +1,6 @@
 import { mergeAttributes } from '@tiptap/core';
 import { Heading as BaseHeading } from '@tiptap/extension-heading';
 import { textblockTypeInputRule } from '@tiptap/vue-3';
-import { Extension } from '@tiptap/core';
-
-import { Plugin, PluginKey } from 'prosemirror-state';
-import { Decoration, DecorationSet } from 'prosemirror-view';
-import { findNode, getNodeAtPos } from './utils/node';
 
 export const Heading = BaseHeading.extend({
     // @ts-ignore

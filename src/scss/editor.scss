@@ -27,14 +27,30 @@
         margin-left: 0.5em;
     }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        line-height: 1.1;
+    @for $i from 1 through 6{
+        h#{$i}{
+            line-height: 1.1;
+            position: relative;
+            &::before{
+                content: 'H#{$i}';
+                display: block;
+                position: absolute;
+                top: 0;
+                left: -22px;
+                font-size: .4em;
+                color: #abaeb1;
+            }
+        }
     }
+
+    // h1,
+    // h2,
+    // h3,
+    // h4,
+    // h5,
+    // h6 {
+    //     line-height: 1.1;
+    // }
 
     code {
         background-color: rgba(#616161, 0.1);

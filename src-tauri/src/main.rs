@@ -15,6 +15,11 @@ static IS_MACOS: bool = cfg!(target_os = "macos");
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
+const WIDTH:f64=600f64;
+const HEIGHT:f64=600f64;
+const MIN_WIDTH:f64=500f64;
+const MIN_HEIGTH:f64=400f64;
+
 
 #[tauri::command]
 fn read_md(path: &str) -> resp::Resp<String> {
@@ -30,6 +35,20 @@ fn save_md(path: &str, md: &str) -> resp::Resp<String> {
         Ok(_) => resp::data(None),
         Err(e) => resp::err(e.to_string()),
     }
+}
+
+#[tauri::command]
+async fn save_as_md(md:&str,title: &str) ->Result<resp::Resp<String>,String> {
+    let file_path = FileDialogBuilder::new().add_filter("Markdown", &["md"]).set_title(title).save_file();
+    if let Some(file_path)=file_path{
+        if let Some(fp)=file_path.to_str(){
+            let filepath:String=fp.into();
+            let mut resp=save_md(fp,md);
+            resp.info=filepath;
+            return Ok(resp);
+        }
+    }
+    Err("".into())
 }
 
 #[tauri::command]
@@ -50,8 +69,8 @@ async fn open_window(handle: tauri::AppHandle) {
         WindowUrl::App("index.html".into()),
     )
     .decorations(IS_MACOS)
-    .inner_size(500f64, 600f64)
-    .min_inner_size(400f64, 400f64)
+    .inner_size(WIDTH, HEIGHT)
+    .min_inner_size(MIN_WIDTH, MIN_HEIGTH)
     .visible(false)
     .build()
     .unwrap();
@@ -69,8 +88,8 @@ async fn open_window(handle: tauri::AppHandle) {
         WindowUrl::App("index.html".into()),
     )
     .decorations(IS_MACOS)
-    .inner_size(500f64, 600f64)
-    .min_inner_size(400f64, 400f64)
+    .inner_size(WIDTH, HEIGHT)
+    .min_inner_size(MIN_WIDTH, MIN_HEIGTH)
     .title_bar_style(tauri::TitleBarStyle::Overlay)
     .hidden_title(true)
     .visible(false)
@@ -131,8 +150,9 @@ async fn open_file(title: &str) ->Result<resp::Resp<String>,String> {
     let file_path = FileDialogBuilder::new().add_filter("Markdown", &["md"]).set_title(title).pick_file();
     if let Some(file_path)=file_path{
         if let Some(fp)=file_path.to_str(){
-            
-            return Ok(read_md(fp.into()));
+            let mut resp=read_md(fp.into());
+            resp.info=fp.into();
+            return Ok(resp);
         }
     }
     Err("".into())
@@ -152,6 +172,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             save_md,
+            save_as_md,
             read_md,
             open_window,
             open_preferences,

@@ -6,6 +6,7 @@ export default {
   openFile:'Open File',
   openFolder:'Open Folder',
   openRecent:'Open Recent',
+  clearRecent: 'Clear Recently Used',
   save:'Save',
   saveAs:'Save As',
   autoSave:'Auto Save',
@@ -19,8 +20,20 @@ export default {
   quit:'Quit',
 
   edit:'Edit',
+  undo:'Undo',
+  redo:'Redo',
   copy:'Copy',
   paste:'Paste',
 
+  view: 'View',
+  outliner:'Outliner',
+  folder:'Folder',
+
+  codeTheme:'Code Highlight Theme',
   language:'Language',
+
+  editor:'Editor',
+  general: 'General',
+  theme:'Theme',
+  image: 'Image',
 }

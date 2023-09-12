@@ -1,7 +1,7 @@
 <template>
   <teleport to='#marknote-titlbar'>
-    <mac v-if="platformName==='darwin'" />
-    <windows v-else />
+    <mac v-if="platformName==='darwin'" @contextmenu.prevent=""/>
+    <windows v-else @contextmenu.prevent=""/>
   </teleport>
 </template>
 <script lang="ts" setup>

@@ -46,3 +46,8 @@ body{
   height: var(--titleBarHeight);
   z-index: 990;
 }
+
+
+.el-tree{
+  background-color: transparent;
+}

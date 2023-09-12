@@ -391,6 +391,11 @@
   resolved "https://registry.npmmirror.com/@tiptap/extension-horizontal-rule/-/extension-horizontal-rule-2.1.7.tgz"
   integrity sha512-hJupsDxDVmjmKI/Ewl/gtiyUx52Y3wRUhT8dCXNOA5eldmPXN23E2Fa2BC8XB47dyc5pubyNcLuqaLeaZ5hedw==
 
+"@tiptap/extension-image@^2.1.8":
+  version "2.1.8"
+  resolved "https://registry.npmmirror.com/@tiptap/extension-image/-/extension-image-2.1.8.tgz#99d78ad1d8c6f513f945beae7de352759f30189f"
+  integrity sha512-o+vUIYLvYcJHftIMoIukzZZ+fTTfC/gXXvQIYz51p3f1qeYXszD11FbtkaJCgXYj8BcGCO7QuzcCdQg+wyROZw==
+
 "@tiptap/extension-italic@^2.1.7":
   version "2.1.7"
   resolved "https://registry.npmmirror.com/@tiptap/extension-italic/-/extension-italic-2.1.7.tgz"

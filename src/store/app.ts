@@ -5,12 +5,14 @@ import { emit, listen } from '@tauri-apps/api/event'
 // import { message } from '@tauri-apps/api/dialog'
 import { appWindow } from '@tauri-apps/api/window'
 import { useI18n } from "vue-i18n";
+import {useEditorStore} from './editor2';
 
 export const useAppStore = defineStore('app', {
   state:():{
     title:string,
     filepath:string|null,
     isSave:boolean,
+    recentFiles:string[],
     platform:null|'linux'| 'darwin'| 'ios'| 'freebsd'| 'dragonfly'| 'netbsd'| 'openbsd'| 'solaris'| 'android'| 'win32',
     visible:{
       outliner:boolean,
@@ -20,6 +22,7 @@ export const useAppStore = defineStore('app', {
     filepath: null,
     isSave:false,
     platform:null,
+    recentFiles:JSON.parse(localStorage.getItem('recent')||'[]'),
     visible:{
       outliner:false,
     }
@@ -28,6 +31,12 @@ export const useAppStore = defineStore('app', {
     setFilepath(filepath:string|null){
       this.filepath=filepath;
       if(filepath){
+        const index=this.recentFiles.findIndex(r=>r===filepath);
+        if(index>-1){
+          this.recentFiles.splice(index,1);
+        }
+        this.recentFiles.splice(0,0, filepath);
+        localStorage.setItem('recent',JSON.stringify(this.recentFiles));
         var paths=filepath.split(sep);
         this.title=paths[paths.length-1];
         this.isSave=true;
@@ -49,10 +58,13 @@ export const useAppStore = defineStore('app', {
         const value=event.payload;
         locale.value=value;
         localStorage.setItem("lang", value);
-        // const window=getCurrent();
-        
-        // await message(value, window.label+' language');
-      })
+      });
+      listen<string>('codeTheme', async (event) => {
+        const value=event.payload;
+        const editorStore=useEditorStore();
+        editorStore.codeTheme=value;
+        localStorage.setItem("codeTheme", value);
+      });
     }
   }
 })

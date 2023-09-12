@@ -1,11 +1,15 @@
 import { defineStore } from 'pinia'
-import { open } from '@tauri-apps/api/dialog';
-import { invoke } from '@tauri-apps/api/tauri';
 import { useEditorStore } from './editor2';
 import { useAppStore } from './app';
 import { appWindow } from '@tauri-apps/api/window';
 import { exit } from '@tauri-apps/api/process';
-import { listen } from '@tauri-apps/api/event';
+import {openFile,saveAs} from '../api/dialog';
+import {read, save} from '../api/file';
+import i18n from '../i18n';
+import { openPreferences, openWindow } from '../api/window';
+
+// @ts-ignore
+const { t, } = i18n.global;
 
 export interface Menu {
   label: string,
@@ -35,6 +39,8 @@ export const useMenuStore = defineStore('menu', {
         const event = (events as any)[item.key];
         if (event) {
           event(item);
+        }else if((events as any)['*']){
+          (events as any)['*'](item);
         }
       }
 
@@ -44,64 +50,63 @@ export const useMenuStore = defineStore('menu', {
 
 const events = {
   newWindow() {
-    invoke('open_window').then(() => console.log('set shadow')).catch(e => console.error(e));
+    openWindow();
   },
   closeWindow() {
     appWindow.close();
   },
   openFile() {
-    /*
-    open({
-      multiple: false,
-      filters: [{
-        name: 'Markdown',
-        extensions: ['md']
-      }]
-    }).then(async (selected) => {
-      if (Array.isArray(selected)) {
-        // user selected multiple files
-      } else if (selected === null) {
-        // user cancelled the selection
-      } else {
-        // user selected a single file
-        // console.log(selected);
-        const resp: any = await invoke('read_md', { path: selected });
-        if (resp.code === 0) {
-          const appStore = useAppStore();
-          appStore.setFilepath(selected);
-          const editorStore = useEditorStore();
-          // editorStore.content = resp.data;
-          editorStore.editor?.commands.setContent(resp.data);
-        }
-        // console.log(resp);
-      }
-    }).catch(e => console.error(e));
-    */
-   invoke('open_file',{title:'打开'}).then((resp:any)=>{
-    if (resp.code === 0) {
-      const appStore = useAppStore();
-      appStore.setFilepath(resp.info);
-      const editorStore = useEditorStore();
-      // editorStore.content = resp.data;
-      editorStore.editor?.commands.setContent(resp.data);
-    } 
+    const editorStore=useEditorStore();
+    editorStore.loading=true;
+    openFile(t('openFile')).then((resp:any)=>{
+      if (resp.code === 0) {
+        const appStore = useAppStore();
+        appStore.setFilepath(resp.info);
+        // editorStore.content = resp.data;
+        editorStore.setContent(resp.data);
+        editorStore.loading=false;
+      } 
+   }).catch(()=>{
+    editorStore.loading=false;
    });
+  },
+  clearRecent(){
+    const appStore = useAppStore();
+    appStore.recentFiles=[];
+    localStorage.setItem('recent',JSON.stringify(appStore.recentFiles));
   },
   save() {
     const editorStore = useEditorStore();
     const appStore = useAppStore();
     if (appStore.filepath) {
-      invoke('save_md', { path: appStore.filepath, md: editorStore.editor?.storage.markdown.getMarkdown() }).then((res:any) => { 
+      save(appStore.filepath, editorStore.editor?.storage.markdown.getMarkdown()).then((res:any) => { 
         console.log('save',res);
         if(res.code===0){
           appStore.isSave=true;
         }
       }).catch(e => console.error(e));
+    }else{
+      saveAs( editorStore.editor?.storage.markdown.getMarkdown(),t('save')).then((res:any) => { 
+        console.log('save',res);
+        if(res.code===0){
+          appStore.setFilepath(res.info);
+        }
+      }).catch(e => console.error(e));
     }
 
   },
+  saveAs() {
+    const editorStore = useEditorStore();
+    const appStore = useAppStore();
+    saveAs( editorStore.editor?.storage.markdown.getMarkdown(),t('saveAs')).then((res:any) => { 
+      if(res.code===0){
+        appStore.setFilepath(res.info);
+      }
+    }).catch(e => console.error(e));
+
+  },
   preferences() {
-    invoke('open_preferences');
+    openPreferences();
   },
   alwaysOnTop(item:Menu){
     appWindow.setAlwaysOnTop(item.checked===true);
@@ -116,5 +121,24 @@ const events = {
 
   quit() {
     exit();
+  },
+
+  '*':(item:Menu)=>{
+    if(item.key.startsWith('recent_')){
+      const key=item.key.substring(7);
+      const editorStore=useEditorStore();
+      editorStore.loading=true;
+      read(key).then((resp:any)=>{
+        if (resp.code === 0) {
+          const appStore = useAppStore();
+          appStore.setFilepath(key);
+          editorStore.setContent(resp.data);
+          editorStore.loading=false;
+        } 
+      }).catch(()=>{
+        editorStore.loading=false;
+      });
+    }
+    console.log(item);
   }
 }

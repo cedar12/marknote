@@ -51,6 +51,9 @@
       },
       "path": {
         "all": true
+      },
+      "notification": {
+        "all": true
       }
     },
     "bundle": {
@@ -73,9 +76,9 @@
         "fullscreen": false,
         "resizable": true,
         "title": "marknote",
-        "width": 500,
+        "width": 600,
         "height": 570,
-        "minWidth": 400,
+        "minWidth": 500,
         "minHeight": 400,
         "decorations": true,
         "center": true,

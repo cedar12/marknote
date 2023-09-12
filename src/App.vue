@@ -11,7 +11,7 @@ appStore.init();
 <template>
   <Titlebar></Titlebar>
   <Layout></Layout>
-  <Menu></Menu>
+  <Menu :key="appStore.recentFiles.join(',')"></Menu>
 </template>
 
 <style scoped>

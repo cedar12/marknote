@@ -1,6 +1,5 @@
 import { findChildren } from '@tiptap/core';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
-// import { CodeBlockOptions,CodeBlock as BuiltInCodeBlock } from '@tiptap/extension-code-block';//BuiltInCodeBlock
 import {CodeBlockLowlight,CodeBlockLowlightOptions as BaseCodeBlockLowlightOptions} from '@tiptap/extension-code-block-lowlight';
 import { lowlight } from 'lowlight/lib/all';
 import { Node as ProsemirrorNode } from 'prosemirror-model';

@@ -12,8 +12,8 @@
                 <div class="preferences-content">
                     <div class="window-title">{{ t('preferences') }}</div>
                     <div class="preferences-router">
-                        <div class="router-item">
-                            <span>{{ t('language') }}</span>
+                        <div v-for="item in options" :key="item" class="router-item" :class="{active:key===item}" @click="handleClick(item)">
+                            <span>{{ t(item) }}</span>
                         </div>
                     </div>
                 </div>
@@ -21,7 +21,8 @@
             <div class="right">
                 <div class="preferences-content">
                     <div style="padding: 0 1rem;">
-                        <Language v-if="key==='language'"></Language>
+                        <General v-if="key==='general'"></General>
+                        <Editor v-if="key==='editor'"></Editor>
                     </div>
                     
                 </div>
@@ -35,21 +36,28 @@ import {ref,watch} from 'vue';
 import {Close} from '@icon-park/vue-next';
 import {useAppStore} from '../store/app';
 import { appWindow } from '@tauri-apps/api/window';
-import Language from './preferences/Language.vue';
+import General from './preferences/General.vue';
+import Editor from './preferences/Editor.vue';
 
 const appStore=useAppStore();
 appStore.init();
 import { useI18n } from 'vue-i18n';
 
-const key=ref<string>('language');
+const key=ref<string>('general');
 
 const {t,locale} = useI18n();
+
+const options=['general','editor','markdown','theme','image'];
 
 appWindow.setTitle(t('preferences'));
 
 watch(()=>locale.value,()=>{
     appWindow.setTitle(t('preferences'));
-})
+});
+
+const handleClick=(k:string)=>{
+    key.value=k;
+}
 </script>
 <style lang="scss">
 .preferences-header{
@@ -132,6 +140,13 @@ watch(()=>locale.value,()=>{
                     }
                 }
             }
+
+            .preferences-item{
+                .header{
+                padding: 0.4em 0;
+                }
+            }
+
         }
     }
     

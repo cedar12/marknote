@@ -129,13 +129,13 @@ export const TableHeader = Node.create<TableHeaderOptions, { clearCallbacks: Arr
                       offset:[0,0],
                     });
 
-                    pre.onclick=(e)=>{
+                    pre.onclick=()=>{
                       this.editor.commands.addColumnBefore();
                     };
-                    del.onclick=(e)=>{
+                    del.onclick=()=>{
                       this.editor.commands.deleteColumn();
                     };
-                    next.onclick=(e)=>{
+                    next.onclick=()=>{
                       addColumnAfter(this.editor.state, this.editor.view.dispatch);
                     };
 
