@@ -3,15 +3,20 @@ import Titlebar from './components/titlebar/index.vue';
 import Layout from "./components/Layout.vue";
 import Menu from "./components/menu/index.vue";
 import {useAppStore} from './store/app';
+import {computed} from 'vue';
 const appStore=useAppStore();
 appStore.init();
+
+const key=computed(()=>{
+  return appStore.recentFiles.join(',')+'_'+appStore.menuKey;
+})
 
 </script>
 
 <template>
   <Titlebar></Titlebar>
   <Layout></Layout>
-  <Menu :key="appStore.recentFiles.join(',')"></Menu>
+  <Menu :key="key"></Menu>
 </template>
 
 <style scoped>

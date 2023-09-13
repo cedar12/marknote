@@ -5,6 +5,26 @@
         <div class="titlebar-tool" :class="{open:menuStore.visible,'sidebar-visbile':appStore.visible.outliner}" @click="menuStore.visible=!menuStore.visible">
           <HamburgerButton theme="filled" />
         </div>
+        <el-popover
+          placement="bottom-start"
+          :width="40"
+          :offset="-4"
+          trigger="hover"
+          popper-class="titlebar-words-popover"
+          popper-style="min-width:auto;"
+        >
+          <template #reference>
+            <div data-tauri-drag-region class="titlebar-words" >
+              <span v-if="mode==='words'" data-tauri-drag-region>{{editorStore.editor?.storage.characterCount.words()}}</span>
+              <span v-if="mode==='chars'" data-tauri-drag-region>{{editorStore.editor?.storage.characterCount.characters()}}</span>
+              <span data-tauri-drag-region>{{ t(mode) }}</span>
+            </div>
+          </template>
+          <div class="titlebar-words-wrapper" @contextmenu.prevent="">
+            <div @click="mode='words'">{{ t('words') }}</div>
+            <div @click="mode='chars'">{{ t('chars') }}</div>
+          </div>
+        </el-popover>
         
       </div>
       <div data-tauri-drag-region class="titlebar-info">
@@ -26,14 +46,21 @@
   
 </template>
 <script lang="ts" setup>
+import {ElPopover} from 'element-plus';
 import {HamburgerButton,Close,Minus,Square} from '@icon-park/vue-next';
 import { appWindow } from '@tauri-apps/api/window';
 import {useMenuStore} from '../../store/menu';
 import {useAppStore} from '../../store/app';
+import {useEditorStore} from '../../store/editor2';
+import {useI18n} from 'vue-i18n';
+import {ref} from 'vue';
 
-
+const {t}=useI18n();
 const menuStore=useMenuStore();
 const appStore=useAppStore();
+const editorStore=useEditorStore();
+
+const mode=ref('words');
 
 </script>
 
@@ -64,11 +91,10 @@ const appStore=useAppStore();
       position:absolute;
       left:0;
       top:0;
-      height: var(--titleBarHeight);
-      width: var(--titleBarHeight);
+      
       &>.titlebar-tool{
-        height: 100%;
-        width: 100%;
+        height: var(--titleBarHeight);
+        width: var(--titleBarHeight);
         line-height: var(--titleBarHeight);
         text-align: center;
         cursor: pointer;
@@ -87,6 +113,24 @@ const appStore=useAppStore();
           background: var(--titlebarBgHover,#dfdfdf);
         }
       }
+
+      &>.titlebar-words{
+        z-index: 3;
+        cursor: pointer;
+        position: absolute;
+        height: var(--titleBarHeight);
+        top: 0;
+        left: calc(var(--titleBarHeight) + 12px);
+        color: #a8a8a8;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 12px;
+        &>span+span{
+          margin-left: .4em;
+        }
+        // width: var(--titleBarHeight);
+      }
       
     }
 
@@ -98,7 +142,7 @@ const appStore=useAppStore();
       z-index: 2;
       box-sizing: border-box;
       overflow: hidden;
-      padding: 0 calc(var(--titleBarHeight) * 3);
+      padding: 0 calc(var(--titleBarHeight) * 3 + 20px);
       .marknote-title{
         &.not-save::after{
           content: ' *';
@@ -130,4 +174,9 @@ const appStore=useAppStore();
     }
   }
 }
+.titlebar-words-wrapper{
+    &>div{
+      cursor: pointer;
+    }
+  }
 </style>

@@ -109,8 +109,9 @@ const handleClick=(k:string)=>{
                 padding-top: 1rem;
                 .router-item{
                     padding: 0.5rem 1rem;
-                    font-size: 1.4rem;
+                    font-size: 16px;
                     position: relative;
+                    cursor: pointer;
                     &:hover{
                         background-color: var(--primaryBackgroundColorHover);
                         background-image: linear-gradient(to right,var(--primaryBackgroundColor),var(--primaryBackgroundColorActive));

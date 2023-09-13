@@ -3,11 +3,12 @@ import tippy from 'tippy.js';
 import { mergeAttributes, Node } from '@tiptap/core';
 import { getCellsInColumn, isRowSelected, isTableSelected, selectRow, selectTable } from './utils/table';
 
-// import { Tooltip } from 'components/tooltip';
 import { Plugin, PluginKey } from 'prosemirror-state';
 import { addRowAfter } from 'prosemirror-tables';
 import { Decoration, DecorationSet } from 'prosemirror-view';
 import { addRowBefore } from '@tiptap/pm/tables';
+import TableCellPopover from './wrapper/TableCellPopover.vue';
+import {render,h} from 'vue';
 
 export interface TableCellOptions {
   HTMLAttributes: Record<string, any>;
@@ -132,80 +133,88 @@ export const TableCell = Node.create<TableCellOptions, { clearCallbacks: Array<(
                     if (index === cells.length - 1) {
                       className += ' last';
                     }
-                    const grip = document.createElement('a');
 
-                    const tooltip=document.createElement('div');
-                    tooltip.className='table-cell-tooltip';
-                    const pre=document.createElement('button');
-                    const del=document.createElement('button');
-                    const next=document.createElement('button');
-                    tooltip.appendChild(pre);
-                    tooltip.appendChild(del);
-                    tooltip.appendChild(next);
-                    pre.innerHTML='<svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24.0605 10L24.0239 38" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 24L38 24" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-                    next.innerHTML='<svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24.0605 10L24.0239 38" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 24L38 24" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-                    del.innerHTML='<svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 10V44H39V10H9Z" fill="none" stroke="#00c4ff" stroke-width="4" stroke-linejoin="round"/><path d="M20 20V33" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M28 20V33" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10H44" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 10L19.289 4H28.7771L32 10H16Z" fill="none" stroke="#00c4ff" stroke-width="4" stroke-linejoin="round"/></svg>';
-                    pre.title='向前插入一行';
-                    del.title='删除行';
-                    next.title='向后插入一行';
+                    const container=document.createElement('div');
+                    // @ts-ignore
+                    render(h(TableCellPopover,{editor:this.editor,rowSelected,className,index}),container);
 
-                    
+                    // const grip = document.createElement('a');
 
-
-                    const install=tippy(grip,{
-                      content:tooltip,
-                      allowHTML:true,
-                      interactive:true,
-                      appendTo:document.body,
-                      arrow:false,
-                      placement:'left',
-                      theme:'light',
-                      trigger:'mouseenter click',
-                      offset:[0,0],
-                    });
-
-                    pre.onclick=()=>{
-                      addRowBefore(this.editor.state, this.editor.view.dispatch);
-                    };
-                    del.onclick=()=>{
-                      // console.log(e,'click',this.editor.state);
-                      this.editor.commands.deleteRow();
-                    };
-                    next.onclick=()=>{
-                      // console.log(e,'click',this.editor.state);
-                      addRowAfter(this.editor.state, this.editor.view.dispatch);
-                    };
+                    // const tooltip=document.createElement('div');
+                    // tooltip.className='table-cell-tooltip';
+                    // const pre=document.createElement('button');
+                    // const del=document.createElement('button');
+                    // const next=document.createElement('button');
+                    // tooltip.appendChild(pre);
+                    // tooltip.appendChild(del);
+                    // tooltip.appendChild(next);
+                    // pre.innerHTML='<svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24.0605 10L24.0239 38" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 24L38 24" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                    // next.innerHTML='<svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24.0605 10L24.0239 38" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 24L38 24" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                    // del.innerHTML='<svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 10V44H39V10H9Z" fill="none" stroke="#00c4ff" stroke-width="4" stroke-linejoin="round"/><path d="M20 20V33" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M28 20V33" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 10H44" stroke="#00c4ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 10L19.289 4H28.7771L32 10H16Z" fill="none" stroke="#00c4ff" stroke-width="4" stroke-linejoin="round"/></svg>';
+                    // pre.title='向前插入一行';
+                    // del.title='删除行';
+                    // next.title='向后插入一行';
 
                     
 
-                    this.storage.clearCallbacks.push(() => {
-                      install.destroy();
-                    });
 
-                    grip.className = className;
+                    // const install=tippy(grip,{
+                    //   content:tooltip,
+                    //   allowHTML:true,
+                    //   interactive:true,
+                    //   appendTo:document.body,
+                    //   arrow:false,
+                    //   placement:'left',
+                    //   theme:'light',
+                    //   trigger:'mouseenter click',
+                    //   offset:[0,0],
+                    // });
 
-                    grip.addEventListener(
-                      'mousedown',
-                      (event) => {
-                        event.preventDefault();
-                        event.stopImmediatePropagation();
+                    // pre.onclick=()=>{
+                    //   addRowBefore(this.editor.state, this.editor.view.dispatch);
+                    // };
+                    // del.onclick=()=>{
+                    //   // console.log(e,'click',this.editor.state);
+                    //   this.editor.commands.deleteRow();
+                    // };
+                    // next.onclick=()=>{
+                    //   // console.log(e,'click',this.editor.state);
+                    //   addRowAfter(this.editor.state, this.editor.view.dispatch);
+                    // };
 
-                        if(rowSelected){
-                          this.editor.commands.blur();
-                        }else{
-                          this.editor.view.dispatch(
-                            // @ts-ignore
-                            selectRow(index)(this.editor.state.tr)
-                          );
-                        }
+                    const grip=container.children[0];
+
+                    // this.storage.clearCallbacks.push(() => {
+                    //   // install.destroy();
+                    //   grip.parentElement?.removeChild(grip);
+                    // });
+
+                    // grip.className = className;
+
+                    // grip.addEventListener(
+                    //   'mousedown',
+                    //   (event) => {
+                    //     event.preventDefault();
+                    //     event.stopImmediatePropagation();
+
+                    //     if(rowSelected){
+                    //       this.editor.commands.blur();
+                    //     }else{
+                    //       this.editor.view.dispatch(
+                    //         // @ts-ignore
+                    //         selectRow(index)(this.editor.state.tr)
+                    //       );
+                    //     }
                         
 
-                        if (event.target !== grip) {
-                          addRowAfter(this.editor.state, this.editor.view.dispatch);
-                        }
-                      },
-                      true
-                    );
+                    //     if (event.target !== grip) {
+                    //       addRowAfter(this.editor.state, this.editor.view.dispatch);
+                    //     }
+                    //   },
+                    //   true
+                    // );
+                    
+                    
                     return grip;
                   })
                 );

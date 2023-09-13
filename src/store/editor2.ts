@@ -18,7 +18,7 @@ import {Link} from '../node/link';
 import {Focus} from '../node/focus';
 import {Image} from '@tiptap/extension-image';
 import Dropcursor from '@tiptap/extension-dropcursor';
-import {Gapcursor} from '@tiptap/extension-gapcursor';
+import CharacterCount from '@tiptap/extension-character-count'
 
 const MarknoteTable=Table.extend({
   addInputRules() {
@@ -66,6 +66,7 @@ export const useEditorStore = defineStore('editor2', {
             Heading,
             Strike,
             Focus,
+            CharacterCount,
             Image.configure({
               inline:true
             }),
@@ -86,7 +87,6 @@ export const useEditorStore = defineStore('editor2', {
               
             }),
             Dropcursor,
-            Gapcursor,
             CodeBlock.configure({
         
               lowlight,

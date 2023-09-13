@@ -69,6 +69,7 @@ async fn open_window(handle: tauri::AppHandle) {
         WindowUrl::App("index.html".into()),
     )
     .decorations(IS_MACOS)
+    .title("marknote")
     .inner_size(WIDTH, HEIGHT)
     .min_inner_size(MIN_WIDTH, MIN_HEIGTH)
     .visible(false)
@@ -88,6 +89,7 @@ async fn open_window(handle: tauri::AppHandle) {
         WindowUrl::App("index.html".into()),
     )
     .decorations(IS_MACOS)
+    .title("marknote")
     .inner_size(WIDTH, HEIGHT)
     .min_inner_size(MIN_WIDTH, MIN_HEIGTH)
     .title_bar_style(tauri::TitleBarStyle::Overlay)

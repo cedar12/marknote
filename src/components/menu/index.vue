@@ -1,8 +1,8 @@
 <template>
   <Teleport to="body">
     <div class="marknote-menus" ref="menusRef" v-if="menuStore.visible">
-      <div class="marknote-menu-mask" @click="onReset"></div>
-      <div class="menus" :class="{ 'right-menu': appStore.platform === 'darwin' }">
+      <div class="marknote-menu-mask" @click="onReset"  @contextmenu.prevent="onReset"></div>
+      <div class="menus" :class="{ 'right-menu': appStore.platform === 'darwin' }" @contextmenu.prevent="">
         <div class="menu-item" :class="{ split: item.split }" v-for="item in menus" :key="item.key">
           <div class="menu-content" :class="{ 'has-children': item.children && item.children.length > 0 }"
             @click="onClick($event, item, 1)">
@@ -42,7 +42,7 @@
   </Teleport>
 </template>
 <script setup lang="ts">
-import { ref, onBeforeMount,watch } from 'vue';
+import { ref, onBeforeMount,watch,nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Menu, useMenuStore } from '../../store/menu';
 import {useAppStore} from '../../store/app';
@@ -79,11 +79,13 @@ const loadMenuData=()=>{
         {
           label: t('newWindow'),
           key: 'newWindow',
-          split: true
+          split: true,
+          shortcut:appStore.keyBinding?.getKey('file.newWindow')?.key
         },
         {
           label: t('openFile'),
           key: 'openFile',
+          shortcut:appStore.keyBinding?.getKey('file.openFile')?.key
         },
         {
           label: t('openFolder'),
@@ -106,10 +108,12 @@ const loadMenuData=()=>{
         {
           label: t('save'),
           key: 'save',
+          shortcut:appStore.keyBinding?.getKey('file.save')?.key
         },
         {
           label: t('saveAs'),
           key: 'saveAs',
+          shortcut:appStore.keyBinding?.getKey('file.saveAs')?.key,
           split: true
         },
         {
@@ -135,6 +139,7 @@ const loadMenuData=()=>{
         {
           label: t('preferences'),
           key: 'preferences',
+          shortcut:appStore.keyBinding?.getKey('file.preferences')?.key,
           split: true
         },
         {
@@ -150,11 +155,13 @@ const loadMenuData=()=>{
         {
           label: t('closeWindow'),
           key: 'closeWindow',
+          shortcut:appStore.keyBinding?.getKey('file.closeWindow')?.key,
           split: true
         },
         {
           label: t('quit'),
           key: 'quit',
+          shortcut:appStore.keyBinding?.getKey('file.quit')?.key,
         }
       ]
     },
@@ -165,12 +172,12 @@ const loadMenuData=()=>{
         {
           label: t('undo'),
           key: 'undo',
-          shortcut: 'Mod Z'
+          shortcut:appStore.keyBinding?.getKey('edit.undo')?.key,
         },
         {
           label: t('redo'),
           key: 'redo',
-          shortcut: 'Mod Y'
+          shortcut:appStore.keyBinding?.getKey('edit.redo')?.key,
         }
       ]
     },
@@ -192,6 +199,31 @@ const loadMenuData=()=>{
       ]
     }
   ];
+
+  nextTick(()=>{
+    appStore.keyBinding?.on((bind)=>{
+      console.log('按下',bind);
+      var temp=menus.value;
+      for (let i = 0; i < bind.description.length-1; i++) {
+        const b = bind.description[i];
+        var item=temp.find(t=>t.key===b);
+        if(item&&item.children){
+          temp=item.children;
+        }
+      }
+      const menu=temp.find(t=>t.key===bind.description[bind.description.length-1]);
+      if(menu&&((!menu.children) || menu.children.length === 0)){
+        if (menu.type === 'checkbox') {
+           menu.checked = !menu.checked;
+        }
+        menuStore.setKey(menu);
+        onReset();
+        return true;
+      }
+    })
+  });
+  
+
 }
 
 const onClick = (e: MouseEvent, item: Menu, level: number) => {

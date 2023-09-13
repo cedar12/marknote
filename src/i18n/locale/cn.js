@@ -38,4 +38,8 @@ export default {
   theme:'主题',
   image: '图片',
   
+
+
+  words:'词',
+  chars:'字',
 }

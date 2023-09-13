@@ -139,7 +139,7 @@ export const Table = BuiltInTable.extend({
       cellMinWidth: 25,
       View: TableView,
       lastColumnResizable: true,
-      allowTableNodeSelection: false,
+      allowTableNodeSelection: true,
     };
   },
   // @ts-ignore

@@ -10,8 +10,8 @@ import "./scss/editor.scss";
 import './scss/codeTheme.scss';
 import { createPinia } from 'pinia'
 import {isPreferences} from "./utils/index";
-// import 'tippy.js/dist/tippy.css';
+import {ElLoadingDirective} from 'element-plus';
 
-createApp(isPreferences?Preferences:App).use(i18n).use(createPinia()).mount("#app");
+createApp(isPreferences?Preferences:App).directive('loading',ElLoadingDirective).use(i18n).use(createPinia()).mount("#app");
 
 

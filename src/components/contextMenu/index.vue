@@ -3,9 +3,9 @@
         <slot></slot>
         <Teleport to="body">
             <div class="context-menu-wrapper"  v-if="showMenu">
-                <div class="context-menu-mask" @click="hide" @contextmenu="hide"></div>
+                <div class="context-menu-mask" @click="hide" @contextmenu.prevent="hide"></div>
                 <Transition @beforeEnter="handleBeforeEnter" @enter="handleEnter" @afterEnter="handleAfterEnter">
-                    <div class="context-menu" :style="{ left: x + 'px', top: y + 'px' }">
+                    <div class="context-menu" :style="{ left: x + 'px', top: y + 'px' }" @contextmenu.prevent="">
                         <div class="menu-list">
                             <div @click="handleClick($event,item)" class="menu-item" :class="{'disabled':disabled(item),'split':item.split===true}" v-for="item in props.menu" :key="item.label">
                                 {{ item.label }}
@@ -115,19 +115,20 @@ function handleAfterEnter(e:Element) {
             background-color: var(--menuBackgroundColor, #fff);
             
             color: var(--menuColor,#202124);
-            box-shadow: 2px 2px 13px var(--menuShadow,#b8b8b8);
+            // box-shadow: 2px 2px 13px var(--menuShadowColor,#b8b8b8);
+            border: 1px solid var(--menuShadowColor);
             border-radius: var(--borderRadius);
             .menu-item{
                 padding: .2rem 1rem;
                 cursor:pointer;
                 &:hover{
-                    background-color: #e8e8e9;
+                    background-color: var(--menuBackgroundColorHover,#e8e8e9);
                 }
                 &.disabled{
-                    color: #dfdfdf;
+                    color: var(--menuTextColorDisabled,#dfdfdf);;
                 }
                 &.split{
-                    border-bottom: 1px solid #dfdfdf;
+                    border-bottom: 1px solid var(--menuBorderColor);
                 }
             }
         }

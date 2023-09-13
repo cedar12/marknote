@@ -122,6 +122,7 @@
         --gripWidth: 8px;
         --gripColor: #ced4da;
         --gripColorActive: #0375fb;
+
         .grip-table,.grip-row,.grip-column{
             display: inline-block;
             position: absolute;
@@ -289,6 +290,23 @@
         pointer-events: all; 
         &:hover{
             background-color: #868b92;
+        }
+    }
+}
+
+.tableWrapper{
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    box-sizing: border-box;
+    &.has-focus{
+        padding: 12px 0 0 12px;
+    }
+    table{
+        tr:first-child{
+            font-weight: bold;
+            text-align: left;
+            background-color: #f1f3f5;
         }
     }
 }

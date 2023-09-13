@@ -1,5 +1,5 @@
 <template>
-  <div class="marknote-layout">
+  <div class="marknote-layout"  @contextmenu.prevent="">
     <div class="layout-outliner" v-if="appStore.visible.outliner">
       <Outliner></Outliner>
     </div>

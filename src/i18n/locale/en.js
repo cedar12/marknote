@@ -36,4 +36,8 @@ export default {
   general: 'General',
   theme:'Theme',
   image: 'Image',
+
+
+  words:'Words',
+  chars:'Chars',
 }

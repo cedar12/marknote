@@ -112,6 +112,14 @@ const events = {
     appWindow.setAlwaysOnTop(item.checked===true);
   },
 
+  undo(){
+    const editorStore=useEditorStore();
+    editorStore.editor?.commands.undo();
+  },
+  redo(){
+    const editorStore=useEditorStore();
+    editorStore.editor?.commands.redo();
+  },
 
   outliner(item:Menu){
     console.log(item)
