@@ -17,6 +17,7 @@
 - [ ] 导出markdown
 
 - [ ] 多主题
+- [ ] 
 
 ```javascript
 console.log('marknote');
@@ -30,7 +31,7 @@ console.log('marknote');
 | --- | --- |
 | 1 | 2 |
 
-abc [baidu.com](https://www.baidu.com)
+abc [marknote](https://github.com/cedar12/marknote)
 
 ```rust
 fn main(){
