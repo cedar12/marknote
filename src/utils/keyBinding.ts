@@ -59,7 +59,11 @@ export class KeyBindingBuilder{
   }
 
   getKey(desc:string){
-    return this.binds.find(b=>b.description.join('.')===desc);
+    const bind=this.binds.find(b=>b.description.join('.')===desc);
+    if(bind?.replace){
+      bind.key=bind.replace;
+    }
+    return bind;
   }
 
   unbind(){
