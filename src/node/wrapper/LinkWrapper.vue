@@ -1,48 +1,31 @@
 <template>
   <NodeViewWrapper class="marknote-link" >
-    <div class="link-wrapper" contenteditable="false" v-if="!isEditable">
-      <ElInput v-model="value"></ElInput>
-    </div>
-    <NodeViewContent as="a"></NodeViewContent>
+    <ElPopover trigger="hover" placement="top">
+      <div class="link-wrapper" contenteditable="false" v-if="!isEditable">
+        <ElInput v-model="value" :disabled="!isEditable"></ElInput>
+      </div>
+      <template #reference>
+        <NodeViewContent as="a"></NodeViewContent>
+      </template>
+    </ElPopover>
   </NodeViewWrapper>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue';
-import {ElInput} from 'element-plus';
+import { ref,onMounted } from 'vue';
+import {ElInput,ElPopover} from 'element-plus';
 import { NodeViewContent, NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
 const props = defineProps(nodeViewProps);
 
 const isEditable = ref(props.editor.isEditable);
 const value = ref(props.node.attrs.language || '');
 
+onMounted(()=>{
+  console.log('link',props);
+})
 </script>
 
 <style lang="scss">
-.marknote-codeblock {
+.marknote-link {
   position: relative;
 
-  .codeblock-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-
-    .n-select {
-      width: 150px;
-    }
-
-    .n-button {}
-  }
-
-  &>pre.codeblock-pre {
-    margin-top: 0;
-    padding: 0px 1rem;
-
-    code {
-      display: block;
-      outline: none;
-      margin: 0;
-      padding: 0;
-
-    }
-  }
 }</style>

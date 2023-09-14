@@ -7,6 +7,7 @@ use std::{
 
 use tauri::{ Manager, Window, WindowUrl, api::dialog::blocking::FileDialogBuilder};
 
+mod utils;
 mod resp;
 
 static WINDOW_ID: AtomicUsize = AtomicUsize::new(1);
@@ -160,6 +161,19 @@ async fn open_file(title: &str) ->Result<resp::Resp<String>,String> {
     Err("".into())
 }
 
+#[tauri::command]
+async fn save_image(path:&str,base64: &str) ->Result<resp::Resp<String>,String> {
+  match utils::write_image(path.into(),base64.into()){
+    Ok(())=>{
+      Ok(resp::ok(path.into(),None))
+    },
+    Err(e)=>{
+      println!("{:?}",e);
+      Err("".into())
+    }
+  }
+}
+
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
@@ -179,6 +193,7 @@ fn main() {
             open_window,
             open_preferences,
             open_file,
+            save_image,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

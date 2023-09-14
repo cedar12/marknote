@@ -18,7 +18,6 @@ export const useContextMenu = (containerRef: Ref<HTMLElement | undefined>,menuRe
         
         const height=menuRef.value.length*30;
 
-        console.log(w,h,width,height,e.clientX,e.clientY);
         x.value = e.clientX;
         if(w-width<x.value){
             x.value=x.value-width;

@@ -16,9 +16,10 @@ import {CodeBlock} from '../node/codeBlock2';
 import {Heading} from '../node/heading';
 import {Link} from '../node/link';
 import {Focus} from '../node/focus';
-import {Image} from '@tiptap/extension-image';
+import {Image} from '../node/image';
 import Dropcursor from '@tiptap/extension-dropcursor';
 import CharacterCount from '@tiptap/extension-character-count'
+import { useAppStore } from './app';
 
 const MarknoteTable=Table.extend({
   addInputRules() {
@@ -58,7 +59,17 @@ export const useEditorStore = defineStore('editor2', {
           editorProps:{
             attributes:{
               class:'marknote'
-            }
+            },
+            
+            handleDrop:(view,e)=>{
+              console.log('drop',view,e);
+            },
+            handleDOMEvents: {
+              drop: (view, e) => { 
+                e.preventDefault(); 
+                console.log('drop',view,e);
+              },
+            },
           },
           extensions:[
             StarterKit,
@@ -107,6 +118,8 @@ export const useEditorStore = defineStore('editor2', {
           onUpdate:()=>{
             console.log('更新outliner data');
             const editorStore=useEditorStore();
+            const appStore=useAppStore();
+            appStore.isSave=false;
             editorStore.tree=editorStore.getTree();
           },
           onCreate:()=>{
@@ -114,7 +127,8 @@ export const useEditorStore = defineStore('editor2', {
             const editorStore=useEditorStore();
             editorStore.tree=editorStore.getTree();
             console.log(editorStore.tree)
-          }
+          },
+          
         })
       }
   },

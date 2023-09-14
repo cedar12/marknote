@@ -16,7 +16,8 @@
   --menuBackgroundColor: var(--contentBackgroundColor);
   --menuShadowColor: #b8b8b8;
   --menuBorderColor: #dfdfdf;
-  --menuBackgroundColorHover: #e8e8e9;
+  --menuBackgroundColorHover: #e8e8e9b7;
+  --menuBackgroundColorGlass: rgba(245, 245, 246, 0.8);
 }
 
 body{

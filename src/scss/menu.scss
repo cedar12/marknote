@@ -16,23 +16,47 @@
     position: absolute;
   }
 
-  .menus {
+
+  .menus{
+    background-color: var(--menuBackgroundColor, #fff);
+    color: var(--menuColor,#202124);
+    // box-shadow: 2px 2px 13px var(--menuShadowColor,#b8b8b8);
+    // border: 1px solid var(--menuShadowColor);
+    border-radius: var(--borderRadius);
+    border: 1px solid var(--menuBorderColor);
+    &.glass{
+      // background-color: rgba(255, 255, 255, 0.4);
+      background-color: transparent;
+      // backdrop-filter: blur(10px);
+      // -webkit-backdrop-filter: blur(4px);
+      &::before{
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
+        background-color: var(--menuBackgroundColorGlass);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+      }
+    }
+  }
+
+  .menus-level-1 {
     font-size: 14px;
     top: 20px;
     left: var(--titleBarHeight);
     width: 100px;
     position: absolute;
-    z-index: 998;
-    background-color: var(--menuBackgroundColor, #fff);
-    color: var(--menuColor,#202124);
-    // box-shadow: 2px 2px 13px var(--menuShadowColor,#b8b8b8);
-    border: 1px solid var(--menuShadowColor);
-    border-radius: var(--borderRadius);
-    border: 1px solid var(--menuBorderColor);
+    z-index: 9998;
     .menu-title{
       user-select: none;
       --webkit-user-select: none;
     }
+
+    
 
     &.right-menu{
       left: auto;
@@ -60,21 +84,16 @@
       }
     }
 
-    .menus2 {
+    .menus-level-2 {
       position: absolute;
       top: var(--menu2Top);
-      left: 100px;
+      left: 95px;
       width: 250px;
       margin-top: .4rem;
-      background-color: var(--menuBackgroundColor, #fff);
-      // box-shadow: 2px 2px 13px var(--menuShadowColor,#b8b8b8);
-      border: 1px solid var(--menuShadowColor);
-      border-radius: var(--borderRadius);
-      border: 1px solid var(--menuBorderColor);
-      z-index: 999;
+      z-index: 9998;
       &.right-menu{
         left: auto;
-        right: 100px;
+        right: 95px;
       }
 
       .menu-content {
@@ -113,17 +132,17 @@
         }
       }
 
-      .menus3{
+      .menus-level-3{
         position: absolute;
         top: var(--menu3Top);
-        left: 250px;
+        left: 245px;
         width: 200px;
         margin-top: .4rem;
-        background-color: var(--menuBackgroundColor, #fff);
-        // box-shadow: 2px 2px 13px var(--menuShadowColor,#b8b8b8);
-        border-radius: var(--borderRadius);
-        border: 1px solid var(--menuBorderColor);
-        z-index: 1000;
+        z-index: 9999;
+        &.right-menu{
+          left: auto;
+          right: 245px;
+        }
       }
 
     }

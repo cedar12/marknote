@@ -6,7 +6,7 @@
                 <div class="context-menu-mask" @click="hide" @contextmenu.prevent="hide"></div>
                 <Transition @beforeEnter="handleBeforeEnter" @enter="handleEnter" @afterEnter="handleAfterEnter">
                     <div class="context-menu" :style="{ left: x + 'px', top: y + 'px' }" @contextmenu.prevent="">
-                        <div class="menu-list">
+                        <div class="menu-list glass">
                             <div @click="handleClick($event,item)" class="menu-item" :class="{'disabled':disabled(item),'split':item.split===true}" v-for="item in props.menu" :key="item.label">
                                 {{ item.label }}
                             </div>
@@ -106,7 +106,7 @@ function handleAfterEnter(e:Element) {
     .context-menu{
         position: absolute;
         min-width: 150px;
-        --borderRadius: 2px;
+        --borderRadius: 4px;
         user-select: none;
         -webkit-user-select: none;
         .menu-list{
@@ -116,8 +116,24 @@ function handleAfterEnter(e:Element) {
             
             color: var(--menuColor,#202124);
             // box-shadow: 2px 2px 13px var(--menuShadowColor,#b8b8b8);
-            border: 1px solid var(--menuShadowColor);
+            // border: 1px solid var(--menuShadowColor);
+            border: 1px solid var(--menuBorderColor);
             border-radius: var(--borderRadius);
+            &.glass{
+                background-color: transparent;
+                &::before{
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    z-index: -1;
+                    background-color: var(--menuBackgroundColorGlass);
+                    backdrop-filter: blur(4px);
+                    -webkit-backdrop-filter: blur(4px);
+                }
+            }
             .menu-item{
                 padding: .2rem 1rem;
                 cursor:pointer;

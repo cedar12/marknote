@@ -7,6 +7,7 @@ import { appWindow } from '@tauri-apps/api/window'
 import { useI18n } from "vue-i18n";
 import {useEditorStore} from './editor2';
 import { KeyBindingBuilder } from '../utils/keyBinding';
+import { isImage } from '../utils';
 
 export const useAppStore = defineStore('app', {
   state:():{
@@ -61,6 +62,34 @@ export const useAppStore = defineStore('app', {
         this.keyBinding=new KeyBindingBuilder();
         this.menuKey=this.menuKey+1;
       });
+
+
+      document.ondrop=(ev)=>{
+        console.log('document drop',ev);
+      }
+
+      appWindow.listen('tauri://file-drop',(ev)=>{
+        console.log('ev',ev);
+        const editorStore=useEditorStore();
+        // @ts-ignore
+        const {state,view}=editorStore.editor;
+        const { schema } = state;
+
+        const payload=ev.payload as any;
+        for (let i = 0; i < payload.length; i++) {
+          const src = payload[i];
+          if(isImage(src)){
+            console.log(state,view);
+            const node = schema.nodes.image.create({
+                src: src,
+            });
+            const transaction = view.state.tr.insert(state.selection.anchor, node);
+            view.dispatch(transaction);
+          }
+        }
+        
+      });
+
       listen<string>('language', async (event) => {
         const value=event.payload;
         locale.value=value;
