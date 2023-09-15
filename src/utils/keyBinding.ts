@@ -78,10 +78,10 @@ export class KeyBindingBuilder{
     const appStore=useAppStore();
     this.binds.forEach(bind=>{
       const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,appStore.platform==='darwin'?'command':'ctrl').toLocaleLowerCase();
-      hotkeys(key, (event, handler)=>{
+      hotkeys(key, bind.description[0], (event, handler)=>{
         if(this.fn){
           const result=this.fn(bind,handler);
-          if(result===true){
+          if(result===true&&event){
             event.preventDefault();
           }
         }

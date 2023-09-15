@@ -1,10 +1,28 @@
+use std::f32::consts::E;
+use std::str::FromStr;
 use std::{path::PathBuf, fs};
 
-use tauri::{api::path::{self, resolve_path, BaseDirectory}, Config, Env};
+use anyhow::anyhow;
+use tauri::Window;
+use tauri::{api::path, Config};
 
 use std::fs::File;
-use std::io::{self, Write};
-use base64::{Engine as _, alphabet, engine::{self, general_purpose}};
+use std::io::{ Write};
+use base64::{Engine as _, engine::general_purpose};
+
+use crate::db;
+
+pub mod constant;
+pub use constant::*;
+
+
+
+pub fn set_shadow(win: Window) {
+  if cfg!(windows) {
+      window_shadows::set_shadow(&win, true).expect("Unsupported platform!");
+  }
+}
+
 
 pub fn get_path()->PathBuf{
   match path::app_data_dir(&Config::default()){
@@ -28,5 +46,99 @@ pub fn write_image(path:String,base64:String)->anyhow::Result<()>{
   // println!("{:?}", img_data);
   let mut img_file = File::create(path)?;
   img_file.write_all(&img_data)?;
+  Ok(())
+}
+
+
+
+pub enum ImageSaveType{
+  /// 默认 
+  /// markdown存储相对路径存储
+  Default(Option<String>),
+  /// 指定
+  /// 绝对路径存储
+  Sepc(String),
+  /// PicGo图床
+  /// PicGo安装路径 命令行上传
+  /// 上传的图片路径
+  PicGo(String),
+} 
+
+impl FromStr for ImageSaveType {
+  type Err = String;
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    let ss=s.split(",").collect::<Vec<&str>>();
+    match ss[0].into() {
+      "default"=>{
+        if ss.len()>1{
+          return Ok(ImageSaveType::Default(Some(String::from(ss[1]))));
+        }
+        Ok(ImageSaveType::Default(None))
+      }
+      "sepc"=>{
+        Ok(ImageSaveType::Sepc(ss[1].to_string()))
+      }
+      "picgo"=>{
+        Ok(ImageSaveType::PicGo(ss[1].to_string()))
+      }
+      _=>Err(s.to_string())
+    }
+  }
+}
+
+impl ToString for ImageSaveType {
+  fn to_string(&self) -> String {
+      match self {
+          ImageSaveType::Default(path) => {
+            if let Some(path)=path{
+              return format!("default,{:?}",path)
+            }
+            "default".into()
+          },
+          ImageSaveType::Sepc(path) => format!("sepc,{:?}",path),
+          ImageSaveType::PicGo(path)=> format!("picgo,{:?}",path)
+      }
+  }
+}
+
+pub fn get_save_image_type()->anyhow::Result<ImageSaveType>{
+  let map=db::config_map()?;
+  let save_type:ImageSaveType=match map.get(config::IMAGE_SAVE_TYPE){
+    Some(t)=>{
+      if let Some(path)=map.get(config::IMAGE_SAVE_PATH){
+        let path=format!("{},{}",t,path);
+        match ImageSaveType::from_str(path.as_str()){
+          Ok(t)=>t,
+          Err(e)=>return Err(anyhow!(e))
+        }
+      }else{
+        ImageSaveType::Default(None)
+      }
+    }
+    None=>{
+      ImageSaveType::Default(None)
+    }
+  };
+  Ok(save_type)
+}
+
+pub fn save_image(md_path:String,image_path:String)->anyhow::Result<()>{
+  let save_type=get_save_image_type()?;
+  match save_type{
+    ImageSaveType::Default(path)=>{
+
+    }
+    ImageSaveType::Sepc(path)=>{
+      
+    }
+    ImageSaveType::PicGo(path)=>{
+      if path.starts_with("http"){
+
+      }else{
+        
+      }
+    }
+  }
   Ok(())
 }

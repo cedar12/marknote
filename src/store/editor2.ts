@@ -20,6 +20,7 @@ import {Image} from '../node/image';
 import Dropcursor from '@tiptap/extension-dropcursor';
 import CharacterCount from '@tiptap/extension-character-count'
 import { useAppStore } from './app';
+import hotkeys from 'hotkeys-js';
 
 const MarknoteTable=Table.extend({
   addInputRules() {
@@ -63,6 +64,20 @@ export const useEditorStore = defineStore('editor2', {
             
             handleDrop:(view,e)=>{
               console.log('drop',view,e);
+            },
+            handleKeyDown(view, event) {
+              const keys=[];
+              const appStore=useAppStore();
+              if(event.metaKey){
+                keys.push(appStore.platform==='darwin'?'command':'win');
+              }else if(event.ctrlKey){
+                keys.push('ctrl');
+              }
+
+              keys.push(event.key);
+              const key=keys.join('+').toLocaleLowerCase();
+              console.log('handleKeyDown',view,event,key);
+              hotkeys.trigger(key,'file');
             },
             handleDOMEvents: {
               drop: (view, e) => { 

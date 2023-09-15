@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
 import { sep } from '@tauri-apps/api/path';
 import { platform } from '@tauri-apps/api/os';
-import { emit, listen } from '@tauri-apps/api/event'
-// import { message } from '@tauri-apps/api/dialog'
+import { emit, listen,TauriEvent } from '@tauri-apps/api/event'
 import { appWindow } from '@tauri-apps/api/window'
 import { useI18n } from "vue-i18n";
 import {useEditorStore} from './editor2';
@@ -68,7 +67,28 @@ export const useAppStore = defineStore('app', {
         console.log('document drop',ev);
       }
 
-      appWindow.listen('tauri://file-drop',(ev)=>{
+      // window.onbeforeunload=(ev)=>{
+      //   confirm('文件未保存，是否退出?', { title: 'Tauri', type: 'warning' }).then(res=>{
+      //     console.log(res);
+      //   });
+      //   ev.preventDefault();
+      // }
+
+      // appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async ()=>{
+      //   const res=await confirm('文件未保存，是否退出?', { title: 'Tauri', type: 'warning' });
+      //   alert(res);
+      // })
+
+
+      // appWindow.onCloseRequested(async (event) => {
+      //   const confirmed = await confirm('Are you sure?');
+      //   if (!confirmed) {
+      //     // user did not confirm closing the window; let's prevent it
+      //     event.preventDefault();
+      //   }
+      // });
+
+      appWindow.listen(TauriEvent.WINDOW_FILE_DROP,(ev)=>{
         console.log('ev',ev);
         const editorStore=useEditorStore();
         // @ts-ignore

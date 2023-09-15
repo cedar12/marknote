@@ -1,5 +1,5 @@
 <template>
-  <el-popover  v-model:visible="visible"  size="small" placement="left" trigger="hover" :persistent="false" popper-class="table-cell-wrapper" >
+  <el-popover  v-model:visible="visible"  size="small" placement="left" trigger="hover" :offset="0" :persistent="false" popper-class="table-cell-wrapper" >
       <template #reference>
         <a :class="props.className" @mousedown="onMouseDown"></a>
       </template>
