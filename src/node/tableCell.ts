@@ -1,12 +1,9 @@
-import tippy from 'tippy.js';
 
 import { mergeAttributes, Node } from '@tiptap/core';
-import { getCellsInColumn, isRowSelected, isTableSelected, selectRow, selectTable } from './utils/table';
+import { getCellsInColumn, isRowSelected, isTableSelected, selectTable } from './utils/table';
 
 import { Plugin, PluginKey } from 'prosemirror-state';
-import { addRowAfter } from 'prosemirror-tables';
 import { Decoration, DecorationSet } from 'prosemirror-view';
-import { addRowBefore } from '@tiptap/pm/tables';
 import TableCellPopover from './wrapper/TableCellPopover.vue';
 import {render,h} from 'vue';
 

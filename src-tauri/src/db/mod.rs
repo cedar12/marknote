@@ -23,6 +23,9 @@ fn init(conn:&Connection){
     )",
     (),
   ).unwrap();
+
+
+
 }
 
 pub fn config_map()->Result<HashMap<String,String>>{
@@ -39,16 +42,28 @@ pub fn config_map()->Result<HashMap<String,String>>{
     let config=config?.clone();
     config_map.insert(config.key, config.value);
   }
+  println!("config map {:?}",config_map);
   Ok(config_map)
 }
 
 pub fn config_set(config_map:HashMap<String,String>)->Result<()>{
   let conn=CONN.lock().unwrap();
+  println!("set config map {:?}",config_map);
   for config in config_map {
-    conn.execute(
-        "UPDATE config SET value=?1 where key=?2",
-        (&config.0, &config.1),
+    let res:usize=conn.query_row(
+      "SELECT count(*) FROM config WHERE key=?1",
+      [config.0.clone()],
+      |row| row.get(0),
     )?;
+    if res>0{
+      conn.execute(
+          "UPDATE config SET value=?1 where key=?2",
+          (&config.0, &config.1),
+      )?;
+    }else{
+      conn.execute("insert into config(key,value) values(?1,?2)", (&config.0,&config.1))?;
+    }
+    
   }
   Ok(())
 }

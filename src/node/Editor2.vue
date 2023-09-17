@@ -9,11 +9,15 @@ import {onMounted,nextTick} from 'vue';
 import {EditorContent,BubbleMenu} from '@tiptap/vue-3';
 import {useEditorStore} from '../store/editor2';
 import LinkMenu from './menu/link/index.vue';
-import {editor,setContent} from '../utils/editor';
+import {createEditor} from '../utils/editor';
 
 const editorStore=useEditorStore();
-  
+const editor=createEditor();
+
 onMounted(()=>{
+
+  
+
   const content=`# marknote
   所见即所得  🎉
   
@@ -48,7 +52,7 @@ onMounted(()=>{
     
   // }, 500);
   nextTick(()=>{
-    setContent(content);
+    editor.value?.commands.setContent(content);
   })
   
 })

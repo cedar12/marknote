@@ -35,6 +35,19 @@ pub async fn save_image(path:&str,base64: &str) ->Result<resp::Resp<String>,Stri
   }
 }
 
+#[tauri::command]
+pub fn save_image_path(md_path:&str,img_path: &str) ->Result<resp::Resp<String>,String> {
+  match utils::save_image(md_path.into(),img_path.into()){
+    Ok(save_path)=>{
+      Ok(resp::ok(save_path,None))
+    },
+    Err(e)=>{
+      println!("{:?}",e);
+      Err("".into())
+    }
+  }
+}
+
 // #[tauri::command]
 // async fn copy_image(path:&str) ->Result<resp::Resp<String>,String> {
 //   match utils::write_image(path.into(),base64.into()){

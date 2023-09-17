@@ -4,9 +4,10 @@ import { platform } from '@tauri-apps/api/os';
 import { emit, listen,TauriEvent } from '@tauri-apps/api/event'
 import { appWindow } from '@tauri-apps/api/window'
 import { useI18n } from "vue-i18n";
-import {useEditorStore} from './editor2';
+import {useEditorStore} from './editor';
 import { KeyBindingBuilder } from '../utils/keyBinding';
 import { isImage } from '../utils';
+import { saveImagePath } from '../api/file';
 
 export const useAppStore = defineStore('app', {
   state:():{
@@ -88,8 +89,9 @@ export const useAppStore = defineStore('app', {
       //   }
       // });
 
-      appWindow.listen(TauriEvent.WINDOW_FILE_DROP,(ev)=>{
+      appWindow.listen(TauriEvent.WINDOW_FILE_DROP,async (ev)=>{
         console.log('ev',ev);
+        if(!this.filepath)return;
         const editorStore=useEditorStore();
         // @ts-ignore
         const {state,view}=editorStore.editor;
@@ -100,11 +102,17 @@ export const useAppStore = defineStore('app', {
           const src = payload[i];
           if(isImage(src)){
             console.log(state,view);
-            const node = schema.nodes.image.create({
-                src: src,
-            });
-            const transaction = view.state.tr.insert(state.selection.anchor, node);
-            view.dispatch(transaction);
+            const resp=await saveImagePath(this.filepath,src) as any;
+            console.log(resp);
+            if(resp.code===0){
+              const node = schema.nodes.image.create({
+                src: resp.info,
+              });
+              console.log(node);
+              const transaction = view.state.tr.insert(state.selection.anchor, node);
+              view.dispatch(transaction);
+            }
+            
           }
         }
         

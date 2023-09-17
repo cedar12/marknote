@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useEditorStore } from './editor2';
+import { useEditorStore } from './editor';
 import { useAppStore } from './app';
 import { appWindow } from '@tauri-apps/api/window';
 import { exit } from '@tauri-apps/api/process';

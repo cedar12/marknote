@@ -25,9 +25,9 @@
               </div>
               <div class="menus  menus-level-3  glass" :class="{ 'right-menu': appStore.platform === 'darwin' }" v-if="key2 === item2.key">
                 <div class="menu-item" :class="{ split: item3.split }" v-for="item3 in item2.children" :key="item3.key">
-                  <div class="menu-content" @click="onClick($event, item3, 3)">
+                  <div class="menu-content" @click="onClick($event, item3, 3)" :title="item3.label">
                     <label class="menu-title">{{ item3.label }}</label>
-                    <span>{{ item3.shortcut }}</span>
+                    <span v-if="item3.shortcut">{{ item3.shortcut }}</span>
                   </div>
 
                 </div>

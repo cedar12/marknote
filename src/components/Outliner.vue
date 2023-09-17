@@ -15,7 +15,7 @@
     </div>
 </template>
 <script lang="ts" setup>
-import {useEditorStore} from '../store/editor2';
+import {useEditorStore} from '../store/editor';
 import {ElTree,ElScrollbar} from 'element-plus';
 // import {Right} from '@icon-park/vue-next';
 

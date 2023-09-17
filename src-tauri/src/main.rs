@@ -31,10 +31,13 @@ fn main() {
             cmd::file::save_md,
             cmd::file::read_md,
             cmd::file::save_image,
+            cmd::file::save_image_path,
             cmd::dialog::save_as_md,
             cmd::dialog::open_file,
             cmd::window::open_window,
             cmd::window::open_preferences,
+            cmd::preferences::save_image_type,
+            cmd::preferences::get_config,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

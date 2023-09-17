@@ -1,7 +1,7 @@
 
 
 import { mergeAttributes, Node } from '@tiptap/core';
-import { getCellsInRow, isColumnSelected, selectColumn } from './utils/table';
+import { getCellsInRow, isColumnSelected } from './utils/table';
 
 // import { Tooltip } from 'components/tooltip';
 import { Plugin, PluginKey } from 'prosemirror-state';

@@ -1,8 +1,10 @@
-use std::f32::consts::E;
+use std::collections::HashMap;
+use std::process::Command;
 use std::str::FromStr;
 use std::{path::PathBuf, fs};
 
 use anyhow::anyhow;
+use reqwest::blocking::Client;
 use tauri::Window;
 use tauri::{api::path, Config};
 
@@ -10,7 +12,7 @@ use std::fs::File;
 use std::io::{ Write};
 use base64::{Engine as _, engine::general_purpose};
 
-use crate::db;
+use crate::{db, resp};
 
 pub mod constant;
 pub use constant::*;
@@ -123,22 +125,60 @@ pub fn get_save_image_type()->anyhow::Result<ImageSaveType>{
   Ok(save_type)
 }
 
-pub fn save_image(md_path:String,image_path:String)->anyhow::Result<()>{
+pub fn save_image(md_path:String,image_path:String)->anyhow::Result<String>{
   let save_type=get_save_image_type()?;
-  match save_type{
+  let save_path=match save_type{
     ImageSaveType::Default(path)=>{
-
+      "".into()
     }
     ImageSaveType::Sepc(path)=>{
-      
+      "".into()
     }
     ImageSaveType::PicGo(path)=>{
       if path.starts_with("http"){
-
+        // "http://127.0.0.1:36677/upload"
+        let res=upload_picgo(path.as_str(),image_path.as_str())?;
+        if !res.success{
+          return Err(anyhow!("Image upload failed"));
+        }
+        res.result[0].clone()
       }else{
-        
+        let program_path=match constant::IS_MACOS{
+          true=>"/Applications/PicGo.app/Contents/MacOS/PicGo",
+          false=>path.as_str()
+        };
+        let output = Command::new(program_path).arg("upload").arg(image_path).output()?;
+        println!("上传PicGo图片 {:?}",output);
+        "".into()
       }
     }
-  }
-  Ok(())
+  };
+  Ok(save_path)
+}
+
+
+fn upload_picgo(url:&str,path:&str)->anyhow::Result<PicGoResp>{
+  let client = Client::new();
+  let mut json=HashMap::new();
+  json.insert("list", vec![path]);
+  let response = client.post(url)
+      .json(&json)
+      .send()?;
+  let resp:PicGoResp=response.json()?;
+  Ok(resp)
+}
+#[derive(Debug,serde::Serialize,serde::Deserialize)]
+pub struct PicGoResp{
+  success:bool,
+  result:Vec<String>,
+}
+
+#[test]
+fn test_mac_picgo(){
+  let image_path="/Users/cengxiangdong/Documents/test.png";
+  let output = Command::new("/Applications/PicGo.app/Contents/MacOS/PicGo").arg(image_path).output().unwrap();
+  
+  println!("上传PicGo图片 {:?}",output);
+  // let res=upload_picgo("http://127.0.0.1:36677/upload", image_path).unwrap();
+  // println!("{:?}",res);
 }

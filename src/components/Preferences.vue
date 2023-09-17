@@ -23,6 +23,7 @@
                     <div style="padding: 0 1rem;">
                         <General v-if="key==='general'"></General>
                         <Editor v-if="key==='editor'"></Editor>
+                        <Image v-if="key==='image'"></Image>
                     </div>
                     
                 </div>
@@ -38,6 +39,8 @@ import {useAppStore} from '../store/app';
 import { appWindow } from '@tauri-apps/api/window';
 import General from './preferences/General.vue';
 import Editor from './preferences/Editor.vue';
+import Image from './preferences/Image.vue';
+
 
 const appStore=useAppStore();
 appStore.init();

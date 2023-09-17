@@ -12,3 +12,7 @@ export function read(path:string){
 export function saveImage(path:string,base64:string){
   return invoke('save_image', { path: path,base64:base64});
 }
+
+export function saveImagePath(mdPath:string,imgPath:string){
+  return invoke('save_image_path', { mdPath,imgPath});
+}

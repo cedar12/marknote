@@ -139,6 +139,15 @@
         width: 200px;
         margin-top: .4rem;
         z-index: 9999;
+        .menu-item{
+          
+          .menu-title{
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
         &.right-menu{
           left: auto;
           right: 245px;
