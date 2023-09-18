@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "update": "node scripts/update.mjs"
   },
   "dependencies": {
     "@icon-park/vue-next": "^1.4.2",
@@ -43,8 +44,10 @@
     "vue-i18n": "^9.3.0"
   },
   "devDependencies": {
+    "@actions/github": "^5.1.1",
     "@tauri-apps/cli": "^1.4.0",
     "@vitejs/plugin-vue": "^4.2.3",
+    "node-fetch": "^3.3.2",
     "rollup-plugin-terser": "^7.0.2",
     "sass": "^1.66.1",
     "typescript": "^5.0.2",

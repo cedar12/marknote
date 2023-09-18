@@ -46,6 +46,8 @@ jobs:
           tagName: v__VERSION__
           releaseName: v__VERSION__
   update:
+    permissions:
+        contents: write
     needs: release
     runs-on: macos-latest
     steps:
@@ -55,7 +57,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v1
         with:
-          node-version: 16
+          node-version: 18
  
       - run: yarn
  
