@@ -13,7 +13,7 @@ edition = "2021"
 tauri-build = { version = "1.4", features = [] }
 
 [dependencies]
-tauri = { version = "1.4", features = [ "window-set-title", "notification-all", "window-set-always-on-top", "clipboard-write-text", "clipboard-read-text", "process-exit", "path-all", "dialog-all", "window-maximize", "window-minimize", "window-unminimize", "window-hide", "window-close", "window-start-dragging", "window-unmaximize", "window-show", "os-all", "shell-open"] }
+tauri = { version = "1.4", features = [ "protocol-all", "window-set-title", "notification-all", "window-set-always-on-top", "clipboard-write-text", "clipboard-read-text", "process-exit", "path-all", "dialog-all", "window-maximize", "window-minimize", "window-unminimize", "window-hide", "window-close", "window-start-dragging", "window-unmaximize", "window-show", "os-all", "shell-open"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 base64 = "0.21.0"
@@ -29,3 +29,11 @@ window-shadows = "0.2.1"
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
+
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+incremental = false
+opt-level = "z"

@@ -2,7 +2,7 @@
   <NodeViewWrapper class="marknote-link" >
     <ElPopover trigger="hover" placement="top">
       <div class="link-wrapper" contenteditable="false" v-if="!isEditable">
-        <ElInput v-model="value" :disabled="!isEditable"></ElInput>
+        <ElInput v-model="value" :disabled="!isEditable" @change="onChange"></ElInput>
       </div>
       <template #reference>
         <NodeViewContent as="a"></NodeViewContent>
@@ -17,7 +17,14 @@ import { NodeViewContent, NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
 const props = defineProps(nodeViewProps);
 
 const isEditable = ref(props.editor.isEditable);
-const value = ref(props.node.attrs.language || '');
+const value = ref(props.node.attrs.href || '');
+
+const onChange=()=>{
+  const {state,view}=props.editor;
+  const {$anchor}=state.selection;
+  const tr=state.tr.setNodeAttribute($anchor.pos,'href',value.value);
+  view.dispatch(tr);
+}
 
 onMounted(()=>{
   console.log('link',props);

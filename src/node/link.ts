@@ -1,5 +1,7 @@
 import { markInputRule } from '@tiptap/core';
 import { Link as BuiltInLink } from '@tiptap/extension-link';
+import { Plugin, PluginKey } from 'prosemirror-state';
+import { Decoration, DecorationSet } from 'prosemirror-view';
 
 const extractHrefFromMatch = (match:RegExpExecArray) => {
   return { href: match.groups?.href };
@@ -56,6 +58,44 @@ export const Link = BuiltInLink.extend({
       },
     };
   },
+
+
+  // @ts-ignore
+  addProseMirrorPlugins() {
+    const { isEditable } = this.editor;
+
+    return [
+      new Plugin({
+        key: new PluginKey('link-control'),
+        props: {
+          decorations: (state) => {
+            if (!isEditable) {
+              return DecorationSet.empty;
+            }
+            const { doc, selection } = state;
+            const decorations: Decoration[] = [Decoration.inline(selection.from,selection.to,{},()=>{
+              const container=document.createElement('a');
+              container.className='link-wrapper';
+              container.innerHTML='aaaaaaa';
+              return container;
+            })];
+            return DecorationSet.create(doc, decorations);
+          },
+        },
+      }),
+      new Plugin({
+        key: new PluginKey('linkHandler'),
+        props: {
+            handleClick: (view,pos, event) => {
+              event.preventDefault();
+              console.log(view,pos);
+            }
+        }
+      }),
+    ];
+  },
+
+
 }).configure({
   openOnClick: false,
   linkOnPaste: true,

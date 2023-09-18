@@ -68,11 +68,15 @@ const editor = useEditor({
       }else if(event.ctrlKey){
         keys.push('ctrl');
       }
-
-      keys.push(event.key);
-      const key=keys.join('+').toLocaleLowerCase();
-      console.log('handleKeyDown',view,event,key);
-      hotkeys.trigger(key,'file');
+      if(event.key==='Process'&&event.ctrlKey){
+        hotkeys.trigger('ctrl+.','file');
+      }else{
+        keys.push(event.key);
+        const key=keys.join('+').toLocaleLowerCase();
+        console.log('handleKeyDown',view,event,key);
+        hotkeys.trigger(key,'file');
+      }
+      
     },
     handleDOMEvents: {
       drop: (view, e) => { 
@@ -83,7 +87,9 @@ const editor = useEditor({
   },
   extensions: [
     StarterKit,
-    Link,
+    Link.configure({
+      openOnClick:false
+    }),
     Heading,
     Strike,
     Focus,
@@ -94,7 +100,7 @@ const editor = useEditor({
     TaskItem,
     TaskList.configure({
       HTMLAttributes: {
-        class: 'marknote-task'
+        class: 'marknote-tasklist'
       },
 
     }),
@@ -126,16 +132,14 @@ const editor = useEditor({
     editorStore.tree = editorStore.getTree();
   },
   onUpdate: () => {
-    console.log('更新outliner data');
     // const editorStore = useEditorStore();
-    // const appStore = useAppStore();
-    // appStore.isSave = false;
+    const appStore = useAppStore();
+    appStore.isSave = false;
     // editorStore.tree = getTree();
     const editorStore = useEditorStore();
     editorStore.tree = editorStore.getTree();
   },
   onCreate: () => {
-    console.log('初始化outliner data');
     // const editorStore = useEditorStore();
     // editorStore.tree = getTree();
     // console.log(editorStore.tree)

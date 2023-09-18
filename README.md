@@ -3,6 +3,7 @@
 🎉A simple `WYSIWYG` markdown editor, available for Linux, macOS and Windows.
 
 ---
+
 1. 非electron
 2. 
 
@@ -17,7 +18,10 @@
 - [ ] 导出markdown
 
 - [ ] 多主题
-- [ ] 
+
+- [ ] 支持`PicGo`
+
+- [ ] 支持图片存储绝对路径或当前Markdown文档路径
 
 ```javascript
 console.log('marknote');

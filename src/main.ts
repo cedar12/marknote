@@ -4,7 +4,8 @@ import App from "./App.vue";
 import Preferences from "./components/Preferences.vue";
 
 import  i18n from "./i18n";
-import 'element-plus/dist/index.css';
+// import 'element-plus/dist/index.css';
+import './scss/element-plus.scss';
 
 import "./scss/editor.scss";
 import './scss/codeTheme.scss';

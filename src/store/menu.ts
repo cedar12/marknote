@@ -9,7 +9,7 @@ import i18n from '../i18n';
 import { openPreferences, openWindow } from '../api/window';
 
 // @ts-ignore
-const { t, } = i18n.global;
+const { t } = i18n.global;
 
 export interface Menu {
   label: string,
@@ -58,7 +58,8 @@ const events = {
   openFile() {
     const editorStore=useEditorStore();
     editorStore.loading=true;
-    openFile(t('openFile')).then((resp:any)=>{
+    const title=t('openFile');
+    openFile(title).then((resp:any)=>{
       if (resp.code === 0) {
         const appStore = useAppStore();
         appStore.setFilepath(resp.info);
@@ -129,6 +130,14 @@ const events = {
 
   quit() {
     exit();
+  },
+
+  about(){
+
+  },
+
+  checkUpdate(){
+    
   },
 
   '*':(item:Menu)=>{

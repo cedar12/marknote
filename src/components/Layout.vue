@@ -21,10 +21,9 @@ import WysiwygEditor from "../node/Editor.vue";
 import ContextMenu from "./contextMenu/index.vue";
 import { ContextMenuItem } from "./contextMenu/useContextMenu";
 import { useI18n } from 'vue-i18n';
-import { useEditorStore } from '../store/editor2';
+import { useEditorStore } from '../store/editor';
 import Outliner from './Outliner.vue';
 import {useAppStore} from '../store/app';
-import { getNodeAtPos } from '../node/utils/node';
 import {readText,writeText} from '@tauri-apps/api/clipboard';
 import {ElScrollbar} from 'element-plus';
 
@@ -46,15 +45,18 @@ const menuItems = ref<ContextMenuItem[]>([
       if(!editor.editor){
         return;
       }
-      const {state,view}=editor.editor;
-      const {$anchor,$from,$to} = state.selection;
-      console.log(view.dom.innerText,$anchor,$from,$to);
-      const node=getNodeAtPos(state,$anchor.pos);
+      
+      const {state}=editor.editor;
+      const {$from,$to} = state.selection;
+      // console.log(view.dom.innerText,$anchor,$from,$to);
+      // const node=getNodeAtPos(state,$anchor.pos);
       // const node=view.nodeDOM(state.selection.$anchor.pos);
       // @ts-ignore
       // const node = editor.editor?.view.;
-      const text=view.dom.innerText.substring($from.pos-1,$to.pos-1);
-      console.log('copy',node, text);
+      // const text=view.dom.innerText.substring($from.pos-1,$to.pos-1);
+      
+      const text=editor.editor.getText().substring($from.pos-1,$to.pos-$to.parentOffset);
+      // console.log('copy',node, text);
       if(text){
         writeText(text);
       }

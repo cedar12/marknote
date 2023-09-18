@@ -9,8 +9,8 @@ export function read(path:string){
 }
 
 
-export function saveImage(path:string,base64:string){
-  return invoke('save_image', { path: path,base64:base64});
+export function saveImage(mdPath:string,filename:string,base64:string){
+  return invoke('save_image', { mdPath: mdPath,filename,base64:base64});
 }
 
 export function saveImagePath(mdPath:string,imgPath:string){

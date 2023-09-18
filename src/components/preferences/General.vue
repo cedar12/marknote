@@ -5,6 +5,14 @@
         <span>{{ t('language') }}</span>
       </div>
       <div class="content">
+        <el-color-picker v-model="saveColor" />
+      </div>
+    </div>
+    <div class="preferences-item">
+      <div class="header">
+        <span>{{ t('language') }}</span>
+      </div>
+      <div class="content">
         <ElSelect v-model="value" @change="onChange">
           <ElOption v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></ElOption>
         </ElSelect>
@@ -17,12 +25,13 @@
 import {ref,watch} from 'vue';
 import {useAppStore} from '../../store/app';
 import {useI18n} from 'vue-i18n';
-import {ElSelect,ElOption} from 'element-plus';
+import {ElSelect,ElOption,ElColorPicker} from 'element-plus';
 
 const appStore=useAppStore();
 const {t,locale} = useI18n();
 
 const value=ref(locale.value);
+const saveColor=ref();
 
 watch(()=>locale.value,()=>{
   value.value=locale.value;

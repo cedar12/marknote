@@ -7,7 +7,7 @@
         </div>
         <el-popover
           placement="bottom-start"
-          :width="40"
+          :width="'auto'"
           :offset="-4"
           trigger="hover"
           popper-class="titlebar-words-popover"
@@ -98,7 +98,7 @@ const mode=ref('words');
         line-height: var(--titleBarHeight);
         text-align: center;
         cursor: pointer;
-        z-index: 3;
+        z-index: 4;
         
         transition: .4s ease-in-out;
         &.sidebar-visbile{
@@ -135,7 +135,7 @@ const mode=ref('words');
     }
 
     .titlebar-info{
-      width:100%;
+      width: 100%;//calc(100% - (var(--titleBarHeight) * 3 + 20px) * 2);
       height: var(--titleBarHeight);
       line-height:  var(--titleBarHeight);
       text-align:center;
@@ -143,10 +143,26 @@ const mode=ref('words');
       box-sizing: border-box;
       overflow: hidden;
       padding: 0 calc(var(--titleBarHeight) * 3 + 20px);
+      background-color: transparent;
       .marknote-title{
+        mix-blend-mode: difference;
+        &::after{
+          content: '';
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          margin-left: 4px;
+          background-color: var(--savedColor,rgb(66, 212, 21));
+          border-radius: 50%;
+        }
         &.not-save::after{
-          content: ' *';
-
+          content: '';
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          margin-left: 4px;
+          background-color: var(--notSavedColor,rgb(224, 185, 10));
+          border-radius: 50%;
         }
       }
     }

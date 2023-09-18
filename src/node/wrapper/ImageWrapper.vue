@@ -3,7 +3,7 @@
     <ElPopover trigger="hover" placement="top">
       
       <template #reference>
-        <el-image :src="value" :preview-src-list="srcList" :width="width" :height="height" :alt="alt" :title="title">
+        <el-image :src="imgSrc" :preview-src-list="srcList" :width="width" :height="height" :alt="alt" :title="title">
           <template #error>
             <div class="image-slot">
               <el-icon><ImageFiles fill="#dfdfdf"/></el-icon>
@@ -19,10 +19,11 @@
   </NodeViewWrapper>
 </template>
 <script lang="ts" setup>
-import { ref,onMounted } from 'vue';
+import { ref,onMounted,watch } from 'vue';
 import {ImageFiles} from '@icon-park/vue-next';
 import {ElInput,ElPopover,ElImage,ElIcon} from 'element-plus';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
+import { convertFileSrc } from '@tauri-apps/api/tauri';
 const props = defineProps(nodeViewProps);
 // ![图片](./vite.svg)
 const { hasTrigger, error, src, alt, title, width, height, textAlign } = props.node.attrs;
@@ -30,14 +31,29 @@ const { hasTrigger, error, src, alt, title, width, height, textAlign } = props.n
 const isEditable = ref(props.editor.isEditable);
 const value = ref(src || '');
 
-const srcList=[value.value];
+const imgSrc=ref('');
+watch(()=>value.value,()=>{
+  if(value.value.startsWith('http')){
+    imgSrc.value=value.value;
+  }else{
+    imgSrc.value=convertFileSrc(value.value);
+  }
+  srcList.value[0]=imgSrc.value;
+})
+
+const srcList=ref([imgSrc.value]);
 
 const setImageSrc=()=>{
   props.updateAttributes({src:value.value});
 }
 
 onMounted(()=>{
-  console.log('image',props,hasTrigger,error,textAlign);
+  if(value.value.startsWith('http')){
+    imgSrc.value=value.value;
+  }else{
+    imgSrc.value=convertFileSrc(value.value);
+  }
+  srcList.value[0]=imgSrc.value;
 })
 </script>
 

@@ -3,6 +3,7 @@ import { VueNodeViewRenderer } from '@tiptap/vue-3';
 import ImageWrapper from './wrapper/ImageWrapper.vue';
 import { Plugin, PluginKey } from 'prosemirror-state';
 import { saveImage } from '../api/file';
+import {useAppStore} from '../store/app';
 
 // @ts-ignore
 const resolveImageEl = (element:HTMLElement):HTMLImageElement => (element.nodeName === 'IMG' ? element : element.querySelector('img'));
@@ -87,6 +88,7 @@ export const Image = BuiltInImage.extend({
             key: new PluginKey('imageHandler'),
             props: {
                 handlePaste: (view, event) => {
+                    const appStore=useAppStore();
                     // @ts-ignore
                     const items = (event.clipboardData || event.originalEvent.clipboardData).items;
                     for (const item of items) {
@@ -99,12 +101,18 @@ export const Image = BuiltInImage.extend({
                             reader.readAsDataURL(image);
                             reader.onload = (e) => {
                               const base64=e.target?.result;
-                              console.log('reader image',base64);
-                              if(base64){
-                                saveImage("./"+image.name,base64 as string).then((resp:any)=>{
+                              // console.log('reader image',base64);
+                              if(base64&&appStore.filepath){
+                                saveImage(appStore.filepath,image.name,base64 as string).then((resp:any)=>{
                                   if(resp.code===0){
+                                    let src=resp.info;
+                                    // if(src.startsWith('http://')||src.startsWith('https://')){
+
+                                    // }else{
+                                    //   src='img:///'+src;
+                                    // }
                                     const node = schema.nodes.image.create({
-                                        src: resp.info,
+                                        src: src,
                                         alt: image.name
                                     });
                                     const transaction = view.state.tr.replaceSelectionWith(node);

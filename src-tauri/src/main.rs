@@ -3,7 +3,9 @@
 #[macro_use]
 extern crate lazy_static;
 
-use tauri::Manager;
+use std::vec;
+
+use tauri::{Manager, http::ResponseBuilder};
 
 use crate::utils::{set_shadow, IS_MACOS};
 

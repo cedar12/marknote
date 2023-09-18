@@ -102,15 +102,19 @@ export const useAppStore = defineStore('app', {
           const src = payload[i];
           if(isImage(src)){
             console.log(state,view);
-            const resp=await saveImagePath(this.filepath,src) as any;
-            console.log(resp);
-            if(resp.code===0){
-              const node = schema.nodes.image.create({
-                src: resp.info,
-              });
-              console.log(node);
-              const transaction = view.state.tr.insert(state.selection.anchor, node);
-              view.dispatch(transaction);
+            try{
+              const resp=await saveImagePath(this.filepath,src) as any;
+              console.log(resp);
+              if(resp.code===0){
+                const node = schema.nodes.image.create({
+                  src: resp.info,
+                });
+                console.log(node);
+                const transaction = view.state.tr.insert(state.selection.anchor, node);
+                view.dispatch(transaction);
+              }
+            }catch(e){
+              console.error(e);
             }
             
           }

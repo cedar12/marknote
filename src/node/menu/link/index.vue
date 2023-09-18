@@ -1,6 +1,6 @@
 <template>
     <div v-if="props.editor?.isActive('link')">
-        {{ getLinkNode() }}
+        <!-- {{ getLinkNode() }} -->
         <ElInput v-model="href" @change="onUpdate"></ElInput>
     </div>
 </template>
@@ -26,11 +26,18 @@ const getLinkNode=()=>{
     // @ts-ignore
     const mark=findMarkPosition(state,state.config.schema.marks.link,from,to);
     // const mark=''
-    console.log(state,mark,state.selection.$from.marks());
+    // console.log(state,mark,state.selection.$from.marks());
 }
 
-const onUpdate=(v:any)=>{
-    console.log(v);
+const onUpdate=()=>{
+    // const {state,view}=props.editor;
+    // const {$from}=state.selection;
+    console.log(href.value);
+    props.editor.chain().focus().setLink({href:href.value})
+    // props.editor.chain().focus().updateAttributes(state.schema.marks.link,{href:href.value});
+    // state.tr.setNodeMarkup($from.pos,state.schema.marks.link,{href:href.value});
+    // const tr=state.tr.setNodeAttribute($from.pos,'href',href.value);
+    // view.dispatch(tr);
 }
 
 </script>

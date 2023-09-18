@@ -30,6 +30,10 @@ export default {
   outliner:'大纲',
   folder:'文件夹',
 
+  help: '帮助',
+  about: '关于',
+  checkUpdate: '检查更新',
+
   codeTheme:'代码高亮主题',
   language:'语言',
 
@@ -38,6 +42,8 @@ export default {
   theme:'主题',
   image: '图片',
   
+  default: '默认',
+  sepc: '指定',
 
 
   words:'词',

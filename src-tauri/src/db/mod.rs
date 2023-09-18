@@ -48,17 +48,17 @@ pub fn config_map()->Result<HashMap<String,String>>{
 
 pub fn config_set(config_map:HashMap<String,String>)->Result<()>{
   let conn=CONN.lock().unwrap();
-  println!("set config map {:?}",config_map);
+  // println!("set config map {:?}",config_map);
   for config in config_map {
     let res:usize=conn.query_row(
       "SELECT count(*) FROM config WHERE key=?1",
       [config.0.clone()],
       |row| row.get(0),
     )?;
-    if res>0{
+    if res>0 {
       conn.execute(
           "UPDATE config SET value=?1 where key=?2",
-          (&config.0, &config.1),
+          (&config.1, &config.0),
       )?;
     }else{
       conn.execute("insert into config(key,value) values(?1,?2)", (&config.0,&config.1))?;

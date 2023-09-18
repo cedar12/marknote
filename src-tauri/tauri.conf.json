@@ -52,6 +52,11 @@
       "path": {
         "all": true
       },
+      "protocol": {
+        "all": true,
+        "asset": true,
+        "assetScope": ["**"]
+      },
       "notification": {
         "all": true
       }
@@ -86,6 +91,16 @@
         "titleBarStyle": "Overlay",
         "visible": false
       }
-    ]
+    ],
+    "updater": {
+      "active": false,
+      "dialog": true,
+      "pubkey": "",
+      "endpoints": ["https://cedar12.github.io/marknote/install.json"],
+      "windows": {
+        "installMode": "passive",
+        "installerArgs": []
+      }
+    }
   }
 }

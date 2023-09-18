@@ -29,6 +29,10 @@ export default {
   outliner:'Outliner',
   folder:'Folder',
 
+  help: 'Help',
+  about: 'About',
+  checkUpdate: 'Check for updates',
+
   codeTheme:'Code Highlight Theme',
   language:'Language',
 
@@ -37,6 +41,8 @@ export default {
   theme:'Theme',
   image: 'Image',
 
+  default: 'Default',
+  sepc: 'Specify',
 
   words:'Words',
   chars:'Chars',

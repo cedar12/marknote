@@ -197,7 +197,22 @@ const loadMenuData=()=>{
           type:'checkbox'
         }
       ]
+    },
+    {
+      label: t('help'),
+      key: 'help',
+      children: [
+        {
+          label: t('about'),
+          key: 'about',
+        },
+        {
+          label: t('checkUpdate'),
+          key: 'checkUpdate',
+        }
+      ]
     }
+
   ];
 
   nextTick(()=>{
