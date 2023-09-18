@@ -95,8 +95,8 @@
     "updater": {
       "active": false,
       "dialog": true,
-      "pubkey": "",
-      "endpoints": ["https://cedar12.github.io/marknote/install.json"],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM2MUE1NDQyQTJDNkFBREIKUldUYnFzYWlRbFFhTmtJU3NoL1o3UVp4ZERqbEV0SXNQaFVBUDZSUVR4Y1Y0ejJLRFdqMkZLQnUK",
+      "endpoints": ["https://github.com/cedar12/marknote/releases/download/updater/update.json"],
       "windows": {
         "installMode": "passive",
         "installerArgs": []

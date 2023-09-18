@@ -66,9 +66,14 @@ const appStore = useAppStore();
             padding: 0 calc(var(--barHeight) * 3);
 
             .marknote-title {
-                &.not-save::after {
-                    content: ' *';
-
+                &.not-save::after{
+                    content: '';
+                    display: inline-block;
+                    width: 10px;
+                    height: 10px;
+                    margin-left: 4px;
+                    background-color:var(--savedColor,rgb(66, 212, 21));
+                    border-radius: 50%;
                 }
             }
         }

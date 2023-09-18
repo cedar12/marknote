@@ -146,22 +146,13 @@ const mode=ref('words');
       background-color: transparent;
       .marknote-title{
         mix-blend-mode: difference;
-        &::after{
-          content: '';
-          display: inline-block;
-          width: 10px;
-          height: 10px;
-          margin-left: 4px;
-          background-color: var(--savedColor,rgb(66, 212, 21));
-          border-radius: 50%;
-        }
         &.not-save::after{
           content: '';
           display: inline-block;
           width: 10px;
           height: 10px;
           margin-left: 4px;
-          background-color: var(--notSavedColor,rgb(224, 185, 10));
+          background-color:var(--savedColor,rgb(66, 212, 21));
           border-radius: 50%;
         }
       }
