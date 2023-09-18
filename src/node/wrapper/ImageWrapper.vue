@@ -26,7 +26,7 @@ import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 const props = defineProps(nodeViewProps);
 // ![图片](./vite.svg)
-const { hasTrigger, error, src, alt, title, width, height, textAlign } = props.node.attrs;
+const {  src, alt, title, width, height } = props.node.attrs;
 
 const isEditable = ref(props.editor.isEditable);
 const value = ref(src || '');
