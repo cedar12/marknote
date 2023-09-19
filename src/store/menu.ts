@@ -186,7 +186,7 @@ const events = {
     fn().then((unlisten:any)=>{
       unlisten();
     }).catch(error=>{
-      alert('更新错误');
+      alert(error);
       console.error(error);
     })
     
