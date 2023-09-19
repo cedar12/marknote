@@ -39,6 +39,9 @@ export default {
 
   editor:'编辑器',
   general: '常规',
+
+  notSaveStatusBackground:'未保存状态点颜色',
+
   theme:'主题',
   image: '图片',
   

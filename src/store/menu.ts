@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { useEditorStore } from './editor';
 import { useAppStore } from './app';
 import { appWindow } from '@tauri-apps/api/window';
+import { ask } from '@tauri-apps/api/dialog';
 import { exit } from '@tauri-apps/api/process';
 import {openFile,saveAs} from '../api/dialog';
 import {read, save} from '../api/file';
@@ -154,17 +155,21 @@ const events = {
           const { shouldUpdate, manifest } = await checkUpdate()
         
           if (shouldUpdate) {
+            
             // You could show a dialog asking the user if they want to install the update here.
-            console.log(
-              `Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
-            )
-        
-            // Install the update. This will also restart the app on Windows!
-            await installUpdate()
-        
-            // On macOS and Linux you will need to restart the app manually.
-            // You could use this step to display another confirmation dialog.
-            await relaunch()
+            const yes=await ask(`marknote ${manifest?.version} 现在可用，是否现在安装？\n发布时间: ${manifest?.date}\n说明: ${manifest?.body}`,'marknote的新版本可用！');
+            if(yes){
+              console.log(
+                `Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
+              )
+          
+              // Install the update. This will also restart the app on Windows!
+              await installUpdate()
+          
+              // On macOS and Linux you will need to restart the app manually.
+              // You could use this step to display another confirmation dialog.
+              await relaunch()
+            }
           }
         } catch (error) {
           unlisten();

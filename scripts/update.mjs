@@ -27,11 +27,18 @@ const updateData = {
  
 const octokit = getOctokit(process.env.GITHUB_TOKEN);
 const options = { owner: context.repo.owner, repo: context.repo.repo };
+
+const isProxy=true;
  
+//https://ghproxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.1/latest.json
+
 const { data: release } = await octokit.rest.repos.getLatestRelease(options);
 updateData.name = release.tag_name;
 // eslint-disable-next-line camelcase
 for (const { name, browser_download_url } of release.assets) {
+  if(isProxy){
+    browser_download_url='https://ghproxy.com/'+browser_download_url;
+  }
   if (name.endsWith('.msi.zip')) {
     // eslint-disable-next-line camelcase
     updateData.platforms.win64.url = browser_download_url;

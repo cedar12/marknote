@@ -1961,7 +1961,7 @@ dependencies = [
 
 [[package]]
 name = "marknote"
-version = "0.0.2"
+version = "0.0.1"
 dependencies = [
  "anyhow",
  "base64 0.21.3",

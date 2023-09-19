@@ -133,6 +133,14 @@ export const useAppStore = defineStore('app', {
         editorStore.codeTheme=value;
         localStorage.setItem("codeTheme", value);
       });
+      listen<string>('unsavedColor', async (event) => {
+        const value=event.payload;
+        localStorage.setItem("unsavedColor", value);
+        document.documentElement.style.setProperty('--notSavedColor',value);
+        
+      });
+
+      emit('unsavedColor',localStorage.getItem('unsavedColor')||'rgb(66, 212, 21)');
     }
   }
 })

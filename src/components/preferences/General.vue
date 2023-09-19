@@ -2,10 +2,10 @@
   <div class="preferences-general">
     <div class="preferences-item">
       <div class="header">
-        <span>{{ t('language') }}</span>
+        <span>{{ t('notSaveStatusBackground') }}</span>
       </div>
       <div class="content">
-        <el-color-picker v-model="saveColor" />
+        <el-color-picker v-model="unsavedColor" @change="(value)=>onChange('unsavedColor',value)" />
       </div>
     </div>
     <div class="preferences-item">
@@ -13,7 +13,7 @@
         <span>{{ t('language') }}</span>
       </div>
       <div class="content">
-        <ElSelect v-model="value" @change="onChange">
+        <ElSelect v-model="value" @change="(value)=>onChange('language',value)">
           <ElOption v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></ElOption>
         </ElSelect>
       </div>
@@ -31,7 +31,7 @@ const appStore=useAppStore();
 const {t,locale} = useI18n();
 
 const value=ref(locale.value);
-const saveColor=ref();
+const unsavedColor=ref(localStorage.getItem('unsavedColor')||'rgb(66, 212, 21)');
 
 watch(()=>locale.value,()=>{
   value.value=locale.value;
@@ -48,12 +48,8 @@ const options=[
   }
 ];
 
-const onChange=(value:any)=>{
-  // const value=e.target['value'];
-  // locale.value=value;
-  // localStorage.setItem("lang", value);
-  console.log('change lang',value);
-  appStore.emit('language',value);
+const onChange=(event:string,value:any)=>{
+  appStore.emit(event,value);
 }
 
 </script>

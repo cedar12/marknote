@@ -152,7 +152,7 @@ const mode=ref('words');
           width: 10px;
           height: 10px;
           margin-left: 4px;
-          background-color:var(--savedColor,rgb(66, 212, 21));
+          background-color:var(--notSavedColor,rgb(66, 212, 21));
           border-radius: 50%;
         }
       }

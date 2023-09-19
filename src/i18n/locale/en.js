@@ -38,6 +38,9 @@ export default {
 
   editor:'Editor',
   general: 'General',
+
+  notSaveStatusBackground:'Unsaved State Point Color',
+
   theme:'Theme',
   image: 'Image',
 

@@ -18,6 +18,8 @@
   --menuBorderColor: #dfdfdf;
   --menuBackgroundColorHover: #e8e8e9b7;
   --menuBackgroundColorGlass: rgba(238, 238, 238, 0.8);
+
+  --notSavedColor:rgb(66, 212, 21);
 }
 
 body{
