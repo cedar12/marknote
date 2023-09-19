@@ -35,7 +35,7 @@ const isProxy=true;
 const { data: release } = await octokit.rest.repos.getLatestRelease(options);
 updateData.name = release.tag_name;
 // eslint-disable-next-line camelcase
-for (const { name, browser_download_url } of release.assets) {
+for (let { name, browser_download_url } of release.assets) {
   if(isProxy){
     browser_download_url='https://ghproxy.com/'+browser_download_url;
   }
