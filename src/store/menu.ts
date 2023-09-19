@@ -7,6 +7,12 @@ import {openFile,saveAs} from '../api/dialog';
 import {read, save} from '../api/file';
 import i18n from '../i18n';
 import { openPreferences, openWindow } from '../api/window';
+import {
+  checkUpdate,
+  installUpdate,
+  onUpdaterEvent,
+} from '@tauri-apps/api/updater';
+import { relaunch } from '@tauri-apps/api/process';
 
 // @ts-ignore
 const { t } = i18n.global;
@@ -137,7 +143,45 @@ const events = {
   },
 
   checkUpdate(){
+    const fn=()=>{
+      return new Promise(async (resolve,reject)=>{
+        const unlisten = await onUpdaterEvent(({ error, status }) => {
+          // This will log all updater events, including status updates and errors.
+          console.log('Updater event', error, status)
+        })
+        
+        try {
+          const { shouldUpdate, manifest } = await checkUpdate()
+        
+          if (shouldUpdate) {
+            // You could show a dialog asking the user if they want to install the update here.
+            console.log(
+              `Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
+            )
+        
+            // Install the update. This will also restart the app on Windows!
+            await installUpdate()
+        
+            // On macOS and Linux you will need to restart the app manually.
+            // You could use this step to display another confirmation dialog.
+            await relaunch()
+          }
+        } catch (error) {
+          unlisten();
+          reject(error);
+        }
+        // you need to call unlisten if your handler goes out of scope, for example if the component is unmounted.
+        // unlisten()
+        resolve(unlisten);
+      })
+    }
+    fn().then((unlisten:any)=>{
+      unlisten();
+    }).catch(error=>{
+      console.error(error);
+    })
     
+    // appWindow.emit('tauri://update');
   },
 
   '*':(item:Menu)=>{
