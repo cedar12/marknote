@@ -1,3 +1,4 @@
+import { Component, ComputedOptions, MethodOptions } from "vue";
 
 
 
@@ -18,6 +19,16 @@ export function getUrlParams(url:string) {
 }
 
 export const isPreferences=getUrlParams(window.location.href)?.preferences==='open';
+
+export function component(app:Component<any, any, any, ComputedOptions, MethodOptions>,components:{[key:string]:Component<any, any, any, ComputedOptions, MethodOptions>}){
+	if(getUrlParams(window.location.href)?.preferences==='open'){
+		return components['Preferences'];
+	}
+	if(getUrlParams(window.location.href)?.about==='open'){
+		return components['About'];
+	}
+	return app;
+}
 
 const IMAGE_EXT=['.png','.jpg','.gif','.ico','.bmp'];
 export function isImage(path:string){

@@ -33,7 +33,7 @@ const value = ref(src || '');
 
 const imgSrc=ref('');
 watch(()=>value.value,()=>{
-  if(value.value.startsWith('http')){
+  if(value.value.startsWith('http://')||value.value.startsWith('https://')){
     imgSrc.value=value.value;
   }else{
     imgSrc.value=convertFileSrc(value.value);

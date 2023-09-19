@@ -39,10 +39,17 @@ export default {
   editor:'Editor',
   general: 'General',
 
+  notice: 'Notice',
+  granted: 'Granted',
+  ungranted: 'Ungranted',
+  requestPermission: 'Request Permission',
   notSaveStatusBackground:'Unsaved State Point Color',
 
   theme:'Theme',
   image: 'Image',
+
+  saveImageType: 'Save Inserting Image',
+  saveImagePath:'Save Image Path',
 
   default: 'Default',
   sepc: 'Specify',

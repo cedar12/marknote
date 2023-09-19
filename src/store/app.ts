@@ -8,10 +8,11 @@ import {useEditorStore} from './editor';
 import { KeyBindingBuilder } from '../utils/keyBinding';
 import { isImage } from '../utils';
 import { saveImagePath } from '../api/file';
+import { isPermissionGranted, requestPermission } from '@tauri-apps/api/notification';
 
 export const useAppStore = defineStore('app', {
   state:():{
-    title:string,
+    title:string|null,
     filepath:string|null,
     isSave:boolean,
     recentFiles:string[],
@@ -21,8 +22,9 @@ export const useAppStore = defineStore('app', {
     },
     keyBinding:KeyBindingBuilder|null,
     menuKey:number,
+    permissionGranted:boolean,
   }=>({
-    title:'marknote',
+    title:null,
     filepath: null,
     isSave:false,
     platform:null,
@@ -32,6 +34,7 @@ export const useAppStore = defineStore('app', {
     },
     keyBinding:null,
     menuKey:0,
+    permissionGranted:false,
   }),
   actions:{
     setFilepath(filepath:string|null){
@@ -57,40 +60,20 @@ export const useAppStore = defineStore('app', {
     init(){
       appWindow.show();
       const { locale } = useI18n();
-      platform().then(platform=>{
+      platform().then(async platform=>{
         this.platform=platform;
         this.keyBinding=new KeyBindingBuilder();
         this.menuKey=this.menuKey+1;
+
+        this.permissionGranted = await isPermissionGranted();
+        if (!this.permissionGranted) {
+          const permission = await requestPermission();
+          this.permissionGranted = permission === 'granted';
+        }
       });
 
-
-      document.ondrop=(ev)=>{
-        console.log('document drop',ev);
-      }
-
-      // window.onbeforeunload=(ev)=>{
-      //   confirm('文件未保存，是否退出?', { title: 'Tauri', type: 'warning' }).then(res=>{
-      //     console.log(res);
-      //   });
-      //   ev.preventDefault();
-      // }
-
-      // appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async ()=>{
-      //   const res=await confirm('文件未保存，是否退出?', { title: 'Tauri', type: 'warning' });
-      //   alert(res);
-      // })
-
-
-      // appWindow.onCloseRequested(async (event) => {
-      //   const confirmed = await confirm('Are you sure?');
-      //   if (!confirmed) {
-      //     // user did not confirm closing the window; let's prevent it
-      //     event.preventDefault();
-      //   }
-      // });
-
       appWindow.listen(TauriEvent.WINDOW_FILE_DROP,async (ev)=>{
-        console.log('ev',ev);
+        // console.log('ev',ev);
         if(!this.filepath)return;
         const editorStore=useEditorStore();
         // @ts-ignore

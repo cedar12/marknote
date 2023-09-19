@@ -7,13 +7,14 @@ import { exit } from '@tauri-apps/api/process';
 import {openFile,saveAs} from '../api/dialog';
 import {read, save} from '../api/file';
 import i18n from '../i18n';
-import { openPreferences, openWindow } from '../api/window';
+import { openAbout, openPreferences, openWindow } from '../api/window';
 import {
   checkUpdate,
   installUpdate,
   onUpdaterEvent,
 } from '@tauri-apps/api/updater';
 import { relaunch } from '@tauri-apps/api/process';
+import { sendNotification } from '@tauri-apps/api/notification';
 
 // @ts-ignore
 const { t } = i18n.global;
@@ -140,7 +141,7 @@ const events = {
   },
 
   about(){
-
+    openAbout();
   },
 
   checkUpdate(){
@@ -170,6 +171,8 @@ const events = {
               // You could use this step to display another confirmation dialog.
               await relaunch()
             }
+          }else{
+            sendNotification({ title: '检查更新', body: '已经是最新版本!' });
           }
         } catch (error) {
           unlisten();
@@ -183,6 +186,7 @@ const events = {
     fn().then((unlisten:any)=>{
       unlisten();
     }).catch(error=>{
+      alert('更新错误');
       console.error(error);
     })
     

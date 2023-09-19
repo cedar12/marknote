@@ -2,6 +2,26 @@
   <div class="preferences-general">
     <div class="preferences-item">
       <div class="header">
+        <span>{{ t('notice') }}</span>
+      </div>
+      <div class="content">
+        <el-tag v-if="appStore.permissionGranted" type="success" effect="dark" >
+          {{ t('granted') }}
+        </el-tag>
+        <el-tooltip  v-else
+        effect="dark"
+        :content="t('requestPermission')"
+        placement="top-start"
+      >
+        <el-tag type="warning" effect="dark" @click="requestPermission">
+          {{ t('ungranted') }}
+        </el-tag>
+      </el-tooltip>
+        
+      </div>
+    </div>
+    <div class="preferences-item">
+      <div class="header">
         <span>{{ t('notSaveStatusBackground') }}</span>
       </div>
       <div class="content">
@@ -25,7 +45,8 @@
 import {ref,watch} from 'vue';
 import {useAppStore} from '../../store/app';
 import {useI18n} from 'vue-i18n';
-import {ElSelect,ElOption,ElColorPicker} from 'element-plus';
+import {ElSelect,ElOption,ElColorPicker,ElTag,ElTooltip} from 'element-plus';
+import { requestPermission } from '@tauri-apps/api/notification';
 
 const appStore=useAppStore();
 const {t,locale} = useI18n();

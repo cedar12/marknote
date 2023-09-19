@@ -28,7 +28,7 @@
         
       </div>
       <div data-tauri-drag-region class="titlebar-info">
-        <span data-tauri-drag-region class="marknote-title" :class="{'not-save':appStore.isSave!==true}" :title="appStore.filepath||''">{{ appStore.title||'marknote' }}</span>
+        <span data-tauri-drag-region class="marknote-title" :class="{'not-save':appStore.isSave!==true}" :title="appStore.filepath||''">{{ appStore.title||'Untitled.md' }}</span>
       </div>
       <div class="titlebar-buttons">
         <div class="titlebar-button" @click="appWindow.minimize()">

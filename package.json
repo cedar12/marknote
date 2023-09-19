@@ -30,6 +30,7 @@
     "@tiptap/starter-kit": "^2.1.7",
     "@tiptap/vue-3": "^2.1.7",
     "@types/turndown": "^5.0.1",
+    "deep-equal": "^2.2.2",
     "element-plus": "^2.3.12",
     "highlight.js": "^11.8.0",
     "hotkeys-js": "^3.12.0",

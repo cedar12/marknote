@@ -38,6 +38,7 @@ fn main() {
             cmd::dialog::open_file,
             cmd::window::open_window,
             cmd::window::open_preferences,
+            cmd::window::open_about,
             cmd::preferences::save_image_type,
             cmd::preferences::get_config,
         ])

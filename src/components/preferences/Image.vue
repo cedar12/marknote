@@ -2,26 +2,30 @@
   <div class="preferences-image">
     <div class="preferences-item">
       <div class="header">
-        <span>{{ t('image') }}</span>
+        <span>{{ t('saveImageType') }}</span>
       </div>
       <div class="content">
         <ElSelect v-model="saveType" @change="onChange" :key="locale">
           <ElOption v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></ElOption>
         </ElSelect>
-        <span class="save-image-type-tip">
-
-        </span>
       </div>
 
     </div>
-    <div class="preferences-item">
+    <div class="preferences-item" v-if="saveType!=='picgo'">
       <div class="header">
-        <span>{{ t('image') }}</span>
+        <span>{{ t('saveImagePath') }}</span>
       </div>
       <div class="content">
         <ElInput type="primary" v-model="path" @change="onChangePath"></ElInput>
       </div>
-
+    </div>
+    <div class="preferences-item" v-else>
+      <div class="header">
+        <span>{{ t('saveImagePath') }}</span>
+      </div>
+      <div class="content">
+        <ElInput type="primary" v-model="path" @change="onChangePath"></ElInput>
+      </div>
     </div>
     <ElButton type="primary" @click="onSave">保存</ElButton>
 

@@ -40,10 +40,18 @@ export default {
   editor:'编辑器',
   general: '常规',
 
+  notice: '通知',
+  granted: '已授权',
+  ungranted: '未授权',
+  requestPermission: '请求授权',
+
   notSaveStatusBackground:'未保存状态点颜色',
 
   theme:'主题',
   image: '图片',
+
+  saveImageType: '保存插入图片',
+  saveImagePath:'保存图片的路径',
   
   default: '默认',
   sepc: '指定',

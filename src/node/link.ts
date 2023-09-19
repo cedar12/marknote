@@ -65,6 +65,7 @@ export const Link = BuiltInLink.extend({
     const { isEditable } = this.editor;
 
     return [
+      ...this.parent(),
       new Plugin({
         key: new PluginKey('link-control'),
         props: {
@@ -86,9 +87,17 @@ export const Link = BuiltInLink.extend({
       new Plugin({
         key: new PluginKey('linkHandler'),
         props: {
+            
             handleClick: (view,pos, event) => {
               event.preventDefault();
-              console.log(view,pos);
+              event.stopImmediatePropagation();
+              const {dom,offset}=view.domAtPos(pos);
+              // const marks=this.editor.state.selection.$head.marks();
+              console.log('link',dom,event);
+              if(event.ctrlKey&&dom.parentElement.nodeName==='A'){
+                window.open(dom.parentElement.href,'_blank');
+              }
+              return false;
             }
         }
       }),
@@ -100,4 +109,7 @@ export const Link = BuiltInLink.extend({
   openOnClick: false,
   linkOnPaste: true,
   autolink: false,
+  HTMLAttributes:{
+    target:'',
+  }
 });

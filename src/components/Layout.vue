@@ -54,8 +54,8 @@ const menuItems = ref<ContextMenuItem[]>([
       // @ts-ignore
       // const node = editor.editor?.view.;
       // const text=view.dom.innerText.substring($from.pos-1,$to.pos-1);
-      
-      const text=editor.editor.getText().substring($from.pos-1,$to.pos-$to.parentOffset);
+      const text=state.doc.textBetween($from.pos,$to.pos,'\n','\t');
+      // const text=editor.editor.getText().substring($from.pos-1,$to.pos-$to.parentOffset);
       // console.log('copy',node, text);
       if(text){
         writeText(text);

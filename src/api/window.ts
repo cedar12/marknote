@@ -7,3 +7,6 @@ export function openWindow(){
 export function openPreferences(){
   return invoke('open_preferences');
 }
+export function openAbout(){
+  return invoke('open_about');
+}

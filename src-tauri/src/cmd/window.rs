@@ -96,10 +96,60 @@ pub async fn open_preferences(handle: tauri::AppHandle){
             .visible(false)
             .build()
             .unwrap();
-            #[cfg(debug_assertions)]
-            {
-                win.open_devtools();
-            }
+        }
+    }
+}
+
+
+
+#[cfg(not(target_os = "macos"))]
+#[tauri::command]
+pub async fn open_about(handle: tauri::AppHandle) {
+    match handle.get_window("about") {
+        Some(window) => {
+            window.set_focus().unwrap();
+        }
+        None => {
+            let win = tauri::WindowBuilder::new(
+                &handle,
+                "about", /* the unique window label */
+                WindowUrl::App("index.html?about=open".into()),
+            )
+            .decorations(IS_MACOS)
+            // .min_inner_size(300f64, 200f64)
+            .inner_size(350f64,250f64)
+            .resizable(false)
+            .visible(false)
+            .center()
+            .build()
+            .unwrap();
+            set_shadow(win);
+        }
+    }
+}
+
+#[cfg(target_os = "macos")]
+#[tauri::command]
+pub async fn open_about(handle: tauri::AppHandle){
+    match handle.get_window("about") {
+        Some(window) => {
+            window.set_focus().unwrap();
+        }
+        None => {
+            let win = tauri::WindowBuilder::new(
+                &handle,
+                "about", /* the unique window label */
+                WindowUrl::App("index.html?about=open".into()),
+            )
+            .decorations(IS_MACOS)
+            .inner_size(350f64,250f64)
+            .resizable(false)
+            .title_bar_style(tauri::TitleBarStyle::Overlay)
+            .hidden_title(true)
+            .center()
+            .visible(false)
+            .build()
+            .unwrap();
         }
     }
 }

@@ -6,31 +6,33 @@
             </div>
         </div>
     </teleport>
-    <div class="marknote-preferences">
-        <div class="preferences">
-            <div class="left">
-                <div class="preferences-content">
-                    <div class="window-title">{{ t('preferences') }}</div>
-                    <div class="preferences-router">
-                        <div v-for="item in options" :key="item" class="router-item" :class="{active:key===item}" @click="handleClick(item)">
-                            <span>{{ t(item) }}</span>
+    <ElConfigProvider :locale="elLocale">
+        <div class="marknote-preferences">
+            <div class="preferences">
+                <div class="left">
+                    <div class="preferences-content">
+                        <div class="window-title">{{ t('preferences') }}</div>
+                        <div class="preferences-router">
+                            <div v-for="item in options" :key="item" class="router-item" :class="{active:key===item}" @click="handleClick(item)">
+                                <span>{{ t(item) }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="right">
-                <div class="preferences-content">
-                    <div style="padding: 0 1rem;">
-                        <General v-if="key==='general'"></General>
-                        <Editor v-if="key==='editor'"></Editor>
-                        <Image v-if="key==='image'"></Image>
+                <div class="right">
+                    <div class="preferences-content">
+                        <div style="padding: 0 1rem;">
+                            <General v-if="key==='general'"></General>
+                            <Editor v-if="key==='editor'"></Editor>
+                            <Image v-if="key==='image'"></Image>
+                        </div>
+                        
                     </div>
-                    
                 </div>
             </div>
+            
         </div>
-        
-    </div>
+    </ElConfigProvider>
 </template>
 <script lang="ts" setup>
 import {ref,watch} from 'vue';
@@ -40,6 +42,11 @@ import { appWindow } from '@tauri-apps/api/window';
 import General from './preferences/General.vue';
 import Editor from './preferences/Editor.vue';
 import Image from './preferences/Image.vue';
+import { ElConfigProvider } from 'element-plus';
+// @ts-ignore
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs';
+// @ts-ignore
+import en from 'element-plus/dist/locale/en.mjs';
 
 
 const appStore=useAppStore();
@@ -50,11 +57,14 @@ const key=ref<string>('general');
 
 const {t,locale} = useI18n();
 
+const elLocale=ref(locale.value==='cn'?zhCn:en);
+
 const options=['general','editor','markdown','theme','image'];
 
 appWindow.setTitle(t('preferences'));
 
 watch(()=>locale.value,()=>{
+    elLocale.value=locale.value==='cn'?zhCn:en;
     appWindow.setTitle(t('preferences'));
 });
 
@@ -146,8 +156,15 @@ const handleClick=(k:string)=>{
             }
 
             .preferences-item{
-                .header{
-                padding: 0.4em 0;
+                &>.header{
+                    padding: 0.4em;
+                    border-bottom: 1px dashed #ccc;
+                }
+                &>.content{
+                    padding: 0.4em;
+                    .el-select{
+                        width: 100%;
+                    }
                 }
             }
 
