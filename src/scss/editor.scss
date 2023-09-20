@@ -15,6 +15,12 @@
         color:#00c4ff;
     }
 
+    .bold-wrapper,.code-wrapper,.strike-wrapper,.italic-wrapper,.link-wrapper{
+        color:var(--echoColor,#ccc);
+    }
+
+   
+
     ul,
     ol {
         padding: 0 1rem;

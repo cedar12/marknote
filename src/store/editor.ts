@@ -19,17 +19,17 @@ export const useEditorStore = defineStore('editor', {
 
   getters:{
     editor():Editor{
-      return window.editor.value;
+      return window.editor?.value;
     }
   },
   
   actions:{
     setContent(content:string){
-      window.editor.value?.commands.setContent(content);
+      this.editor?.commands.setContent(content);
       this.tree=this.getTree();
     },
     getTree(){
-      const json=window.editor.value?.getJSON();
+      const json=this.editor?.getJSON();
       // console.log(json);
       const tree:NodeTree[]=[];
       for (let i = 0; json?.content && i < json?.content?.length; i++) {

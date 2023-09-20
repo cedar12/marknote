@@ -4,6 +4,8 @@ import Layout from "./components/Layout.vue";
 import Menu from "./components/menu/index.vue";
 import {useAppStore} from './store/app';
 import {computed} from 'vue';
+import {createEditor} from './utils/editor';
+createEditor();
 const appStore=useAppStore();
 appStore.init();
 

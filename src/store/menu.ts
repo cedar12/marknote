@@ -87,15 +87,17 @@ const events = {
   save() {
     const editorStore = useEditorStore();
     const appStore = useAppStore();
+    const md=editorStore.editor?.storage.markdown.getMarkdown();
+    console.log(md);
     if (appStore.filepath) {
-      save(appStore.filepath, editorStore.editor?.storage.markdown.getMarkdown()).then((res:any) => { 
+      save(appStore.filepath, md).then((res:any) => { 
         console.log('save',res);
         if(res.code===0){
           appStore.isSave=true;
         }
       }).catch(e => console.error(e));
     }else{
-      saveAs( editorStore.editor?.storage.markdown.getMarkdown(),t('save')).then((res:any) => { 
+      saveAs(md ,t('save')).then((res:any) => { 
         console.log('save',res);
         if(res.code===0){
           appStore.setFilepath(res.info);

@@ -2,6 +2,7 @@ import { markInputRule } from '@tiptap/core';
 import { Link as BuiltInLink } from '@tiptap/extension-link';
 import { Plugin, PluginKey } from 'prosemirror-state';
 import { Decoration, DecorationSet } from 'prosemirror-view';
+import { findMarkPosition } from './utils/mark';
 
 const extractHrefFromMatch = (match:RegExpExecArray) => {
   return { href: match.groups?.href };
@@ -67,19 +68,36 @@ export const Link = BuiltInLink.extend({
     return [
       ...this.parent(),
       new Plugin({
-        key: new PluginKey('link-control'),
+        key: new PluginKey('link-wrapper'),
         props: {
           decorations: (state) => {
             if (!isEditable) {
               return DecorationSet.empty;
             }
             const { doc, selection } = state;
-            const decorations: Decoration[] = [Decoration.inline(selection.from,selection.to,{},()=>{
-              const container=document.createElement('a');
-              container.className='link-wrapper';
-              container.innerHTML='aaaaaaa';
-              return container;
-            })];
+            const marks=selection.$head.marks();
+            const decorations: Decoration[] = []
+            marks.forEach(mark=>{
+              if(mark.type.name===this.name){
+                const {start,end}=findMarkPosition(state,mark,selection.from,selection.to);
+                decorations.push(Decoration.widget(start,()=>{
+                  const span=document.createElement('span');
+                  span.className='link-wrapper link-start';
+                  span.innerText=`[`
+                  return span;
+                },{side:-1}));
+                decorations.push(Decoration.widget(end,()=>{
+                  const span=document.createElement('span');
+                  span.className='link-wrapper link-end';
+                  span.innerText=`](${mark.attrs.href})`;
+                  span.onclick=()=>{
+                    console.log('click href ',mark.attrs.href);
+                  }
+                  return span;
+                },{side:1}));
+              }
+              
+            })
             return DecorationSet.create(doc, decorations);
           },
         },
@@ -91,12 +109,13 @@ export const Link = BuiltInLink.extend({
             handleClick: (view,pos, event) => {
               event.preventDefault();
               event.stopImmediatePropagation();
-              const {dom,offset}=view.domAtPos(pos);
-              // const marks=this.editor.state.selection.$head.marks();
-              console.log('link',dom,event);
-              if(event.ctrlKey&&dom.parentElement.nodeName==='A'){
-                window.open(dom.parentElement.href,'_blank');
-              }
+              // const {dom,offset}=view.domAtPos(pos);
+              // // const marks=this.editor.state.selection.$head.marks();
+              // console.log('link',dom,event);
+              // event.target as HTMLElement;
+              // if(event.ctrlKey&&==='A'){
+              //   window.open(dom.parentElement.href,'_blank');
+              // }
               return false;
             }
         }

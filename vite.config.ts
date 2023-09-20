@@ -1,10 +1,19 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { terser } from "rollup-plugin-terser";
+import topLevelAwait from 'vite-plugin-top-level-await';
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    topLevelAwait({
+      // The export name of top-level await promise for each chunk module
+      promiseExportName: '__mn',
+      // The function to generate import names of top-level await promise in each chunk module
+      promiseImportName: i => `__mn_${i}`
+    }),
+  ],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

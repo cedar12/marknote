@@ -15,7 +15,7 @@
 </template>
 <script lang="ts" setup>
 import {useAppStore} from '../../store/app';
-import {useEditorStore} from '../../store/editor2';
+import {useEditorStore} from '../../store/editor';
 import {useI18n} from 'vue-i18n';
 import {ElSelect,ElOption} from 'element-plus';
 

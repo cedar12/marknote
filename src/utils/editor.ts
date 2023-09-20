@@ -2,19 +2,23 @@ import { useEditor } from '@tiptap/vue-3';
 import { wrappingInputRule } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import TaskList from '@tiptap/extension-task-list';
-import { Strike } from '../node/strike';
+import { Strike } from '../extensions/strike';
 import TaskItem from '@tiptap/extension-task-item';
-import { Markdown } from 'tiptap-markdown';
-import { Table } from '../node/table';
-import { TableHeader } from '../node/tableHeader';
-import { TableCell } from '../node/tableCell';
-import { TableRow } from '../node/tableRow';
+import { Markdown } from '../extensions/markdown';
+import { Table } from '../extensions/table';
+import { TableHeader } from '../extensions/tableHeader';
+import { TableCell } from '../extensions/tableCell';
+import { TableRow } from '../extensions/tableRow';
 import { lowlight } from './lowlight';
-import { CodeBlock } from '../node/codeBlock2';
-import { Heading } from '../node/heading';
-import { Link } from '../node/link';
-import { Focus } from '../node/focus';
-import { Image } from '../node/image';
+import { CodeBlock } from '../extensions/codeBlock2';
+import { Heading } from '../extensions/heading';
+import { Link } from '../extensions/link';
+import { Italic } from '../extensions/italic';
+import { Bold } from '../extensions/bold';
+import { Code } from '../extensions/code';
+import { Focus } from '../extensions/focus';
+import { Image } from '../extensions/image';
+import { Katex } from '../extensions/katex';
 import CharacterCount from '@tiptap/extension-character-count'
 import { useAppStore } from '../store/app';
 import { useEditorStore } from '../store/editor';
@@ -45,108 +49,112 @@ Markdown.configure({
 
 
 
-function createEditor(){
+function createEditor() {
 
 
 
-const editor = useEditor({
-  content: '',
-  editorProps:{
-    attributes:{
-      class:'marknote'
-    },
-    
-    handleDrop:(view,e)=>{
-      console.log('drop',view,e);
-    },
-    handleKeyDown(view, event) {
-      const keys=[];
-      const appStore=useAppStore();
-      if(event.metaKey){
-        keys.push(appStore.platform==='darwin'?'command':'win');
-      }else if(event.ctrlKey){
-        keys.push('ctrl');
-      }
-      if(event.key==='Process'&&event.ctrlKey){
-        hotkeys.trigger('ctrl+.','file');
-      }else{
-        keys.push(event.key);
-        const key=keys.join('+').toLocaleLowerCase();
-        // console.log('handleKeyDown',view,event,key);
-        hotkeys.trigger(key,'file');
-      }
-      
-    },
-    handleDOMEvents: {
-      drop: (view, e) => { 
-        e.preventDefault(); 
-        console.log('drop',view,e);
-      },
-    },
-  },
-  extensions: [
-    StarterKit,
-    Link.configure({
-      openOnClick:false
-    }),
-    Heading,
-    Strike,
-    Focus,
-    CharacterCount,
-    Image.configure({
-      inline: true
-    }),
-    TaskItem,
-    TaskList.configure({
-      HTMLAttributes: {
-        class: 'marknote-tasklist'
-      },
-    }),
-    TableRow,
-    TableHeader,
-    TableCell,
-    MarknoteTable.configure({
-      HTMLAttributes: {
-        class: 'marknote-table'
+  const editor = useEditor({
+    content: '',
+    editorProps: {
+      attributes: {
+        class: 'marknote'
       },
 
-    }),
-    CodeBlock.configure({
+      handleDrop: (view, e) => {
+        console.log('drop', view, e);
+      },
+      handleKeyDown(view, event) {
+        const keys = [];
+        const appStore = useAppStore();
+        if (event.metaKey) {
+          keys.push(appStore.platform === 'darwin' ? 'command' : 'win');
+        } else if (event.ctrlKey) {
+          keys.push('ctrl');
+        }
+        if (event.key === 'Process' && event.ctrlKey) {
+          hotkeys.trigger('ctrl+.', 'file');
+        } else {
+          keys.push(event.key);
+          const key = keys.join('+').toLocaleLowerCase();
+          // console.log('handleKeyDown',view,event,key);
+          hotkeys.trigger(key, 'file');
+        }
 
-      lowlight,
-    }),
-    Markdown,
-  ],
-  onTransaction(_props) {
-    // const {view,state}=props.editor;
-    // const selection=state.selection;
-    // const node=getNode(state);
-    // const node=view.nodeDOM(selection.$anchor.pos);
-    // const dom=view.nodeDOM(selection.$anchor.pos);
-    // console.log('tr',props,node,dom);
+      },
+      handleDOMEvents: {
+        drop: (view, e) => {
+          e.preventDefault();
+          console.log('drop', view, e);
+        },
+      },
+    },
+    extensions: [
+      StarterKit,
+      Link.configure({
+        openOnClick: false
+      }),
+      Heading,
+      Strike,
+      Bold,
+      Italic,
+      Code,
+      Focus,
+      CharacterCount,
+      Image.configure({
+        inline: true
+      }),
+      Katex,
+      TaskItem,
+      TaskList.configure({
+        HTMLAttributes: {
+          class: 'marknote-tasklist'
+        },
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      MarknoteTable.configure({
+        HTMLAttributes: {
+          class: 'marknote-table'
+        },
 
-    const editorStore = useEditorStore();
-    editorStore.tree = editorStore.getTree();
-  },
-  onUpdate: () => {
-    // const editorStore = useEditorStore();
-    const appStore = useAppStore();
-    appStore.isSave = false;
-    // editorStore.tree = getTree();
-    const editorStore = useEditorStore();
-    editorStore.tree = editorStore.getTree();
-  },
-  onCreate: () => {
-    // const editorStore = useEditorStore();
-    // editorStore.tree = getTree();
-    // console.log(editorStore.tree)
-    const editorStore = useEditorStore();
-    editorStore.tree = editorStore.getTree();
-  },
+      }),
+      CodeBlock.configure({
 
-});
-window.editor=editor;
-return editor;
+        lowlight,
+      }),
+      Markdown,
+    ],
+    onTransaction(_props) {
+      // const {view,state}=props.editor;
+      // const selection=state.selection;
+      // const node=getNode(state);
+      // const node=view.nodeDOM(selection.$anchor.pos);
+      // const dom=view.nodeDOM(selection.$anchor.pos);
+      // console.log('tr',props,node,dom);
+
+      const editorStore = useEditorStore();
+      editorStore.tree = editorStore.getTree();
+    },
+    onUpdate: () => {
+      // const editorStore = useEditorStore();
+      const appStore = useAppStore();
+      appStore.isSave = false;
+      // editorStore.tree = getTree();
+      const editorStore = useEditorStore();
+      editorStore.tree = editorStore.getTree();
+    },
+    onCreate: () => {
+      // const editorStore = useEditorStore();
+      // editorStore.tree = getTree();
+      // console.log(editorStore.tree)
+      const editorStore = useEditorStore();
+      editorStore.tree = editorStore.getTree();
+    },
+
+  });
+  window.editor = editor;
+  return editor;
 }
 
 

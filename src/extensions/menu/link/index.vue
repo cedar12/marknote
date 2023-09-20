@@ -3,7 +3,7 @@
         <div v-if="editor?.isActive('link')">
             <!-- {{ getLinkNode() }} -->
             <ElInput v-model="href" @change="onUpdate"></ElInput>
-            <ElButton @click="()=>editor.chain().focus().toggleLink({href:''})">链接</ElButton>
+            <!-- <ElButton @click="()=>editor.chain().focus().toggleLink({href:''})">链接</ElButton> -->
         </div>
     </BubbleMenu>
 </template>
@@ -71,15 +71,17 @@ watch(()=>editor.value.state.selection,()=>{
 
 const onUpdate=()=>{
     const {state,view}=props.editor;
-    const {from,to}=state.selection;
+    // const {from,to}=state.selection;
+    const from=values.from;
+    const to=values.to;
     console.log(href.value);
     const text = state.doc.textBetween(from,to);
      const schema = view.state.schema;
      const node = schema.text(text, [schema.marks.link.create({ href: href.value})]);
 
-      view.dispatch(view.state.tr.deleteRange(from, to));
-      view.dispatch(view.state.tr.insert(from, node));
-      view.dispatch(view.state.tr.scrollIntoView());
+    view.dispatch(view.state.tr.deleteRange(from, to));
+    view.dispatch(view.state.tr.insert(from, node));
+    view.dispatch(view.state.tr.scrollIntoView());
     // editor.value.chain().focus().setLink({href:href.value})
     // props.editor.chain().focus().updateAttributes(state.schema.marks.link,{href:href.value});
     // state.tr.setNodeMarkup($from.pos,state.schema.marks.link,{href:href.value});

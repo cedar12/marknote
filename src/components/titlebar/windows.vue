@@ -51,7 +51,7 @@ import {HamburgerButton,Close,Minus,Square} from '@icon-park/vue-next';
 import { appWindow } from '@tauri-apps/api/window';
 import {useMenuStore} from '../../store/menu';
 import {useAppStore} from '../../store/app';
-import {useEditorStore} from '../../store/editor2';
+import {useEditorStore} from '../../store/editor';
 import {useI18n} from 'vue-i18n';
 import {ref} from 'vue';
 

@@ -6,6 +6,7 @@ declare module "*.vue" {
   export default component;
 }
 
+
 declare interface Window {
   editor: ShallowRef<Editor | undefined>;
 }

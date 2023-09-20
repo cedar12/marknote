@@ -6,7 +6,7 @@
     <div class="layout-content" :class="'code-theme-'+editor.codeTheme">
       <ContextMenu :menu="menuItems">
         <ElScrollbar height="calc(100vh - var(--titleBarHeight))">
-          <WysiwygEditor/>
+          <Editor></Editor>
         </ElScrollbar>
       </ContextMenu>
 
@@ -16,8 +16,7 @@
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue';
-// import WysiwygEditor from "./WysiwygEditor.vue";
-import WysiwygEditor from "../node/Editor.vue";
+import Editor from "./Editor.vue";
 import ContextMenu from "./contextMenu/index.vue";
 import { ContextMenuItem } from "./contextMenu/useContextMenu";
 import { useI18n } from 'vue-i18n';
