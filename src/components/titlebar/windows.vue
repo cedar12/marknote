@@ -37,7 +37,7 @@
         <div class="titlebar-button" @click="appWindow.toggleMaximize()">
           <Square theme="outline"/>
         </div>
-        <div class="titlebar-button" @click="appWindow.close()">
+        <div class="titlebar-button" @click="appStore.closeWindow()">
           <Close></Close>
         </div>
       </div>

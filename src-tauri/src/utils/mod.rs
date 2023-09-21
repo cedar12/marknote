@@ -12,7 +12,7 @@ use tauri::{api::path, Config};
 use std::fs::File;
 use std::io::{ Write};
 use base64::{Engine as _, engine::general_purpose};
-
+use chrono::Local;
 use crate::{db, resp};
 
 pub mod constant;
@@ -160,6 +160,7 @@ pub fn get_save_image_type()->anyhow::Result<ImageSaveType>{
 
 pub async fn save_image(md_path:String,image_path:String)->anyhow::Result<String>{
   let save_type=get_save_image_type()?;
+  let mut now=Local::now().format("%Y%m%d%H%M%S.").to_string();
   let save_path=match save_type{
     ImageSaveType::Default(path)=>{
       let filename=get_extension_from_filename(image_path.clone())?;
@@ -170,7 +171,8 @@ pub async fn save_image(md_path:String,image_path:String)->anyhow::Result<String
         let path=path.replace("${filename}", &md_filename);
         pb.push(path);
       }
-      pb.push(filename);
+      now.push_str(&filename);
+      pb.push(now);
       if let Some(p)=pb.parent(){
         not_exists_create_dir_all(p)?;
       }
@@ -184,6 +186,7 @@ pub async fn save_image(md_path:String,image_path:String)->anyhow::Result<String
       not_exists_create_dir_all(path.clone())?;
       let filename=get_extension_from_filename(image_path.clone())?;
       let mut pb=PathBuf::from(path);
+      now.push_str(&filename);
       pb.push(filename);
       fs::copy(image_path.clone(),pb.clone())?;
       match pb.to_str() {

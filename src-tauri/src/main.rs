@@ -26,9 +26,29 @@ fn main() {
                 window.open_devtools();
             }
             set_shadow(app.get_window("main").unwrap());
-            println!("{:?}",db::config_map().unwrap());
+            
             Ok(())
         })
+        // .on_window_event(|event| {
+        //     let window=event.window();
+        //     let label=window.label();
+        //     // println!("window event {:?}",label);
+        //     if label!="about"&&label!="preferences"{
+        //         match event.event() {
+        //             tauri::WindowEvent::CloseRequested{api,..} => {
+                        
+        //                 println!("close request {:?}",label);
+        //                 let api=api.clone();
+        //                 window.listen("close", move|_|{
+        //                     api.prevent_close();
+        //                 });
+        //                 window.emit("window-close", ()).unwrap();
+                        
+        //             }
+        //             _ => {}
+        //         }
+        //     }
+        // })
         .invoke_handler(tauri::generate_handler![
             cmd::file::save_md,
             cmd::file::read_md,

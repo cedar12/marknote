@@ -1,15 +1,14 @@
 <template>
-  <BubbleMenu v-if="editor" :editor="editor">
     <!-- <LinkMenu :editor="editor"></LinkMenu> -->
-  </BubbleMenu>
+  <Menu></Menu>
   <EditorContent :editor="editor" v-loading="editorStore.loading"></EditorContent>
 </template>
 <script lang="ts" setup> 
 import {onMounted,nextTick} from 'vue';
-import {EditorContent,BubbleMenu} from '@tiptap/vue-3';
+import {EditorContent} from '@tiptap/vue-3';
 import {useEditorStore} from '../store/editor';
 import { storeToRefs } from 'pinia';
-// import LinkMenu from './menu/link/index.vue';
+import Menu from '../extensions/menu/index.vue';
 
 // import {createEditor} from '../utils/editor';
 

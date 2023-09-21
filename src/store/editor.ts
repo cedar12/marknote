@@ -1,5 +1,5 @@
 
-import { Editor } from '@tiptap/vue-3';
+import { Editor, JSONContent } from '@tiptap/vue-3';
 import { defineStore } from 'pinia';
 
 
@@ -8,12 +8,13 @@ export const useEditorStore = defineStore('editor', {
     tree:NodeTree[],
     codeTheme:string,
     loading:boolean,
+    headings:JSONContent[],
   }{
       return {
         tree:[],
-        codeTheme:'github',
+        codeTheme:'default',
         loading:false,
-        
+        headings:[],
       }
   },
 
@@ -26,11 +27,13 @@ export const useEditorStore = defineStore('editor', {
   actions:{
     setContent(content:string){
       this.editor?.commands.setContent(content);
-      this.tree=this.getTree();
+      this.getTree();
     },
     getTree(){
       const json=this.editor?.getJSON();
-      // console.log(json);
+      this.headings=json.content?.filter(n=>n.type==='heading')||[];
+      // console.log(this.headings);
+      /*
       const tree:NodeTree[]=[];
       for (let i = 0; json?.content && i < json?.content?.length; i++) {
         const node = json?.content[i];
@@ -77,10 +80,13 @@ export const useEditorStore = defineStore('editor', {
         }
       }
       return tree;
+      */
     }
   }
 
 });
+
+
 
 
 export interface NodeTree{

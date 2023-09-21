@@ -59,4 +59,11 @@ export default {
 
   words:'词',
   chars:'字',
+
+  version:'版本',
+  author:'作者',
+
+  closeTitleTip:'文件保存提示',
+  closeTip:'文件未保存，是否放弃保存？',
+  giveUp:'放弃',
 }

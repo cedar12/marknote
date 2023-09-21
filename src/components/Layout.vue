@@ -1,5 +1,5 @@
 <template>
-  <div class="marknote-layout"  @contextmenu.prevent="">
+  <div class="marknote-layout">
     <div class="layout-outliner" v-if="appStore.visible.outliner">
       <Outliner></Outliner>
     </div>
@@ -11,7 +11,7 @@
       </ContextMenu>
 
     </div>
-
+    <Dialog></Dialog>
   </div>
 </template>
 <script lang="ts" setup>
@@ -21,10 +21,11 @@ import ContextMenu from "./contextMenu/index.vue";
 import { ContextMenuItem } from "./contextMenu/useContextMenu";
 import { useI18n } from 'vue-i18n';
 import { useEditorStore } from '../store/editor';
-import Outliner from './Outliner.vue';
+import Outliner from './Outliner2.vue';
 import {useAppStore} from '../store/app';
 import {readText,writeText} from '@tauri-apps/api/clipboard';
 import {ElScrollbar} from 'element-plus';
+import Dialog from './dialog/index.vue';
 
 const { t } = useI18n();
 const appStore=useAppStore();

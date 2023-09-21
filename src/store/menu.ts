@@ -61,7 +61,9 @@ const events = {
     openWindow();
   },
   closeWindow() {
-    appWindow.close();
+    // appWindow.close();
+    const appStore = useAppStore();
+    appStore.closeWindow();
   },
   openFile() {
     const editorStore=useEditorStore();
@@ -85,25 +87,9 @@ const events = {
     localStorage.setItem('recent',JSON.stringify(appStore.recentFiles));
   },
   save() {
-    const editorStore = useEditorStore();
+    // const editorStore = useEditorStore();
     const appStore = useAppStore();
-    const md=editorStore.editor?.storage.markdown.getMarkdown();
-    console.log(md);
-    if (appStore.filepath) {
-      save(appStore.filepath, md).then((res:any) => { 
-        console.log('save',res);
-        if(res.code===0){
-          appStore.isSave=true;
-        }
-      }).catch(e => console.error(e));
-    }else{
-      saveAs(md ,t('save')).then((res:any) => { 
-        console.log('save',res);
-        if(res.code===0){
-          appStore.setFilepath(res.info);
-        }
-      }).catch(e => console.error(e));
-    }
+    appStore.save();
 
   },
   saveAs() {

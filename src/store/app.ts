@@ -7,8 +7,14 @@ import { useI18n } from "vue-i18n";
 import {useEditorStore} from './editor';
 import { KeyBindingBuilder } from '../utils/keyBinding';
 import { isImage } from '../utils';
-import { saveImagePath } from '../api/file';
+import { save, saveImagePath } from '../api/file';
+import {saveAs} from '../api/dialog';
 import { isPermissionGranted, requestPermission } from '@tauri-apps/api/notification';
+import { confirm } from '@tauri-apps/api/dialog';
+import i18n from '../i18n';
+
+// @ts-ignore
+const { t } = i18n.global;
 
 export const useAppStore = defineStore('app', {
   state:():{
@@ -57,6 +63,10 @@ export const useAppStore = defineStore('app', {
       emit(event,payload);
     },
 
+    closeWindow(){
+      appWindow.emit(TauriEvent.WINDOW_CLOSE_REQUESTED);
+    },
+
     init(){
       appWindow.show();
       const { locale } = useI18n();
@@ -72,38 +82,60 @@ export const useAppStore = defineStore('app', {
         }
       });
 
-      appWindow.listen(TauriEvent.WINDOW_FILE_DROP,async (ev)=>{
-        // console.log('ev',ev);
-        if(!this.filepath)return;
-        const editorStore=useEditorStore();
-        // @ts-ignore
-        const {state,view}=editorStore.editor;
-        const { schema } = state;
-
-        const payload=ev.payload as any;
-        for (let i = 0; i < payload.length; i++) {
-          const src = payload[i];
-          if(isImage(src)){
-            console.log(state,view);
+      if(appWindow.label!=='preferences'&&appWindow.label!=='about'){
+        
+        appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async (ev)=>{
+          console.log(ev);
+          if(this.isSave){
+            appWindow.close();
+          }else{
             try{
-              const resp=await saveImagePath(this.filepath,src) as any;
-              console.log(resp);
-              if(resp.code===0){
-                const node = schema.nodes.image.create({
-                  src: resp.info,
-                });
-                console.log(node);
-                const transaction = view.state.tr.insert(state.selection.anchor, node);
-                view.dispatch(transaction);
+              const yes=await confirm(t('closeTip'), {title:t('closeTitleTip'),okLabel:t('save'),cancelLabel:t('giveUp')});
+              if(yes){
+                this.save();
+              }else{
+                appWindow.close();
               }
             }catch(e){
-              console.error(e);
+              console.log(e);
             }
             
           }
-        }
+        });
         
-      });
+        appWindow.listen(TauriEvent.WINDOW_FILE_DROP,async (ev)=>{
+          // console.log('ev',ev);
+          if(!this.filepath)return;
+          const editorStore=useEditorStore();
+          // @ts-ignore
+          const {state,view}=editorStore.editor;
+          const { schema } = state;
+
+          const payload=ev.payload as any;
+          for (let i = 0; i < payload.length; i++) {
+            const src = payload[i];
+            if(isImage(src)){
+              console.log(state,view);
+              try{
+                const resp=await saveImagePath(this.filepath,src) as any;
+                console.log(resp);
+                if(resp.code===0){
+                  const node = schema.nodes.image.create({
+                    src: resp.info,
+                  });
+                  console.log(node);
+                  const transaction = view.state.tr.insert(state.selection.anchor, node);
+                  view.dispatch(transaction);
+                }
+              }catch(e){
+                console.error(e);
+              }
+              
+            }
+          }
+          
+        });
+      }
 
       listen<string>('language', async (event) => {
         const value=event.payload;
@@ -124,6 +156,26 @@ export const useAppStore = defineStore('app', {
       });
 
       emit('unsavedColor',localStorage.getItem('unsavedColor')||'rgb(66, 212, 21)');
+    },
+
+    save(){
+      const editorStore = useEditorStore();
+      const md=editorStore.editor?.storage.markdown.getMarkdown();
+      if (this.filepath) {
+        save(this.filepath, md).then((res:any) => { 
+          console.log('save',res);
+          if(res.code===0){
+            this.isSave=true;
+          }
+        }).catch(e => console.error(e));
+      }else{
+        saveAs(md ,t('save')).then((res:any) => { 
+          console.log('save',res);
+          if(res.code===0){
+            this.setFilepath(res.info);
+          }
+        }).catch(e => console.error(e));
+      }
     }
   }
 })

@@ -20,6 +20,7 @@ console.log('marknote');
 | a | b |
 | --- | --- |
 | 1 | 2 |
+|  |  |
 
 abc [baidu.com](https://www.baidu.com)
 
@@ -30,7 +31,7 @@ fn main(){
 ```
 
 $$
-a^2=8
+\Sigma_{i=0}^{100}{i}^5+b^a=c
 $$
 
-11111
+![image.png](D:\marknote\docs\marknote.md.assets\20230921145123.image.png)

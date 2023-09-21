@@ -66,7 +66,7 @@ export const Link = BuiltInLink.extend({
     const { isEditable } = this.editor;
 
     return [
-      ...this.parent(),
+      ...(this.parent?.()||[]),
       new Plugin({
         key: new PluginKey('link-wrapper'),
         props: {
@@ -90,9 +90,7 @@ export const Link = BuiltInLink.extend({
                   const span=document.createElement('span');
                   span.className='link-wrapper link-end';
                   span.innerText=`](${mark.attrs.href})`;
-                  span.onclick=()=>{
-                    console.log('click href ',mark.attrs.href);
-                  }
+                  
                   return span;
                 },{side:1}));
               }

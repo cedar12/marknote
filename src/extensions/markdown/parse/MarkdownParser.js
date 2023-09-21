@@ -27,7 +27,6 @@ export class MarkdownParser {
     parse(content, { inline } = {}) {
         if(typeof content === 'string') {
             const renderer = this.md;
-            console.log('parse',content,inline);
             this.editor.extensionManager.extensions.forEach(extension =>
                 getMarkdownSpec(extension)?.parse?.setup?.call({ editor:this.editor, options:extension.options }, renderer)
             );

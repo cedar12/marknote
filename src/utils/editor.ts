@@ -97,11 +97,15 @@ function createEditor() {
       Strike,
       Bold,
       Italic,
-      Code,
+      Code.configure({
+        HTMLAttributes:{
+          class: 'inline'
+        }
+      }),
       Focus,
       CharacterCount,
       Image.configure({
-        inline: true
+        inline: false,
       }),
       Katex,
       TaskItem,
@@ -134,7 +138,7 @@ function createEditor() {
       // console.log('tr',props,node,dom);
 
       const editorStore = useEditorStore();
-      editorStore.tree = editorStore.getTree();
+      editorStore.getTree();
     },
     onUpdate: () => {
       // const editorStore = useEditorStore();
@@ -142,14 +146,14 @@ function createEditor() {
       appStore.isSave = false;
       // editorStore.tree = getTree();
       const editorStore = useEditorStore();
-      editorStore.tree = editorStore.getTree();
+      editorStore.getTree();
     },
     onCreate: () => {
       // const editorStore = useEditorStore();
       // editorStore.tree = getTree();
       // console.log(editorStore.tree)
       const editorStore = useEditorStore();
-      editorStore.tree = editorStore.getTree();
+      editorStore.getTree();
     },
 
   });

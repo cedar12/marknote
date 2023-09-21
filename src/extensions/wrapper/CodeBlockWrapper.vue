@@ -6,7 +6,7 @@
         <ElOption v-for="item in props.extension.options.lowlight.listLanguages()" :key="item" :label="item" :value="item"></ElOption>
       </ElSelect>
       <div>
-        <ElTooltip size="small " content="复制">
+        <ElTooltip size="small " :content="t('copy')">
           <ElButton size="small" @click="handleClick" tabindex="-1">
               <Copy></Copy>
           </ElButton>
@@ -24,6 +24,8 @@ import {ElSelect,ElOption,ElButton,ElTooltip} from 'element-plus';
 import { Copy } from '@icon-park/vue-next';
 import { NodeViewContent, NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3';
 import { writeText } from '@tauri-apps/api/clipboard';
+import {useI18n} from 'vue-i18n';
+const {t}=useI18n();
 const props = defineProps(nodeViewProps);
 
 const isEditable = ref(props.editor.isEditable);

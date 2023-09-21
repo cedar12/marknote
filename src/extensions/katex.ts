@@ -2,8 +2,7 @@
 import { mergeAttributes, Node, nodeInputRule } from '@tiptap/core';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
 import KatexWrapper from './wrapper/KatexWrapper.vue';
-import {getDatasetAttribute} from './utils';
-import katex from 'katex';
+import {} from '@tiptap/pm/commands';
 
 export type IKatexAttrs = {
   text?: string;
@@ -43,7 +42,7 @@ export const Katex = Node.create<IKatexOptions>({
         default: '',
         parseHTML: (el)=>{
           const tex=el.querySelector('annotation[encoding="application/x-tex"]') as HTMLElement;
-          console.log(el,tex,tex.textContent);
+          // console.log(el,tex,tex.textContent);
           return tex.textContent;
         },
       },

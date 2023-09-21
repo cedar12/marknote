@@ -7,18 +7,23 @@
     </div>
   </teleport>
   <div class="about-container">
-    <div class="about-logo">
-      <img src="../assets/logo.png"/>
+    <div class="about-row">
+      <div class="about-logo">
+        <img src="../assets/logo.png"/>
+      </div>
+      <div class="about-info">
+        <ul>
+          <li>{{t('version')}}: {{ version }}</li>
+          <li>Tauri {{ t('version') }}: {{ tauriVersion }}</li>
+          <li>{{ t('author') }}: <a href="mailto:cedar12.zxd@qq.com">cedar12</a></li>
+        </ul>
+      </div>
     </div>
-    <div class="about-info">
-      <ul>
-        <li>{{ name }} Version: {{ version }}</li>
-        <li>Tauri Version: {{ tauriVersion }}</li>
-        <li>Author: <a href="mailto:cedar12.zxd@qq.com">cedar12</a></li>
-        <li>Source: <a href="https://github.com/cedar12/marknote" target="_blank">Github</a></li>
-        <li>License: MIT</li>
-        
-      </ul>
+    <div class="about-row" style="margin-top: 1em;">
+      <div>Source: <a href="https://github.com/cedar12/marknote" target="_blank">Github</a></div>
+    </div>
+    <div class="about-row"  style="margin-top: 1em;">
+      <div>License: MIT</div>
     </div>
   </div>
 </template>
@@ -73,12 +78,28 @@ onBeforeMount(async ()=>{
 }
 .about-container{
   padding: 1em;
-  font-size: 14px;
+  font-size: 1em;
+  .about-row{
+    display: flex;
+  }
   .about-logo{
     display: flex;
     justify-content: center;
+    flex-basis: 90px;
     img{
       width: 80px;
+      height: 80px;
+    }
+  }
+  .about-info{
+    flex: 1;
+    ul{
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      li{
+        padding: 4px;
+      }
     }
   }
 }

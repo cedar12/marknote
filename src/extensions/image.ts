@@ -24,7 +24,7 @@ export const Image = BuiltInImage.extend({
       content: '',
       marks: '',
       group: 'block',
-      draggable: false,
+      draggable: true,
       selectable: true,
       atom: true,
     };
@@ -37,7 +37,8 @@ export const Image = BuiltInImage.extend({
         default: null,
         parseHTML: (element) => {
           const img = resolveImageEl(element);
-          return img.dataset.src || img.getAttribute('src');
+          const src=img.dataset.src || img.getAttribute('src');
+          return decodeURIComponent(src||'');
         },
       },
       alt: {

@@ -56,4 +56,11 @@ export default {
 
   words:'Words',
   chars:'Chars',
+
+  version:'Version',
+  author:'Author',
+
+  closeTitleTip:'File Save Tip',
+  closeTip:'The file is not saved, whether to give up saving?',
+  giveUp:'Give UP',
 }

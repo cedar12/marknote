@@ -1,8 +1,12 @@
 <template>
   <NodeViewWrapper class="marknote-katex" >
     <div class="katex-wrapper" contenteditable="false" v-if="isFocus()">
-      <ElInput v-model="value" autosize ref="inputRef"
-    type="textarea"  @change="onChangeText" @keydown:enter="onEnter"></ElInput>
+      <!-- <ElInput v-model="value" autosize ref="inputRef"
+    type="textarea"  @change="onChangeText" @keydown="onKeydown"></ElInput> -->
+      
+      <ElTooltip size="small " :content="t('edit')">
+          <ElButton size="small" :icon="Edit" @click="onEdit"></ElButton>
+      </ElTooltip>
     </div>
     <div className="katex-content" v-if="value&&value.trim()!=''" v-html="formatText()"></div>
     <div className="katex-content" v-else>
@@ -11,12 +15,17 @@
   </NodeViewWrapper>
 </template>
 <script lang="ts" setup>
+import {Edit} from '@icon-park/vue-next';
 import { ref,onMounted,watch,nextTick } from 'vue';
-import {ElInput} from 'element-plus';
+import {ElButton,ElTooltip} from 'element-plus';
 import katex from 'katex';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
+import { appWindow } from '@tauri-apps/api/window';
+import {useI18n} from 'vue-i18n';
 const props = defineProps(nodeViewProps);
 const {  text } = props.node.attrs;
+
+const {t}=useI18n();
 
 const value=ref(text);
 const inputRef=ref();
@@ -51,36 +60,35 @@ const onChangeText=()=>{
   
   props.updateAttributes({ text: value.value });
 }
-const formatText = ():string => {
-    try {
-      return katex.renderToString(`${value.value}`);
-      // error.value=null;
-      // return result;
-    } catch (e) {
-      // error.value=e;
-      return `<span class="katex-error">${e}</span>`;
-    }
-};
 
+appWindow.listen<string>('dialog-katex-text',(event)=>{
+  value.value=event.payload;
+  onChangeText();
+})
 
-const onEnter=(event:KeyboardEvent)=>{
-  console.log(event);
-  if(event.ctrlKey||event.altKey||event.metaKey){
-    props.editor.chain().focus().enter().run();
-  }
+const onEdit=()=>{
+  appWindow.emit('dialog-katex-visible',value.value);
 }
+const formatText = ():string => {
+  return katex.renderToString(`${value.value}`,{throwOnError:false,displayMode:true});
+    // try {
+    //   return katex.renderToString(`${value.value}`,{throwOnError:false,displayMode:true});
+    //   // error.value=null;
+    //   // return result;
+    // } catch (e) {
+    //   // error.value=e;
+    //   return `<span class="katex-error">${e}</span>`;
+    // }
+};
 
 </script>
 
 <style lang="scss">
 .marknote-katex {
   position: relative;
-  textarea{
-    background-color: #d6d4d4;
-    outline: none;
-  }
-  .katex-error{
-    color: #f00;
+  .katex-wrapper{
+    display: flex;
+    justify-content: end;
   }
   .katex-html{
       display: none;
