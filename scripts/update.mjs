@@ -57,7 +57,11 @@ for (let { name, browser_download_url } of release.assets) {
     // eslint-disable-next-line no-await-in-loop
     const signature = await getSignature(browser_download_url);
     updateData.platforms.darwin.signature = signature;
-  } else if (name.endsWith('.AppImage.tar.gz')) {
+  } else if (name.endsWith('.dmg')) {
+    // eslint-disable-next-line no-await-in-loop
+    const signature = await getSignature(browser_download_url);
+    updateData.platforms.darwin.signature = signature;
+  }else if (name.endsWith('.AppImage.tar.gz')) {
     // eslint-disable-next-line camelcase
     updateData.platforms.linux.url = browser_download_url;
     // eslint-disable-next-line camelcase

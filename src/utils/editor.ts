@@ -63,7 +63,7 @@ function createEditor() {
       handleDrop: (view, e) => {
         console.log('drop', view, e);
       },
-      handleKeyDown(view, event) {
+      handleKeyDown(_view, event) {
         const keys = [];
         const appStore = useAppStore();
         if (event.metaKey) {

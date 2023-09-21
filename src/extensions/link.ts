@@ -104,7 +104,7 @@ export const Link = BuiltInLink.extend({
         key: new PluginKey('linkHandler'),
         props: {
             
-            handleClick: (view,pos, event) => {
+            handleClick: (_view,_pos, event) => {
               event.preventDefault();
               event.stopImmediatePropagation();
               // const {dom,offset}=view.domAtPos(pos);

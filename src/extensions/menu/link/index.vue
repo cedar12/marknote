@@ -1,5 +1,5 @@
 <template>
-    <BubbleMenu :editor="editor" :should-show="shouldShow">
+    <BubbleMenu :editor="editor">
         <div v-if="editor?.isActive('link')">
             <!-- {{ getLinkNode() }} -->
             <ElInput v-model="href" @change="onUpdate"></ElInput>
@@ -9,7 +9,7 @@
 </template>
 <script  lang="ts" setup>
 import {BubbleMenu} from '@tiptap/vue-3';
-import {ElInput,ElButton} from 'element-plus';
+import {ElInput} from 'element-plus';
 import {ref,reactive,watch} from 'vue';
 import {findMarkPosition} from '../../utils/mark';
 import { Editor } from '@tiptap/vue-3';

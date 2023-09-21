@@ -5,7 +5,7 @@ import { appWindow } from '@tauri-apps/api/window';
 import { ask } from '@tauri-apps/api/dialog';
 import { exit } from '@tauri-apps/api/process';
 import {openFile,saveAs} from '../api/dialog';
-import {read, save} from '../api/file';
+import {read} from '../api/file';
 import i18n from '../i18n';
 import { openAbout, openPreferences, openWindow } from '../api/window';
 import {

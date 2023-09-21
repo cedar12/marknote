@@ -1,6 +1,6 @@
 [package]
 name = "marknote"
-version = "0.0.1"
+version = "0.0.2"
 description = "WYSIWYG Markdown Editor"
 authors = ["cedar12.zxd@qq.com"]
 license = "MIT"

@@ -7,7 +7,7 @@
     </div>
   </teleport>
   <div class="about-container">
-    <div class="about-row">
+    <div class="about-row" style="margin-top: 10px;">
       <div class="about-logo">
         <img src="../assets/logo.png"/>
       </div>
