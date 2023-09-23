@@ -167,17 +167,20 @@ pub async fn save_image(md_path:String,image_path:String)->anyhow::Result<String
       let md_filename=get_extension_from_filename(md_path.clone())?;
       let mut pb=PathBuf::from(md_path);
       pb.pop();
+      let mut pb2=PathBuf::new();
       if let Some(path)=path{
         let path=path.replace("${filename}", &md_filename);
-        pb.push(path);
+        pb.push(path.clone());
+        pb2.push(path);
       }
       now.push_str(&filename);
-      pb.push(now);
+      pb.push(now.clone());
+      pb2.push(now);
       if let Some(p)=pb.parent(){
         not_exists_create_dir_all(p)?;
       }
       fs::copy(image_path.clone(),pb.clone())?;
-      match pb.to_str() {
+      match pb2.to_str() {
           Some(p) => p.into(),
           None => return Err(anyhow!("path error")),
       }

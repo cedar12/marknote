@@ -94,6 +94,6 @@ export const Heading = BaseHeading.extend({
           })
         })
       },
-      
+
 
 });

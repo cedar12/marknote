@@ -36,7 +36,7 @@ const shouldShow=({ view, state, from, to }) => {
 
   const isEmptyTextBlock = !doc.textBetween(from, to).length && isTextSelection(state.selection);
 
-  if (!view.hasFocus() || empty || isEmptyTextBlock || editor.value.isActive('katex')||editor.value.isActive('codeBlock')) {
+  if (!view.hasFocus() || empty || isEmptyTextBlock || editor.value.isActive('table')|| editor.value.isActive('katex')||editor.value.isActive('codeBlock')||editor.value.isActive('image')||editor.value.isActive('katex')) {
     return false;
   }
 

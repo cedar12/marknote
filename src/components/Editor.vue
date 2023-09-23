@@ -19,7 +19,8 @@ const editorStore=useEditorStore();
 const {editor} = storeToRefs(editorStore);
   
 onMounted(()=>{
-  const content=`# marknote
+  const content=`
+  # marknote
   所见即所得  🎉
   
   2. 1

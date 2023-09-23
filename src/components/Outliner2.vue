@@ -29,6 +29,7 @@ const {headings}=storeToRefs(editorStore);
 // }
 
 const onClick=(heading:JSONContent)=>{
+    console.log(heading,getText(heading));
     if(getText(heading)!=''){
         location.hash=heading.attrs?.id;
     }

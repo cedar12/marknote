@@ -19,6 +19,7 @@ import { Code } from '../extensions/code';
 import { Focus } from '../extensions/focus';
 import { Image } from '../extensions/image';
 import { Katex } from '../extensions/katex';
+import { TableOfContents } from '../extensions/tableOfContents';
 import CharacterCount from '@tiptap/extension-character-count'
 import { useAppStore } from '../store/app';
 import { useEditorStore } from '../store/editor';
@@ -127,6 +128,7 @@ function createEditor() {
 
         lowlight,
       }),
+      TableOfContents,
       Markdown,
     ],
     onTransaction(_props) {

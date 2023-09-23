@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "marknote",
-    "version": "0.0.2-beta"
+    "version": "0.0.2-1"
   },
   "tauri": {
     "allowlist": {

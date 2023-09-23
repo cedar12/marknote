@@ -21,7 +21,7 @@ import ContextMenu from "./contextMenu/index.vue";
 import { ContextMenuItem } from "./contextMenu/useContextMenu";
 import { useI18n } from 'vue-i18n';
 import { useEditorStore } from '../store/editor';
-import Outliner from './Outliner2.vue';
+import Outliner from './Toc.vue';
 import {useAppStore} from '../store/app';
 import {readText,writeText} from '@tauri-apps/api/clipboard';
 import {ElScrollbar} from 'element-plus';

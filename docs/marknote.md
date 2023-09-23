@@ -34,4 +34,4 @@ $$
 \Sigma_{i=0}^{100}{i}^5+b^a=c
 $$
 
-![image.png](D:\marknote\docs\marknote.md.assets\20230921145123.image.png)
+![image.png](marknote.md.assets/20230923222412.image.png)

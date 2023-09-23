@@ -24,6 +24,8 @@ import {ImageFiles} from '@icon-park/vue-next';
 import {ElInput,ElPopover,ElImage,ElIcon} from 'element-plus';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
+import {useAppStore} from '../../store/app';
+const appStroe=useAppStore();
 const props = defineProps(nodeViewProps);
 // ![图片](./vite.svg)
 const {  src, alt, title, width, height } = props.node.attrs;
@@ -36,6 +38,8 @@ watch(()=>value.value,()=>{
   if(value.value.startsWith('http://')||value.value.startsWith('https://')){
     imgSrc.value=value.value;
   }else{
+    // 相对markdown文件路径待优化
+
     imgSrc.value=convertFileSrc(value.value);
   }
   srcList.value[0]=imgSrc.value;
@@ -47,11 +51,32 @@ const setImageSrc=()=>{
   props.updateAttributes({src:value.value});
 }
 
+const isAbsolute=(path:string)=>{
+  if(path.startsWith('/')){
+    return true;
+  }
+  if(/^[a-zA-Z]:(\\|\/)/.test(path)){
+    return true;
+  }
+  return false;
+}
+
+const getDir=(path:string)=>{
+  var index=path.lastIndexOf('/');
+  if(index==-1){
+    var index=path.lastIndexOf('\\');
+  }
+  return path.substring(0,index+1);
+}
+
 onMounted(()=>{
   if(value.value.startsWith('http')){
     imgSrc.value=value.value;
-  }else{
+  }else if(isAbsolute(value.value)){
     imgSrc.value=convertFileSrc(value.value);
+  }else if(appStroe.filepath){
+    const dir=getDir(appStroe.filepath);
+    imgSrc.value=convertFileSrc(dir+value.value);
   }
   srcList.value[0]=imgSrc.value;
 })
