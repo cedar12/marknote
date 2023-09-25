@@ -20,6 +20,7 @@ import { ref, onMounted,nextTick,watch } from 'vue';
 import { useEditorStore } from '../store/editor';
 import { useAppStore } from '../store/app';
 import { storeToRefs } from 'pinia';
+import {ElScrollbar} from 'element-plus';
 
 const appStore=useAppStore();
 const editorStore = useEditorStore();

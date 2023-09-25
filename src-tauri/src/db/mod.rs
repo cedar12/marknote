@@ -1,6 +1,6 @@
 use rusqlite::{Connection, Result};
 use std::{sync::{Arc,Mutex}, collections::HashMap, path::PathBuf};
-use crate::{model::Config, utils};
+use crate::{model::Config, utils::{self, constant}};
 
 fn get_db_path()->PathBuf{
   println!("app path: {:?}",utils::get_path());
@@ -24,8 +24,21 @@ fn init(conn:&Connection){
     (),
   ).unwrap();
 
+  let count=count(conn,constant::config::IMAGE_SAVE_TYPE).unwrap();
+  if count==0 {
+    conn.execute("insert into config(key,value) values(?1,?2)", (constant::config::IMAGE_SAVE_TYPE,"default")).unwrap();
+    conn.execute("insert into config(key,value) values(?1,?2)", (constant::config::IMAGE_SAVE_PATH,"${filename}.assets")).unwrap();
+  }
 
+}
 
+fn count(conn:&Connection,key:&str)->Result<usize>{
+  let count:usize=conn.query_row(
+    "SELECT count(*) FROM config WHERE key=?1",
+    [key],
+    |row| row.get(0),
+  )?;
+  Ok(count)
 }
 
 pub fn config_map()->Result<HashMap<String,String>>{
@@ -67,51 +80,3 @@ pub fn config_set(config_map:HashMap<String,String>)->Result<()>{
   }
   Ok(())
 }
-
-
-
-
-/*
-#[derive(Debug)]
-struct Person {
-    id: i32,
-    name: String,
-    data: Option<Vec<u8>>,
-}
-
-fn main() -> Result<()> {
-    let conn = Connection::open_in_memory()?;
-
-    conn.execute(
-        "CREATE TABLE person (
-            id    INTEGER PRIMARY KEY,
-            name  TEXT NOT NULL,
-            data  BLOB
-        )",
-        (), // empty list of parameters.
-    )?;
-    let me = Person {
-        id: 0,
-        name: "Steven".to_string(),
-        data: None,
-    };
-    conn.execute(
-        "INSERT INTO person (name, data) VALUES (?1, ?2)",
-        (&me.name, &me.data),
-    )?;
-
-    let mut stmt = conn.prepare("SELECT id, name, data FROM person")?;
-    let person_iter = stmt.query_map([], |row| {
-        Ok(Person {
-            id: row.get(0)?,
-            name: row.get(1)?,
-            data: row.get(2)?,
-        })
-    })?;
-
-    for person in person_iter {
-        println!("Found person {:?}", person.unwrap());
-    }
-    Ok(())
-}
- */
