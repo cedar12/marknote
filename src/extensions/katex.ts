@@ -72,7 +72,10 @@ export const Katex = Node.create<IKatexOptions>({
             type: this.name,
             attrs: options,
           });
-        },
+      },
+      // toggleKatex: (attributes) => ({ commands }) => {
+      //   return commands.toggleNode(this.name, 'paragraph', attributes)
+      // },
     };
   },
 
@@ -92,6 +95,15 @@ export const Katex = Node.create<IKatexOptions>({
     return VueNodeViewRenderer(KatexWrapper);
   },
 
-  
+  // @ts-ignore
+  addKeyboardShortcuts(){
+    
+    return {
+      'Mod-Alt-M': () => {
+        console.log('toggle katex');
+        // return this.editor.commands.toggleKatex()
+      },
+    }  
+  }
 
 });

@@ -22,8 +22,27 @@ export default {
   edit:'Edit',
   undo:'Undo',
   redo:'Redo',
+  cut: 'Cut',
   copy:'Copy',
   paste:'Paste',
+  selectAll:'Select All',
+  find:'Find',
+  Replace:'Replace',
+
+  paragraph:'Paragraph',
+  normalText:'Normal Text',
+  heading:'Heading',
+  table:'Table',
+  codeFences:'Code Fences',
+  quoteBlock:'Quote Block',
+  mathBlock:'Math Block',
+
+  orderedList:'Ordered List',
+  bulletList:'Bullet List',
+  taskList:'Task List',
+
+  horizontalRule:'Horizontal Rule',
+
 
   view: 'View',
   outliner:'Outliner',

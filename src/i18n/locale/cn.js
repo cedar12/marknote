@@ -22,8 +22,26 @@ export default {
   edit:'编辑',
   undo:'撤销',
   redo:'重做',
+  cut: '剪切',
   copy:'复制',
   paste:'粘贴',
+  selectAll:'全选',
+  find:'查找',
+  Replace:'替换',
+
+  paragraph:'段落',
+  normalText:'常规文本',
+  heading:'标题',
+  table:'表格',
+  codeFences:'代码块',
+  quoteBlock:'引用块',
+  mathBlock:'数学块',
+
+  bulletList:'无序列表',
+  orderedList:'有序列表',
+  taskList:'任务列表',
+
+  horizontalRule:'水平线',
   
 
   view: '视图',

@@ -170,6 +170,11 @@ const loadMenuData=()=>{
       key: 'edit',
       children: [
         {
+          label: t('cut'),
+          key: 'cut',
+          shortcut:appStore.keyBinding?.getKey('edit.cut')?.key,
+        },
+        {
           label: t('undo'),
           key: 'undo',
           shortcut:appStore.keyBinding?.getKey('edit.undo')?.key,
@@ -181,6 +186,97 @@ const loadMenuData=()=>{
         }
       ]
     },
+    {
+      label: t('paragraph'),
+      key: 'paragraph',
+      children: [
+      {
+          label: t('normalText'),
+          key: 'normalText',
+          shortcut:appStore.keyBinding?.getKey('paragraph.normalText')?.key,
+        },
+        {
+          label: t('heading')+' 1',
+          key: 'heading1',
+          shortcut:appStore.keyBinding?.getKey('paragraph.heading1')?.key,
+        },
+        {
+          label:  t('heading')+' 2',
+          key: 'heading2',
+          shortcut:appStore.keyBinding?.getKey('paragraph.heading2')?.key,
+        },
+        {
+          label: t('heading')+' 3',
+          key: 'heading3',
+          shortcut:appStore.keyBinding?.getKey('paragraph.heading3')?.key,
+        },
+        {
+          label: t('heading')+' 4',
+          key: 'heading4',
+          shortcut:appStore.keyBinding?.getKey('paragraph.heading4')?.key,
+        },
+        {
+          label: t('heading')+' 5',
+          key: 'heading5',
+          shortcut:appStore.keyBinding?.getKey('paragraph.heading5')?.key,
+        },
+        {
+          label: t('heading')+' 6',
+          key: 'heading6',
+          shortcut:appStore.keyBinding?.getKey('paragraph.heading6')?.key,
+          split:true,
+        },
+        {
+          label: t('table'),
+          key: 'table',
+          shortcut:appStore.keyBinding?.getKey('paragraph.table')?.key,
+        },
+        {
+          label: t('codeFences'),
+          key: 'codeFences',
+          shortcut:appStore.keyBinding?.getKey('paragraph.codeFences')?.key,
+        },
+        {
+          label: t('quoteBlock'),
+          key: 'quoteBlock',
+          shortcut:appStore.keyBinding?.getKey('paragraph.quoteBlock')?.key,
+        },
+        {
+          label: t('mathBlock'),
+          key: 'mathBlock',
+          shortcut:appStore.keyBinding?.getKey('paragraph.mathBlock')?.key,
+          split:true,
+        },
+        
+        {
+          label: t('orderedList'),
+          key: 'orderedList',
+          shortcut:appStore.keyBinding?.getKey('paragraph.orderedList')?.key,
+        },
+        {
+          label: t('bulletList'),
+          key: 'bulletList',
+          shortcut:appStore.keyBinding?.getKey('paragraph.bulletList')?.key,
+        },
+        {
+          label: t('taskList'),
+          key: 'taskList',
+          shortcut:appStore.keyBinding?.getKey('paragraph.taskList')?.key,
+          split:true,
+        },
+        {
+          label: t('paragraph'),
+          key: 'paragraph',
+          shortcut:appStore.keyBinding?.getKey('paragraph.paragraph')?.key,
+        },
+        {
+          label: t('horizontalRule'),
+          key: 'horizontalRule',
+          shortcut:appStore.keyBinding?.getKey('paragraph.horizontalRule')?.key,
+        },
+      ]
+    },
+
     {
       label: t('view'),
       key: 'view',

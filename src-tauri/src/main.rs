@@ -3,9 +3,8 @@
 #[macro_use]
 extern crate lazy_static;
 
-use std::vec;
-
-use tauri::{Manager, http::ResponseBuilder};
+use tauri::Manager;
+use utils::open_with;
 
 use crate::utils::{set_shadow, IS_MACOS};
 
@@ -14,41 +13,20 @@ mod utils;
 mod resp;
 mod db;
 mod cmd;
+mod log_conf;
 
 
 fn main() {
+    log_conf::init();
     tauri::Builder::default()
         .setup(|app| {
             let window = app.get_window("main").unwrap();
             window.set_decorations(IS_MACOS).unwrap();
             #[cfg(debug_assertions)]
-            {
-                window.open_devtools();
-            }
+            window.open_devtools();
             set_shadow(app.get_window("main").unwrap());
-            
             Ok(())
         })
-        // .on_window_event(|event| {
-        //     let window=event.window();
-        //     let label=window.label();
-        //     // println!("window event {:?}",label);
-        //     if label!="about"&&label!="preferences"{
-        //         match event.event() {
-        //             tauri::WindowEvent::CloseRequested{api,..} => {
-                        
-        //                 println!("close request {:?}",label);
-        //                 let api=api.clone();
-        //                 window.listen("close", move|_|{
-        //                     api.prevent_close();
-        //                 });
-        //                 window.emit("window-close", ()).unwrap();
-                        
-        //             }
-        //             _ => {}
-        //         }
-        //     }
-        // })
         .invoke_handler(tauri::generate_handler![
             cmd::file::save_md,
             cmd::file::read_md,
@@ -61,6 +39,7 @@ fn main() {
             cmd::window::open_about,
             cmd::preferences::save_image_type,
             cmd::preferences::get_config,
+            cmd::utils::args,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

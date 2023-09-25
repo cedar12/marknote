@@ -181,8 +181,28 @@ const events = {
     // appWindow.emit('tauri://update');
   },
 
+  codeFences(){
+    const editorStore=useEditorStore();
+    editorStore.editor.commands.toggleCodeBlock();
+  },
+
+  quoteBlock(){
+    const editorStore=useEditorStore();
+    editorStore.editor.commands.toggleBlockquote();
+  },
+  // mathBlock(){
+  //   const editorStore=useEditorStore();
+  //   editorStore.editor.commands.toggleKatex();
+  // },
+
+
   '*':(item:Menu)=>{
-    if(item.key.startsWith('recent_')){
+    if(/^heading([1-6])$/.test(item.key)){
+      //@ts-ignore
+      const level=/^heading([1-6])$/.exec(item.key)[1];
+      const editorStore=useEditorStore();
+      editorStore.editor.commands.toggleHeading({level:parseInt(level) as any});
+    }else if(item.key.startsWith('recent_')){
       const key=item.key.substring(7);
       const editorStore=useEditorStore();
       editorStore.loading=true;

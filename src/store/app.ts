@@ -7,11 +7,12 @@ import { useI18n } from "vue-i18n";
 import {useEditorStore} from './editor';
 import { KeyBindingBuilder } from '../utils/keyBinding';
 import { isImage } from '../utils';
-import { save, saveImagePath } from '../api/file';
-import {saveAs} from '../api/dialog';
+import { read, save, saveImagePath } from '../api/file';
+import { saveAs} from '../api/dialog';
 import { isPermissionGranted, requestPermission } from '@tauri-apps/api/notification';
 import { confirm } from '@tauri-apps/api/dialog';
 import i18n from '../i18n';
+import { args } from '../api/utils';
 
 // @ts-ignore
 const { t } = i18n.global;
@@ -80,9 +81,32 @@ export const useAppStore = defineStore('app', {
           const permission = await requestPermission();
           this.permissionGranted = permission === 'granted';
         }
+        if(appWindow.label==='main'){
+            const editorStore=useEditorStore();
+            try{
+              const resp:any=await args();
+              const payload:string[]=resp.payload;
+              if(payload.length>1){
+                const path=payload[1];
+                editorStore.loading=true;
+                const resp:any=await read(path);
+              if (resp.code === 0) {
+                const appStore = useAppStore();
+                appStore.setFilepath(path);
+                editorStore.setContent(resp.data);
+              }
+              
+            }
+            }catch(e){
+
+            }finally{
+              editorStore.loading=false;
+            }
+        }
       });
 
       if(appWindow.label!=='preferences'&&appWindow.label!=='about'){
+
         
         appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async (ev)=>{
           console.log(ev);

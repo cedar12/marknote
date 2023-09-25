@@ -39,12 +39,68 @@ const defaultKeyBinding:KeyBinding[]=[
 
   ,
   {
+    description:['edit','cut'],
+    key:'Mod+X',
+  },
+  {
     description:['edit','undo'],
     key:'Mod+Z',
   },
   {
     description:['edit','redo'],
     key:'Mod+Y',
+  },
+  {
+    description:['paragraph','normalText'],
+    key:'Mod+Alt+0',
+  },
+  {
+    description:['paragraph','heading1'],
+    key:'Mod+Alt+1',
+  },
+  {
+    description:['paragraph','heading2'],
+    key:'Mod+Alt+2',
+  },
+  {
+    description:['paragraph','heading3'],
+    key:'Mod+Alt+3',
+  },
+  {
+    description:['paragraph','heading4'],
+    key:'Mod+Alt+4',
+  },
+  {
+    description:['paragraph','heading5'],
+    key:'Mod+Alt+5',
+  },
+  {
+    description:['paragraph','heading6'],
+    key:'Mod+Alt+6',
+  },
+  {
+    description:['paragraph','codeFences'],
+    key:'Mod+Alt+C',
+  },
+  {
+    description:['paragraph','bulletList'],
+    key:'Mod+Shift+8',
+  },
+  {
+    description:['paragraph','orderedList'],
+    key:'Mod+Shift+7',
+  },
+  {
+    description:['paragraph','taskList'],
+    key:'Mod+Shift+9',
+  },
+  {
+    description:['paragraph','quoteBlock'],
+    key:'Mod+Shift+B',
+  },
+  {
+    description:['paragraph','paragraph'],
+    key:'Mod+Enter',
   }
 ];
 
