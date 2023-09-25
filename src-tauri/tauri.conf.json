@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "marknote",
-    "version": "0.0.1.1"
+    "version": "../package.json"
   },
   "tauri": {
     "allowlist": {
@@ -71,7 +71,13 @@
         "icons/128x128@2x.png",
         "icons/icon.icns",
         "icons/icon.ico"
-      ]
+      ],
+      "windows": {
+        "nsis": {
+          "languages": ["SimpChinese", "English"],
+          "displayLanguageSelector": true
+        }
+      }
     },
     "security": {
       "csp": null
