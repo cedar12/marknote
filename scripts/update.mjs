@@ -30,7 +30,7 @@ const options = { owner: context.repo.owner, repo: context.repo.repo };
 
 const isProxy=true;
  
-//https://ghproxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.1/latest.json
+//https://ghproxy.com/https://github.com/cedar12/marknote/releases/download/latest/latest.json
 
 const { data: release } = await octokit.rest.repos.getLatestRelease(options);
 updateData.name = release.tag_name;
