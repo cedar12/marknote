@@ -1,6 +1,6 @@
 [package]
 name = "marknote"
-version = "0.0.0"
+version = "0.0.2"
 description = "WYSIWYG Markdown Editor"
 authors = ["cedar12.zxd@qq.com"]
 license = "MIT"
@@ -34,7 +34,6 @@ cron="0.5"
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
-
 
 [profile.release]
 panic = "abort"

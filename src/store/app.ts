@@ -12,7 +12,7 @@ import { saveAs} from '../api/dialog';
 import { isPermissionGranted, requestPermission } from '@tauri-apps/api/notification';
 import { confirm } from '@tauri-apps/api/dialog';
 import i18n from '../i18n';
-import { args } from '../api/utils';
+import { args,log } from '../api/utils';
 
 // @ts-ignore
 const { t } = i18n.global;
@@ -84,21 +84,21 @@ export const useAppStore = defineStore('app', {
         if(appWindow.label==='main'){
             const editorStore=useEditorStore();
             try{
-              const resp:any=await args();
-              const payload:string[]=resp.payload;
+              const payload:string[]=await args();
+              log.debug("args: "+payload);
               if(payload.length>1){
                 const path=payload[1];
                 editorStore.loading=true;
                 const resp:any=await read(path);
-              if (resp.code === 0) {
-                const appStore = useAppStore();
-                appStore.setFilepath(path);
-                editorStore.setContent(resp.data);
+                if (resp.code === 0) {
+                  const appStore = useAppStore();
+                  appStore.setFilepath(path);
+                  editorStore.setContent(resp.data);
+                }
+                
               }
-              
-            }
-            }catch(e){
-
+            }catch(e:any){
+              log.info(e+'');
             }finally{
               editorStore.loading=false;
             }

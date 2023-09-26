@@ -39,7 +39,10 @@ fn main() {
             cmd::window::open_about,
             cmd::preferences::save_image_type,
             cmd::preferences::get_config,
-            cmd::utils::args,
+            cmd::utils::cmd_args,
+            cmd::utils::log_info,
+            cmd::utils::log_error,
+            cmd::utils::log_debug,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
