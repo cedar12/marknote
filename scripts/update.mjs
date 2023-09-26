@@ -20,6 +20,7 @@ const updateData = {
     win64: { signature: '', url: '' },
     linux: { signature: '', url: '' },
     darwin: { signature: '', url: '' },
+    'darwin-aarch64':{signature:'',url:''},
     'linux-x86_64': { signature: '', url: '' },
     'windows-x86_64': { signature: '', url: '' }
   }
@@ -52,10 +53,12 @@ for (let { name, browser_download_url } of release.assets) {
   } else if (name.endsWith('.app.tar.gz')) {
     // eslint-disable-next-line camelcase
     updateData.platforms.darwin.url = browser_download_url;
+    updateData.platforms['darwin-aarch64'].url=browser_download_url;
   } else if (name.endsWith('.app.tar.gz.sig')) {
     // eslint-disable-next-line no-await-in-loop
     const signature = await getSignature(browser_download_url);
     updateData.platforms.darwin.signature = signature;
+    updateData.platforms['darwin-aarch64'].signature=signature;
   } else if (name.endsWith('.AppImage.tar.gz')) {
     // eslint-disable-next-line camelcase
     updateData.platforms.linux.url = browser_download_url;

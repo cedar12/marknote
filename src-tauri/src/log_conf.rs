@@ -14,6 +14,8 @@ use log4rs::{
     Config, Handle,
 };
 
+use crate::utils;
+
 const PATTERN_ENCODER: &str = "[marknote] {d(%Y-%m-%d %H:%M:%S)} - {l} - {t}:{L} - {m}{n}";
 // const DATETIME_FORMAT: &str = "%Y%m%d%";
 // const DATETIME_FORMAT: &str = "%Y%m%d%H%M%S";
@@ -27,10 +29,13 @@ fn get_log_config() -> Config {
     let stdout = ConsoleAppender::builder()
         .encoder(Box::new(PatternEncoder::new(PATTERN_ENCODER)))
         .build();
+
+    let mut log_dir=utils::get_log_dir();
+    log_dir.push(format!("{}.log", formatted_date));
     
     let file = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new(PATTERN_ENCODER)))
-        .build(format!("log/{}.log", formatted_date))
+        .build(log_dir)
         .unwrap();
 
     let level=from_env_level();
