@@ -55,6 +55,20 @@ pub fn get_cache_dir()->PathBuf{
   
 }
 
+pub fn get_log_dir()->PathBuf{
+  match path::app_log_dir(&Config::default()){
+    Some(p)=>{
+      let p=p.join("com.github.marknote");
+      if !p.exists(){
+        fs::create_dir_all(p.clone()).unwrap();
+      }
+      p
+    },
+    None=>PathBuf::new()
+  }
+  
+}
+
 pub fn not_exists_create_dir_all<P: AsRef<Path>>(path: P)->std::io::Result<()>{
   let mut p=PathBuf::new();
   p.push(path);

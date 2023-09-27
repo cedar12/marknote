@@ -19,6 +19,7 @@ const editorStore=useEditorStore();
 const {editor} = storeToRefs(editorStore);
   
 onMounted(()=>{
+/*
   const content=`
   # marknote
   所见即所得  🎉
@@ -50,11 +51,10 @@ onMounted(()=>{
   `;
   // console.log('mount editor',editor);
 
-  // setTimeout(() => {
-    
-  // }, 500);
+  */
   nextTick(()=>{
-    editorStore.setContent(content);
+    // editorStore.setContent(content);
+    editor.value.commands.focus();
   })
   
 })
