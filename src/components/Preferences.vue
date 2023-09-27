@@ -156,6 +156,9 @@ const handleClick=(k:string)=>{
             }
 
             .preferences-item{
+                &.right{
+                    text-align: right;
+                }
                 &>.header{
                     padding: 0.4em;
                     border-bottom: 1px dashed #ccc;
@@ -164,6 +167,10 @@ const handleClick=(k:string)=>{
                     padding: 0.4em;
                     .el-select{
                         width: 100%;
+                    }
+                    .content-tip{
+                        color: var(--contentBorderColor);
+                        padding: 1em 0;
                     }
                 }
             }

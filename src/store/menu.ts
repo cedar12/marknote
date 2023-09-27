@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { useEditorStore } from './editor';
 import { useAppStore } from './app';
 import { appWindow } from '@tauri-apps/api/window';
-import { ask } from '@tauri-apps/api/dialog';
+import { ask,confirm } from '@tauri-apps/api/dialog';
 import { exit } from '@tauri-apps/api/process';
 import {openFile,saveAs} from '../api/dialog';
 import {read} from '../api/file';
@@ -206,17 +206,37 @@ const events = {
       const key=item.key.substring(7);
       const editorStore=useEditorStore();
       editorStore.loading=true;
-      read(key).then((resp:any)=>{
-        if (resp.code === 0) {
-          const appStore = useAppStore();
-          appStore.setFilepath(key);
-          editorStore.setContent(resp.data);
-          editorStore.loading=false;
-        } 
-      }).catch(()=>{
-        editorStore.loading=false;
-      });
+      const appStroe=useAppStore();
+      if(!appStroe.isSave){
+        confirm(t('closeTip'), {title:t('closeTitleTip'),cancelLabel:t('save'),okLabel:t('giveUp')}).then(yes=>{
+          console.log('confirm',yes);
+          if(yes===false){
+            appStroe.save();
+          }else{
+            readMarkdownFile(key);
+          }
+        });
+        
+      }else{
+        readMarkdownFile(key);
+      }
+      
     }
     console.log(item);
   }
+}
+
+
+function readMarkdownFile(path:string){
+  const editorStore=useEditorStore();
+  read(path).then((resp:any)=>{
+    if (resp.code === 0) {
+      const appStore = useAppStore();
+      appStore.setFilepath(path);
+      editorStore.setContent(resp.data);
+      editorStore.loading=false;
+    } 
+  }).catch(()=>{
+    editorStore.loading=false;
+  });
 }

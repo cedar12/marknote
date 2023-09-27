@@ -1,6 +1,8 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, process::Command, env};
 
 use crate::{db, resp::{Resp, self}, utils::constant};
+
+use super::utils::cmd_args;
 
 
 
@@ -25,5 +27,25 @@ pub fn get_config() ->Resp<HashMap<String,String>>{
         Ok(map)=>resp::data(Some(map)),
         Err(e)=>resp::err(e.to_string())
     }
+    
+}
+
+
+#[tauri::command]
+pub fn set_ftype(){
+    if cfg!(target_os = "windows") {
+        use std::os::windows::process::CommandExt;
+        let exe_path=env::current_exe().unwrap();
+        log::debug!("exe path: {}",exe_path.to_string_lossy());
+        match Command::new("cmd").arg("/c").creation_flags(0x08000000).arg("ftype").arg(format!("Markdown={}",exe_path.to_string_lossy())).arg("%1").spawn(){
+            Ok(child)=>{ 
+                log::error!("child id {:?}",child.id());
+            },
+            Err(e)=>{
+                log::error!("{:?}",e);
+            }
+        };
+    }
+    
     
 }

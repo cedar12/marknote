@@ -39,6 +39,7 @@ fn main() {
             cmd::window::open_about,
             cmd::preferences::save_image_type,
             cmd::preferences::get_config,
+            cmd::preferences::set_ftype,
             cmd::utils::cmd_args,
             cmd::utils::log_info,
             cmd::utils::log_error,

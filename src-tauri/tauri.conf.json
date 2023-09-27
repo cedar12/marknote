@@ -15,7 +15,14 @@
       "all": false,
       "shell": {
         "all": false,
-        "open": true
+        "open": true,
+        "scope": [
+          {
+            "name": "Windows-ftype",
+            "cmd": "ftype",
+            "args": true
+          }
+        ]
       },
       "os": {
         "all": true

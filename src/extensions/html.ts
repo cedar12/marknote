@@ -1,15 +1,17 @@
-import { mergeAttributes } from '@tiptap/core';
-import { Heading as BaseHeading } from '@tiptap/extension-heading';
+import { mergeAttributes,Node } from '@tiptap/core';
 import { textblockTypeInputRule } from '@tiptap/vue-3';
 
-export const Heading = BaseHeading.extend({
+export const Html = Node.create({
+    name:'html',
+    priority:10,
+
     // @ts-ignore
     addOptions() {
 
         return {
-          levels: [1, 2, 3, 4, 5, 6],
-          HTMLAttributes: {
-            id:null,
+          tag: null,
+          HTMLAttributes:{
+
           },
         }
       },
@@ -22,77 +24,60 @@ export const Heading = BaseHeading.extend({
     
       addAttributes() {
         return {
-          level: {
-            default: 1,
-            rendered: false,
-          },
-          id:{
+          tag:{
             default: null,
             rendered:true,
             parseHTML: element => {
-              // console.log(element);
-
-              return element.innerText;
+              console.log('parse',element);
+              return element.nodeName;
             }
           }
         }
       },
     
       parseHTML() {
-        return this.options.levels
-          .map((level: number) => ({
-            tag: `h${level}`,
-            attrs: { level },
-          }))
+        return [{tag:this.options.tag}]
       },
     
       renderHTML({ node, HTMLAttributes }) {
-        const hasLevel = this.options.levels.includes(node.attrs.level)
-        const level = hasLevel
-          ? node.attrs.level
-          : this.options.levels[0]
-    
-        return [`h${level}`, mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0]
+        console.log('render',node);
+        return [node.attrs.tag, mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0]
       },
     
       addCommands() {
         return {
-          setHeading: attributes => ({ commands }) => {
-            if (!this.options.levels.includes(attributes.level)) {
-              return false
-            }
-    
-            return commands.setNode(this.name, attributes)
-          },
-          toggleHeading: attributes => ({ commands }) => {
-            if (!this.options.levels.includes(attributes.level)) {
-              return false
-            }
-    
-            return commands.toggleNode(this.name, 'paragraph', attributes)
-          },
+          
         }
       },
     
       addKeyboardShortcuts() {
-        return this.options.levels.reduce((items, level) => ({
-          ...items,
-          ...{
-            [`Mod-Alt-${level}`]: () => this.editor.commands.toggleHeading({ level }),
-          },
-        }), {})
+        return {}
       },
     
       addInputRules() {
-        return this.options.levels.map(level => {
-          return textblockTypeInputRule({
-            find: new RegExp(`^(#{1,${level}})\\s$`),
+        return [
+          textblockTypeInputRule({
+            find: /\<(\w+)(\s+((.+?)="(.+)?")+\s*?)?\>/,
             type: this.type,
-            getAttributes: {
-              level,
+            getAttributes: (match)=>{
+              var attr={
+                tag:match[1],
+                HTMLAttributes:{},
+              }
+              if(match[3]){
+                var htmlAttr:{[key:string]:string}={};
+                const matchs=match[3].split(' ');
+                matchs.forEach(m=>{
+                  const domAttr=m.trim().split('=');
+                  htmlAttr[domAttr[0].trim()]=domAttr[1].trim().substring(1,domAttr[1].trim().length-1);
+                });
+                attr.HTMLAttributes=htmlAttr;
+              }
+              console.log('rule',attr);
+              return attr;
             },
           })
-        })
+        ]
       },
 
 

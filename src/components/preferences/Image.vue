@@ -8,6 +8,11 @@
         <ElSelect v-model="saveType" @change="onChange" :key="locale">
           <ElOption v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></ElOption>
         </ElSelect>
+        <span class="content-tip">
+          默认: 相对Markdown文档路径存储插入的图片<br/>
+          指定: 系统绝对路径存储插入的图片<br/>
+          PicGo: 插入的图片上传至PicGo图床
+        </span>
       </div>
 
     </div>
@@ -16,7 +21,10 @@
         <span>{{ t('saveImagePath') }}</span>
       </div>
       <div class="content">
-        <ElInput type="primary" v-model="path" @change="onChangePath"></ElInput>
+        <ElInput v-model="path" @change="onChangePath"></ElInput>
+        <span class="content-tip" v-if="saveType==='default'">
+          Includes ${filename} in the text-box above to automatically insert the document filename.
+        </span>
       </div>
     </div>
     <div class="preferences-item" v-else>
@@ -24,10 +32,16 @@
         <span>{{ t('saveImagePath') }}</span>
       </div>
       <div class="content">
-        <ElInput type="primary" v-model="path" @change="onChangePath"></ElInput>
+        <ElInput v-model="path" @change="onChangePath"></ElInput>
       </div>
     </div>
-    <ElButton type="primary" @click="onSave">保存</ElButton>
+
+    <div class="preferences-item right">
+      <div class="content">
+        <ElButton @click="onSave">保存</ElButton>
+      </div>
+    </div>
+    
 
   </div>
 </template>

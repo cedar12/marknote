@@ -150,4 +150,18 @@ export const Table = BuiltInTable.extend({
     // @ts-ignore
     return [...this.parent(), !isPrint && !isEditable && readonlyTableView()].filter(Boolean);
   },
+
+  
+  addKeyboardShortcuts(){
+    
+    return {
+      'Mod-Shift-t': () => {
+        this.editor.commands.insertTable({rows:2,cols:3,withHeaderRow:true});
+        return true;
+      }
+    }
+  },
+
+  
+
 }).configure({ resizable: true });

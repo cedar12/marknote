@@ -70,6 +70,25 @@ export const useAppStore = defineStore('app', {
 
     init(){
       appWindow.show();
+      if(appWindow.label==='main'){
+        const editorStore=useEditorStore();
+        args().then(async (payload:string[])=>{
+          if(payload.length>1){
+            const path=payload[1];
+            editorStore.loading=true;
+            const resp:any=await read(path);
+            if (resp.code === 0) {
+              const appStore = useAppStore();
+              appStore.setFilepath(path);
+              editorStore.setContent(resp.data);
+            }
+            editorStore.loading=false;
+          }
+        }).catch(()=>{
+          editorStore.loading=false;
+        });
+      }
+      
       const { locale } = useI18n();
       platform().then(async platform=>{
         this.platform=platform;
@@ -81,41 +100,20 @@ export const useAppStore = defineStore('app', {
           const permission = await requestPermission();
           this.permissionGranted = permission === 'granted';
         }
-        if(appWindow.label==='main'){
-            const editorStore=useEditorStore();
-            try{
-              const payload:string[]=await args();
-              log.debug("args: "+payload);
-              if(payload.length>1){
-                const path=payload[1];
-                editorStore.loading=true;
-                const resp:any=await read(path);
-                if (resp.code === 0) {
-                  const appStore = useAppStore();
-                  appStore.setFilepath(path);
-                  editorStore.setContent(resp.data);
-                }
-                
-              }
-            }catch(e:any){
-              log.info(e+'');
-            }finally{
-              editorStore.loading=false;
-            }
-        }
+        
       });
 
       if(appWindow.label!=='preferences'&&appWindow.label!=='about'){
 
         
-        appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async (ev)=>{
-          console.log(ev);
+        appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async (_ev)=>{
+          // console.log(ev);
           if(this.isSave){
             appWindow.close();
           }else{
             try{
-              const yes=await confirm(t('closeTip'), {title:t('closeTitleTip'),okLabel:t('save'),cancelLabel:t('giveUp')});
-              if(yes){
+              const yes=await confirm(t('closeTip'), {title:t('closeTitleTip'),okLabel:t('giveUp'),cancelLabel:t('save')});
+              if(yes===false){
                 this.save();
               }else{
                 appWindow.close();

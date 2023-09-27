@@ -7,3 +7,6 @@ export function save(save_type:string,path:string){
 export function getConfig(){
   return invoke('get_config');
 }
+export function ftype(){
+  return invoke('set_ftype');
+}

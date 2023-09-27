@@ -18,7 +18,7 @@
                   <Check v-if="item2.checked"></Check>
                 </label>
                 <label class="menu-title">{{ item2.label }}</label>
-                <span>{{ item2.shortcut }}</span>
+                <span>{{ replaceShortcut(item2.shortcut) }}</span>
                 <i>
                   <Right v-if="item2.children && item2.children.length > 0"></Right>
                 </i>
@@ -27,7 +27,7 @@
                 <div class="menu-item" :class="{ split: item3.split }" v-for="item3 in item2.children" :key="item3.key">
                   <div class="menu-content" @click="onClick($event, item3, 3)" :title="item3.label">
                     <label class="menu-title">{{ item3.label }}</label>
-                    <span v-if="item3.shortcut">{{ item3.shortcut }}</span>
+                    <span v-if="item3.shortcut">{{ replaceShortcut(item3.shortcut) }}</span>
                   </div>
 
                 </div>
@@ -286,6 +286,7 @@ const loadMenuData=()=>{
           key: 'outliner',
           type:'checkbox',
           checked:appStore.visible.outliner,
+          shortcut:appStore.keyBinding?.getKey('view.outliner')?.key,
         },
         {
           label: t('folder'),
@@ -367,5 +368,15 @@ const onReset = () => {
 watch(()=>locale.value,()=>{
   loadMenuData();
 })
+
+
+function replaceShortcut(shortcut?:string){
+  if(!shortcut)return '';
+  const mod=appStore.platform==='darwin'?'Cmd':'Ctrl';
+  const alt=appStore.platform==='darwin'?'Option':'Alt';
+  const key=shortcut.replace(/Mod/g,mod).replace(/Alt/g,alt);
+  console.log('key->',key);
+  return key;
+}
 
 </script>

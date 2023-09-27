@@ -79,6 +79,10 @@ const defaultKeyBinding:KeyBinding[]=[
     key:'Mod+Alt+6',
   },
   {
+    description:['paragraph','table'],
+    key:'Mod+Shift+T',
+  },
+  {
     description:['paragraph','codeFences'],
     key:'Mod+Alt+C',
   },
@@ -101,6 +105,10 @@ const defaultKeyBinding:KeyBinding[]=[
   {
     description:['paragraph','paragraph'],
     key:'Mod+Enter',
+  },
+  {
+    description:['view','outliner'],
+    key:'Alt+Z',
   }
 ];
 

@@ -188,10 +188,20 @@ export const CodeBlock = CodeBlockLowlight.extend<CodeBlockLowlightOptions>({
     
     return {
       'Tab': () => {
-
-        this.editor.view.dispatch(this.editor.state.tr.insertText('\t'));
+        if(this.editor.isActive('codeBlock')){
+          this.editor.view.dispatch(this.editor.state.tr.insertText('\t'));
+          return true;
+        }
         // return this.editor.commands.indent();
-        return true;
+        return false;
+      },
+      'Shift-Tab': () => {
+        if(this.editor.isActive('codeBlock')){
+          // this.editor.view.dispatch(this.editor.state.tr.insertText('\t'));
+          return true;
+        }
+        // return this.editor.commands.indent();
+        return false;
       },
       'Mod-Alt-c': () => this.editor.commands.toggleCodeBlock(),
 

@@ -26,6 +26,7 @@ export const useEditorStore = defineStore('editor', {
   
   actions:{
     setContent(content:string){
+      this.editor?.commands.clearContent(false);
       this.editor?.commands.setContent(content);
       this.getTree();
     },

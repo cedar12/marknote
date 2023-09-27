@@ -10,6 +10,18 @@
         </ElSelect>
       </div>
     </div>
+    <div class="preferences-item">
+      <div class="header">
+        <span>代码缩进</span>
+      </div>
+      <div class="content">
+        <ElSelect @change="onChange">
+          <ElOption label="2字符" :value="'  '"></ElOption>
+          <ElOption label="4字符" :value="'    '"></ElOption>
+          <ElOption label="制表符" :value="'\t'"></ElOption>
+        </ElSelect>
+      </div>
+    </div>
     
   </div>
 </template>

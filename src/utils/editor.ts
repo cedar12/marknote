@@ -19,6 +19,7 @@ import { Code } from '../extensions/code';
 import { Focus } from '../extensions/focus';
 import { Image } from '../extensions/image';
 import { Katex } from '../extensions/katex';
+import { Html } from '../extensions/html';
 import { TableOfContents } from '../extensions/tableOfContents';
 import CharacterCount from '@tiptap/extension-character-count'
 import { useAppStore } from '../store/app';
@@ -72,13 +73,17 @@ function createEditor() {
         } else if (event.ctrlKey) {
           keys.push('ctrl');
         }
+        if(event.altKey){
+          keys.push('alt');
+        }
         if (event.key === 'Process' && event.ctrlKey) {
           hotkeys.trigger('ctrl+.', 'file');
         } else {
           keys.push(event.key);
           const key = keys.join('+').toLocaleLowerCase();
-          // console.log('handleKeyDown',view,event,key);
+          // console.log('handleKeyDown',event,key);
           hotkeys.trigger(key, 'file');
+          hotkeys.trigger(key, 'view');
         }
 
       },
@@ -96,6 +101,7 @@ function createEditor() {
       }),
       Heading,
       Strike,
+      Html,
       Bold,
       Italic,
       Code.configure({
@@ -106,7 +112,7 @@ function createEditor() {
       Focus,
       CharacterCount,
       Image.configure({
-        inline: false,
+        inline: true,
       }),
       Katex,
       TaskItem,

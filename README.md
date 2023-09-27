@@ -1,5 +1,7 @@
 # markote
 
+![](https://img.shields.io/github/stars/cedar12/marknote)![](https://img.shields.io/github/forks/cedar12/marknote)![](https://img.shields.io/github/downloads/cedar12/marknote/total)
+
 🎉A simple `WYSIWYG` markdown editor, available for Linux, macOS and Windows.
 
 ---
