@@ -5,7 +5,7 @@
         <span>{{ t('theme') }}</span>
       </div>
       <div class="content">
-        <div class="theme-item" :class="appStore.theme===theme.value?'active':''" v-for="theme in themes" @click="onChangeTheme(theme)">
+        <div class="theme-item" :class="appStore.theme?.value===theme.value?'active':''" v-for="theme in themes" @click="onChangeTheme(theme)">
           <div class="theme-option marknote" :key="theme.value" :style="caseStyle(theme.style)">
             <h3>{{ theme.label }}</h3>
             <p><a target="_blank" href="https://github.com/cedar12/marknote">MarkNote</a> is a simple <code class="inline">WYSIWYG</code> markdown editor</p>
@@ -54,6 +54,7 @@ const caseStyle=(styles:ThemeStyle):string=>{
 }
 
 const onChangeTheme=(theme:ThemeItem)=>{
+  appStore.theme=theme;
   emit('theme',theme);
 }
 
