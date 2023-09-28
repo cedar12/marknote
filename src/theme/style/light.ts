@@ -14,7 +14,7 @@ const light:ThemeItem={
       primaryTextColorActive: '#1e9fca',
       contentTextColor: '#3e3e3e',
       primaryBorderColor: '#52b5f9',
-      contentBorderColor: '#1b3954',
+      contentBorderColor: '#babec1',
       contentBackgroundColorActive: '#ececec',
       contentBackgroundColorHover: '#ececec',
       contentTextColorActive: '#616161',
