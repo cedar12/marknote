@@ -15,6 +15,7 @@ import {
 } from '@tauri-apps/api/updater';
 import { relaunch } from '@tauri-apps/api/process';
 import { sendNotification } from '@tauri-apps/api/notification';
+import { log } from '../api/utils';
 
 // @ts-ignore
 const { t } = i18n.global;
@@ -195,6 +196,23 @@ const events = {
   //   editorStore.editor.commands.toggleKatex();
   // },
 
+  quickStart(){
+    const path='./docs/marknote.md';
+    const appStroe=useAppStore();
+    if(!appStroe.isSave){
+      confirm(t('closeTip'), {title:t('closeTitleTip'),cancelLabel:t('save'),okLabel:t('giveUp')}).then(yes=>{
+        console.log('confirm',yes);
+        if(yes===false){
+          appStroe.save();
+        }else{
+          readMarkdownFile(path);
+        }
+      });
+      
+    }else{
+      readMarkdownFile(path);
+    }
+  },
 
   '*':(item:Menu)=>{
     if(/^heading([1-6])$/.test(item.key)){
@@ -204,8 +222,6 @@ const events = {
       editorStore.editor.commands.toggleHeading({level:parseInt(level) as any});
     }else if(item.key.startsWith('recent_')){
       const key=item.key.substring(7);
-      const editorStore=useEditorStore();
-      editorStore.loading=true;
       const appStroe=useAppStore();
       if(!appStroe.isSave){
         confirm(t('closeTip'), {title:t('closeTitleTip'),cancelLabel:t('save'),okLabel:t('giveUp')}).then(yes=>{
@@ -229,13 +245,16 @@ const events = {
 
 function readMarkdownFile(path:string){
   const editorStore=useEditorStore();
+  editorStore.loading=true;
   read(path).then((resp:any)=>{
     if (resp.code === 0) {
       const appStore = useAppStore();
       appStore.setFilepath(path);
       editorStore.setContent(resp.data);
-      editorStore.loading=false;
-    } 
+    }else{
+      log.error(resp.info);
+    }
+    editorStore.loading=false;
   }).catch(()=>{
     editorStore.loading=false;
   });

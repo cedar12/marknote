@@ -42,7 +42,8 @@ const onChange=(value:any)=>{
   // const value=e.target['value'];
   // locale.value=value;
   // localStorage.setItem("lang", value);
-  console.log('change lang',value);
+  // console.log('change lang',value);
+  localStorage.setItem('codeTheme',value);
   appStore.emit('codeTheme',value);
 }
 </script>

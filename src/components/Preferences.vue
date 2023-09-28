@@ -25,6 +25,7 @@
                             <General v-if="key==='general'"></General>
                             <Editor v-if="key==='editor'"></Editor>
                             <Image v-if="key==='image'"></Image>
+                            <Theme v-if="key==='theme'"></Theme>
                         </div>
                         
                     </div>
@@ -42,11 +43,9 @@ import { appWindow } from '@tauri-apps/api/window';
 import General from './preferences/General.vue';
 import Editor from './preferences/Editor.vue';
 import Image from './preferences/Image.vue';
+import Theme from './preferences/Theme.vue';
 import { ElConfigProvider } from 'element-plus';
-// @ts-ignore
-import zhCn from 'element-plus/dist/locale/zh-cn.mjs';
-// @ts-ignore
-import en from 'element-plus/dist/locale/en.mjs';
+import * as elementPlusLocales from 'element-plus/es/locale/index';
 
 
 const appStore=useAppStore();
@@ -57,14 +56,14 @@ const key=ref<string>('general');
 
 const {t,locale} = useI18n();
 
-const elLocale=ref(locale.value==='cn'?zhCn:en);
+const elLocale=ref((elementPlusLocales as any)[locale.value]);
 
 const options=['general','editor','markdown','theme','image'];
 
 appWindow.setTitle(t('preferences'));
 
 watch(()=>locale.value,()=>{
-    elLocale.value=locale.value==='cn'?zhCn:en;
+    elLocale.value=(elementPlusLocales as any)[locale.value];
     appWindow.setTitle(t('preferences'));
 });
 
@@ -158,6 +157,16 @@ const handleClick=(k:string)=>{
             .preferences-item{
                 &.right{
                     text-align: right;
+                }
+                &.flat{
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 0.4em;
+                    &>.header{
+                        padding: 0;
+                        border-bottom: none;
+                    }
                 }
                 &>.header{
                     padding: 0.4em;

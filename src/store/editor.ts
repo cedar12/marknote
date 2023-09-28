@@ -12,7 +12,7 @@ export const useEditorStore = defineStore('editor', {
   }{
       return {
         tree:[],
-        codeTheme:'default',
+        codeTheme:localStorage.getItem('codeTheme')||'default',
         loading:false,
         headings:[],
       }

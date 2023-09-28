@@ -306,6 +306,10 @@ const loadMenuData=()=>{
         {
           label: t('checkUpdate'),
           key: 'checkUpdate',
+        },
+        {
+          label: t('quickStart'),
+          key: 'quickStart',
         }
       ]
     }

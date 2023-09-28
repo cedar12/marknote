@@ -1,3 +1,4 @@
+export const label='English';
 export default {
   menu:'Menu',
   file:'File',
@@ -51,6 +52,7 @@ export default {
   help: 'Help',
   about: 'About',
   checkUpdate: 'Check for updates',
+  quickStart:'Quick Start',
 
   codeTheme:'Code Highlight Theme',
   language:'Language',
@@ -65,6 +67,9 @@ export default {
   notSaveStatusBackground:'Unsaved State Point Color',
 
   theme:'Theme',
+  autoTheme:'Automatically adjust application theme according to system settings:',
+
+
   image: 'Image',
 
   saveImageType: 'Save Inserting Image',

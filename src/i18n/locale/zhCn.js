@@ -1,3 +1,4 @@
+export const label='简体中文';
 export default {
   menu:'菜单',
   file:'文件',
@@ -51,6 +52,7 @@ export default {
   help: '帮助',
   about: '关于',
   checkUpdate: '检查更新',
+  quickStart:'开始',
 
   codeTheme:'代码高亮主题',
   language:'语言',
@@ -66,6 +68,8 @@ export default {
   notSaveStatusBackground:'未保存状态点颜色',
 
   theme:'主题',
+  autoTheme:'主题跟随系统设置',
+
   image: '图片',
 
   saveImageType: '保存插入图片',

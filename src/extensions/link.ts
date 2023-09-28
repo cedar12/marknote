@@ -3,6 +3,8 @@ import { Link as BuiltInLink } from '@tiptap/extension-link';
 import { Plugin, PluginKey } from 'prosemirror-state';
 import { Decoration, DecorationSet } from 'prosemirror-view';
 import { findMarkPosition } from './utils/mark';
+import LinkPopover from './wrapper/LinkPopover.vue';
+import {render,h} from 'vue';
 
 const extractHrefFromMatch = (match:RegExpExecArray) => {
   return { href: match.groups?.href };
@@ -64,7 +66,6 @@ export const Link = BuiltInLink.extend({
   // @ts-ignore
   addProseMirrorPlugins() {
     const { isEditable } = this.editor;
-
     return [
       ...(this.parent?.()||[]),
       new Plugin({
@@ -78,6 +79,8 @@ export const Link = BuiltInLink.extend({
             const marks=selection.$head.marks();
             const decorations: Decoration[] = []
             marks.forEach(mark=>{
+              
+
               if(mark.type.name===this.name){
                 const {start,end}=findMarkPosition(state,mark,selection.from,selection.to);
                 decorations.push(Decoration.widget(start,()=>{
@@ -87,11 +90,15 @@ export const Link = BuiltInLink.extend({
                   return span;
                 },{side:-1}));
                 decorations.push(Decoration.widget(end,()=>{
-                  const span=document.createElement('span');
-                  span.className='link-wrapper link-end';
-                  span.innerText=`](${mark.attrs.href})`;
+                  // const span=document.createElement('span');
+                  // span.className='link-wrapper link-end';
+                  // span.innerText=`](${mark.attrs.href})`;
+
+                  const container=document.createElement('div');
+                    // @ts-ignore
+                  render(h(LinkPopover,{editor:this.editor,className:'link-wrapper link-end',href:mark.attrs.href,start,end}),container);
                   
-                  return span;
+                  return container.children[0];
                 },{side:1}));
               }
               

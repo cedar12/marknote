@@ -57,6 +57,7 @@ import {useAppStore} from '../../store/app';
 import {useI18n} from 'vue-i18n';
 import {ElSelect,ElOption,ElColorPicker,ElTag,ElTooltip,ElButton} from 'element-plus';
 import { requestPermission } from '@tauri-apps/api/notification';
+import {locales} from '../../i18n';
 import { ftype } from '../../api/preferences';
 // import { Command } from '@tauri-apps/api/shell';
 // import { args } from '../../api/utils';
@@ -71,16 +72,7 @@ watch(()=>locale.value,()=>{
   value.value=locale.value;
 });
 
-const options=[
-  {
-    label:'中文',
-    value:'cn'
-  },
-  {
-    label:'English',
-    value:'en'
-  }
-];
+const options=locales();
 
 const onChange=(event:string,value:any)=>{
   appStore.emit(event,value);

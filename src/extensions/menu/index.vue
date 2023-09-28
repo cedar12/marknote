@@ -8,7 +8,7 @@
           <ElButton size="small" :icon="TextItalic"  @click="editor.chain().focus().toggleItalic().run()"></ElButton>
         </ElTooltip>
         <ElTooltip content="链接">
-          <ElButton size="small" :icon="Link" @click=""></ElButton>
+          <ElButton size="small" :icon="Link" @click="onClickLink"></ElButton>
         </ElTooltip>
         <ElTooltip content="代码">
           <ElButton size="small" :icon="Code" @click="editor.chain().focus().toggleCode().run()"></ElButton>
@@ -28,6 +28,7 @@ import { isTextSelection } from '@tiptap/core';
 const editorStore=useEditorStore();
 const {editor}=storeToRefs(editorStore);
 
+const excludes=['table','katex','codeBlock','image'];
 
 //@ts-ignore
 const shouldShow=({ view, state, from, to }) => {
@@ -35,11 +36,21 @@ const shouldShow=({ view, state, from, to }) => {
   const { empty } = selection;
 
   const isEmptyTextBlock = !doc.textBetween(from, to).length && isTextSelection(state.selection);
-
-  if (!view.hasFocus() || empty || isEmptyTextBlock || editor.value.isActive('table')|| editor.value.isActive('katex')||editor.value.isActive('codeBlock')||editor.value.isActive('image')||editor.value.isActive('katex')) {
+  const findType=excludes.find((e)=>editor.value.isActive(e));
+  if (!view.hasFocus() || empty || isEmptyTextBlock || (findType&&findType.length>0)) {
     return false;
   }
 
   return true;
 };
+
+
+
+const onClickLink=()=>{
+  if(editor.value.isActive('link')){
+    editor.value.commands.unsetLink();
+  }else{
+    editor.value.commands.setLink({href:'https://www.baidu.com'});
+  }
+}
 </script>

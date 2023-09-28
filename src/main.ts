@@ -7,7 +7,7 @@ import About from "./components/About.vue";
 import  i18n from "./i18n";
 // import 'element-plus/dist/index.css';
 import './scss/element-plus.scss';
-
+import 'element-plus/theme-chalk/dark/css-vars.css';
 import "./scss/editor.scss";
 import './scss/codeTheme.scss';
 import { createPinia } from 'pinia'

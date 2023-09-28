@@ -16,7 +16,7 @@
 
 - [ ] 导出markdown
 
-- [ ] 多主题
+- [x] 多主题
 
 - [x] 字词统计
 
@@ -29,6 +29,8 @@
 - [x] Katex公式
 
 - [ ] 流程图
+
+![image.png](https://cdn.jsdelivr.net/gh/cedar12/picgo@main/images/image.png)
 
 ```javascript
 console.log('marknote');

@@ -13,9 +13,30 @@ import { isPermissionGranted, requestPermission } from '@tauri-apps/api/notifica
 import { confirm } from '@tauri-apps/api/dialog';
 import i18n from '../i18n';
 import { args,log } from '../api/utils';
+import { findThemeByType, setTheme, ThemeItem } from '../theme';
 
 // @ts-ignore
 const { t } = i18n.global;
+
+
+function getTheme(){
+  var theme=null;
+  try{
+    const themeJson=localStorage.getItem('theme');
+    if(themeJson){
+      theme=JSON.parse(themeJson);
+    }
+  }catch(e){
+    console.error(e);
+  }
+  if(!theme){
+    theme=findThemeByType('light');
+  }
+  if(theme){
+    setTheme(theme);
+  }
+  return theme;
+}
 
 export const useAppStore = defineStore('app', {
   state:():{
@@ -30,6 +51,8 @@ export const useAppStore = defineStore('app', {
     keyBinding:KeyBindingBuilder|null,
     menuKey:number,
     permissionGranted:boolean,
+    theme:ThemeItem|undefined,
+    autoTheme:boolean,
   }=>({
     title:null,
     filepath: null,
@@ -42,6 +65,8 @@ export const useAppStore = defineStore('app', {
     keyBinding:null,
     menuKey:0,
     permissionGranted:false,
+    theme:getTheme(),
+    autoTheme:false,
   }),
   actions:{
     setFilepath(filepath:string|null){
@@ -70,6 +95,13 @@ export const useAppStore = defineStore('app', {
 
     init(){
       appWindow.show();
+      const autoTheme=localStorage.getItem('autoTheme');
+      if(autoTheme=='true'){
+        this.autoTheme=true;
+        const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)");
+        setTheme(findThemeByType(isDarkTheme.matches?'dark':'light') as any);
+      }
+
       if(appWindow.label==='main'){
         const editorStore=useEditorStore();
         args().then(async (payload:string[])=>{
@@ -88,7 +120,7 @@ export const useAppStore = defineStore('app', {
           editorStore.loading=false;
         });
       }
-      
+
       const { locale } = useI18n();
       platform().then(async platform=>{
         this.platform=platform;
@@ -176,6 +208,21 @@ export const useAppStore = defineStore('app', {
         document.documentElement.style.setProperty('--notSavedColor',value);
         
       });
+
+      listen<ThemeItem>('theme', async (event) => {
+        const value=event.payload;
+        setTheme(value);
+      });
+
+      listen(TauriEvent.WINDOW_THEME_CHANGED,(ev)=>{
+        if(this.autoTheme){
+          const themeType:any=ev.payload;
+          const theme=findThemeByType(themeType);
+          if(theme){
+            emit('theme',theme);
+          }
+        }
+      })
 
       emit('unsavedColor',localStorage.getItem('unsavedColor')||'rgb(66, 212, 21)');
     },

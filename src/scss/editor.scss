@@ -3,6 +3,10 @@
     // margin: 1rem 0;
     padding: 1rem 4rem;
     font-family: var(--fontFamily);
+    color: var(--contentTextColor);
+    background-color: var(--contentBackgroundColor);
+    --editorHighlightBackgroundColor:var(--contentBackgroundColorActive);
+    --editorHighlightTextColor:var(--contentTextColorActive);
     &.resize-cursor{
         cursor:col-resize;
     }
@@ -12,7 +16,7 @@
     }
 
     a{
-        color:#00c4ff;
+        color:var(--primaryTextColor,#00c4ff);
     }
 
     .bold-wrapper,.code-wrapper,.strike-wrapper,.italic-wrapper,.link-wrapper{
@@ -63,9 +67,10 @@
     code.inline {
         // background-color: rgba(#616161, 0.1);
         background-color:var(--editorHighlightBackgroundColor,#f1f3f5);
-        color: #616161;
+        color: var(--editorHighlightTextColor,#616161);
         padding: 0.2em 0.4em;
         margin: 0 0.2em;
+        border-radius: 4px;
         font-family: 'JetBrainsMono', monospace;
     }
 
@@ -78,7 +83,7 @@
         margin-top: 0.75em !important;
         padding-left: 1rem;
         margin: 0;
-        border-left: 0.4em solid rgba(#1b3954, 0.2);
+        border-left: 0.4em solid var(--contentBorderColor,#1b3954);
         background-color: var(--editorHighlightBackgroundColor,#f1f3f5);
         // border-top-right-radius: 0.5rem; 
         // border-bottom-right-radius: 0.5rem;
@@ -106,8 +111,8 @@
         width: 100%;
         margin: 0;
         --gripWidth: 8px;
-        --gripColor: #ced4da;
-        --gripColorActive: #0375fb;
+        --gripColor:var(--contentBorderColor,#f1f3f5);
+        --gripColorActive: var(--contentTextColorHover,#616161);
 
         .grip-table,.grip-row,.grip-column{
             display: inline-block;
@@ -150,7 +155,7 @@
         td,
         th {
             min-width: 1em;
-            border: 1px solid #ced4da;
+            border: 1px solid var(--contentBackgroundColorActive,#ced4da);
             padding: 3px 5px;
             vertical-align: top;
             box-sizing: border-box;
@@ -164,7 +169,8 @@
         th {
             font-weight: bold;
             text-align: left;
-            background-color: #f1f3f5;
+            background-color:var(--editorHighlightBackgroundColor,#f1f3f5);
+            color: var(--editorHighlightTextColor,#616161);
         }
 
         .selectedCell:after {
