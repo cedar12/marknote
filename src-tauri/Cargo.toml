@@ -1,6 +1,6 @@
 [package]
 name = "marknote"
-version = "0.0.2"
+version = "0.0.3"
 description = "MarkNote"
 authors = ["cedar12.zxd@qq.com"]
 license = "MIT"

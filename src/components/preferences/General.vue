@@ -1,14 +1,14 @@
 <template>
   <div class="preferences-general">
 
-    <div class="preferences-item" v-if="appStore.platform==='win32'">
+    <!-- <div class="preferences-item" v-if="appStore.platform==='win32'">
       <div class="header">
         <span>文件关联</span>
       </div>
       <div class="content">
         <el-button size="default" @click="onClickFtype">关联默认打开</el-button>
       </div>
-    </div>
+    </div> -->
 
     <div class="preferences-item">
       <div class="header">
@@ -55,10 +55,10 @@
 import {ref,watch} from 'vue';
 import {useAppStore} from '../../store/app';
 import {useI18n} from 'vue-i18n';
-import {ElSelect,ElOption,ElColorPicker,ElTag,ElTooltip,ElButton} from 'element-plus';
+import {ElSelect,ElOption,ElColorPicker,ElTag,ElTooltip} from 'element-plus';
 import { requestPermission } from '@tauri-apps/api/notification';
 import {locales} from '../../i18n';
-import { ftype } from '../../api/preferences';
+// import { ftype } from '../../api/preferences';
 // import { Command } from '@tauri-apps/api/shell';
 // import { args } from '../../api/utils';
 
@@ -78,11 +78,11 @@ const onChange=(event:string,value:any)=>{
   appStore.emit(event,value);
 }
 
-const onClickFtype=async ()=>{
-  ftype();
-  // const payload:string[]=await args();
-  // new Command('ftype', [`Markdown=${payload[0]}`,'%1']);
-}
+// const onClickFtype=async ()=>{
+//   ftype();
+//   // const payload:string[]=await args();
+//   // new Command('ftype', [`Markdown=${payload[0]}`,'%1']);
+// }
 
 </script>
 <style lang="scss">

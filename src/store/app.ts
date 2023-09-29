@@ -12,7 +12,7 @@ import { saveAs} from '../api/dialog';
 import { isPermissionGranted, requestPermission } from '@tauri-apps/api/notification';
 import { confirm } from '@tauri-apps/api/dialog';
 import i18n from '../i18n';
-import { args,log } from '../api/utils';
+import { args } from '../api/utils';
 import { findThemeByType, setTheme, ThemeItem } from '../theme';
 
 // @ts-ignore
@@ -94,6 +94,7 @@ export const useAppStore = defineStore('app', {
     },
 
     init(){
+      this.isSave=true;
       appWindow.show();
       const autoTheme=localStorage.getItem('autoTheme');
       if(autoTheme=='true'){
@@ -215,6 +216,7 @@ export const useAppStore = defineStore('app', {
       });
 
       listen(TauriEvent.WINDOW_THEME_CHANGED,(ev)=>{
+        console.log(this.autoTheme,ev);
         if(this.autoTheme){
           const themeType:any=ev.payload;
           const theme=findThemeByType(themeType);

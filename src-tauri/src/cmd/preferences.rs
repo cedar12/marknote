@@ -33,7 +33,8 @@ pub fn get_config() ->Resp<HashMap<String,String>>{
 
 #[tauri::command]
 pub fn set_ftype(){
-    if cfg!(target_os = "windows") {
+    #[cfg(target_os="windows")]
+    {
         use std::os::windows::process::CommandExt;
         let exe_path=env::current_exe().unwrap();
         log::debug!("exe path: {}",exe_path.to_string_lossy());
