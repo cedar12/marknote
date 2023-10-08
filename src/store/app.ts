@@ -138,6 +138,11 @@ export const useAppStore = defineStore('app', {
 
       if(appWindow.label!=='preferences'&&appWindow.label!=='about'){
 
+        appWindow.listen(TauriEvent.WINDOW_FOCUS,()=>{
+          const editorStore=useEditorStore();
+          editorStore.editor.commands.focus();
+        });
+
         
         appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async (_ev)=>{
           // console.log(ev);
@@ -145,6 +150,7 @@ export const useAppStore = defineStore('app', {
             appWindow.close();
           }else{
             try{
+              // @ts-ignore
               const yes=await confirm(t('closeTip'), {title:t('closeTitleTip'),okLabel:t('giveUp'),cancelLabel:t('save')});
               if(yes===false){
                 this.save();

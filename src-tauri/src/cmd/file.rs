@@ -70,3 +70,17 @@ pub async fn save_image_path(md_path:&str,img_path: &str) ->Result<resp::Resp<St
 //     }
 //   }
 // }
+
+
+#[tauri::command]
+pub async fn export_html(path:&str,html: &str) ->Result<resp::Resp<String>,String> {
+  match fs::write(path, html){
+    Ok(())=>{
+      Ok(resp::ok(path.into(),None))
+    }
+    Err(e)=>{
+      Err(e.to_string())
+    }
+  }
+  
+}

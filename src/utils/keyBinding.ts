@@ -1,10 +1,12 @@
 import hotkeys, { HotkeysEvent } from 'hotkeys-js';
 import {useAppStore} from '../store/app';
+import * as globalShortcut from '@tauri-apps/api/globalShortcut';
 
 export interface KeyBinding{
   description:string[],
   key:string,
   replace?:string,
+  system?:boolean,
 }
 
 const defaultKeyBinding:KeyBinding[]=[
@@ -27,6 +29,7 @@ const defaultKeyBinding:KeyBinding[]=[
   {
     description:['file','preferences'],
     key:'Mod+.',
+    system:false,
   },
   {
     description:['file','closeWindow'],
@@ -112,7 +115,7 @@ const defaultKeyBinding:KeyBinding[]=[
   }
 ];
 
-type KeyBindingFn=(bind:KeyBinding,handler: HotkeysEvent)=>boolean|void;
+type KeyBindingFn=(bind:KeyBinding,handler?: HotkeysEvent)=>boolean|void;
 
 export class KeyBindingBuilder{
   private binds:KeyBinding[];
@@ -131,6 +134,7 @@ export class KeyBindingBuilder{
   }
 
   unbind(){
+    globalShortcut.unregisterAll();
     hotkeys.unbind();
   }
 
@@ -141,15 +145,26 @@ export class KeyBindingBuilder{
   bind(){
     const appStore=useAppStore();
     this.binds.forEach(bind=>{
-      const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,appStore.platform==='darwin'?'command':'ctrl').toLocaleLowerCase();
-      hotkeys(key, bind.description[0], (event, handler)=>{
-        if(this.fn){
-          const result=this.fn(bind,handler);
-          if(result===true&&event){
-            event.preventDefault();
+      if(bind.system===true){
+        const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,'CommandOrControl').toLocaleLowerCase();
+        globalShortcut.unregister(key);
+        globalShortcut.register(key,()=>{
+          if(this.fn){
+            this.fn(bind);
           }
-        }
-      });
+        });
+      }else{
+        const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,appStore.platform==='darwin'?'command':'ctrl').toLocaleLowerCase();
+        hotkeys(key, bind.description[0], (event, handler)=>{
+          if(this.fn){
+            const result=this.fn(bind,handler);
+            if(result===true&&event){
+              event.preventDefault();
+            }
+          }
+        });
+      }
+      
     });
   }
 

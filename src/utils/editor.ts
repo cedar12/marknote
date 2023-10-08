@@ -145,23 +145,17 @@ function createEditor() {
       // const dom=view.nodeDOM(selection.$anchor.pos);
       // console.log('tr',props,node,dom);
 
-      const editorStore = useEditorStore();
-      editorStore.getTree();
     },
     onUpdate: () => {
       // const editorStore = useEditorStore();
       const appStore = useAppStore();
       appStore.isSave = false;
       // editorStore.tree = getTree();
-      const editorStore = useEditorStore();
-      editorStore.getTree();
     },
     onCreate: () => {
       // const editorStore = useEditorStore();
       // editorStore.tree = getTree();
       // console.log(editorStore.tree)
-      const editorStore = useEditorStore();
-      editorStore.getTree();
     },
 
   });

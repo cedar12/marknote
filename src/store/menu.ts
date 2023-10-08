@@ -103,6 +103,12 @@ const events = {
     }).catch(e => console.error(e));
 
   },
+  html(){
+    const editorStore=useEditorStore();
+    const html=editorStore.editor.getHTML();
+    console.log('html',html);
+  },
+
   preferences() {
     openPreferences();
   },
