@@ -110,8 +110,8 @@ const defaultKeyBinding:KeyBinding[]=[
     key:'Mod+Enter',
   },
   {
-    description:['view','outliner'],
-    key:'Alt+Z',
+    description:['view','sidebar'],
+    key:'Alt+S',
   }
 ];
 

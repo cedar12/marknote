@@ -105,15 +105,12 @@ const showChild=(heading:Heading,show:boolean)=>{
     
     if(range===false&&h.id===id){
       range=true;
-      console.log('start',i);
     }else if(range&&h.level<=level){
       range=false;
-      console.log('end',i);
     }
     if(range&&h.id!==id){
       h.show=show;
       h.status=show?'open':'close';
-      console.log('show',h,show);
     }
     hs.push({...h});
   }
@@ -125,9 +122,9 @@ const showChild=(heading:Heading,show:boolean)=>{
 
 <style lang="scss">
 .marknote-outliner{
-    background-color: var(--primaryBackgroundColor);
-    color: var(--primaryTextColor);
-    padding-top: var(--titleBarHeight);
+    // background-color: var(--primaryBackgroundColor);
+    // color: var(--primaryTextColor);
+    // padding-top: var(--titleBarHeight);
     --el-fill-color-light: var(--primaryBackgroundColorHover);
     --el-fill-color-blank: var(--primaryBackgroundColor);
     --el-text-color-regular: var(--primaryTextColor);
@@ -135,7 +132,7 @@ const showChild=(heading:Heading,show:boolean)=>{
         height: calc(100vh - var(--titleBarHeight));
         overflow: hidden;
         .outliner-item{
-            padding: 2px 0 2px 10px;
+            padding: 2px 0 2px 0;
             display: flex;
             align-items: center;
             cursor: pointer;

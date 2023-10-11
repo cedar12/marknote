@@ -47,6 +47,7 @@ fn main() {
             cmd::utils::log_info,
             cmd::utils::log_error,
             cmd::utils::log_debug,
+            cmd::utils::open_explorer,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

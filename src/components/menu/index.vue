@@ -282,17 +282,17 @@ const loadMenuData=()=>{
       key: 'view',
       children: [
         {
-          label: t('outliner'),
-          key: 'outliner',
+          label: t('sidebar'),
+          key: 'sidebar',
           type:'checkbox',
-          checked:appStore.visible.outliner,
-          shortcut:appStore.keyBinding?.getKey('view.outliner')?.key,
+          checked:appStore.sidebar.visible,
+          shortcut:appStore.keyBinding?.getKey('view.sidebar')?.key,
         },
-        {
-          label: t('folder'),
-          key: 'folderView',
-          type:'checkbox'
-        }
+        // {
+        //   label: t('folder'),
+        //   key: 'folderView',
+        //   type:'checkbox'
+        // }
       ]
     },
     {
@@ -370,6 +370,10 @@ const onReset = () => {
 }
 
 watch(()=>locale.value,()=>{
+  loadMenuData();
+})
+
+watch(()=>appStore.sidebar.visible,()=>{
   loadMenuData();
 })
 

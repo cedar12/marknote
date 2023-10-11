@@ -46,6 +46,7 @@ export default {
 
 
   view: 'View',
+  sidebar: 'Sidebar',
   outliner:'Outliner',
   folder:'Folder',
 

@@ -1,8 +1,8 @@
 <template>
-  <div data-tauri-drag-region class="titlebar-bg">
+  <div data-tauri-drag-region class="titlebar-bg"  :style="`--titlbarSidebarWidth: ${appStore.sidebar.visible?'var(--sidebarWidth)':'0'}`">
     <div data-tauri-drag-region class="titlebar">
       <div class="titlebar-toolbar">
-        <div class="titlebar-tool" :class="{open:menuStore.visible,'sidebar-visbile':appStore.visible.outliner}" @click="menuStore.visible=!menuStore.visible">
+        <div class="titlebar-tool" :class="{open:menuStore.visible,'sidebar-visbile':appStore.sidebar.visible}" @click="menuStore.visible=!menuStore.visible">
           <HamburgerButton theme="filled" />
         </div>
         <el-popover
@@ -67,15 +67,18 @@ const mode=ref('words');
 <style lang="scss">
 //--titlebarBgHover --titleBarHeight --editorBgColor
 .titlebar-bg{
-  --titlebarBgHover:var(--primaryBackgroundColorHover)
+  --titlebarBgHover:var(--primaryBackgroundColorHover);
   // --barHeight:var(--titleBarHeight,30px);
   height: var(--titleBarHeight);
-  // background: var(--editorBgColor,#ffffff);
+  --titlbarSidebarWidth:var(--sidebarWidth,0);
+  background: linear-gradient(to right, var(--primaryBackgroundColor) 0, var(--primaryBackgroundColor) var(--titlbarSidebarWidth,0), var(--contentBackgroundColor,#ffffff) var(--titlbarSidebarWidth,0), var(--contentBackgroundColor,#ffffff) 100%) !important;
+  
   position: relative;
   left: 0;
   top: 0;
   right: 0;
   .titlebar{
+    mix-blend-mode: difference;
     position:fixed;
     user-select: none;
     background: transparent;
@@ -98,6 +101,7 @@ const mode=ref('words');
         line-height: var(--titleBarHeight);
         text-align: center;
         cursor: pointer;
+        color: #a8a8a8;
         z-index: 4;
         
         transition: .4s ease-in-out;
@@ -110,7 +114,7 @@ const mode=ref('words');
         }
         &.open{
           transform: rotate(90deg);
-          background: var(--titlebarBgHover,#dfdfdf);
+          // background: var(--titlebarBgHover,#dfdfdf);
         }
       }
 
@@ -143,9 +147,12 @@ const mode=ref('words');
       box-sizing: border-box;
       overflow: hidden;
       padding: 0 calc(var(--titleBarHeight) * 3 + 20px);
-      background-color: transparent;
-      .marknote-title{
+      // background-color: transparent;
+      // mix-blend-mode: difference;
+      span.marknote-title{
         mix-blend-mode: difference;
+        // isolation: isolate;
+        color: #a8a8a8;
         &.not-save::after{
           content: '';
           display: inline-block;
@@ -174,8 +181,9 @@ const mode=ref('words');
         width: var(--titleBarHeight);
         height: var(--titleBarHeight);
         cursor: pointer;
+        color: #a8a8a8;
         &:hover {
-          background: var(--titlebarBgHover,#dfdfdf);
+          background: #46464685;//var(--titlebarBgHover,#dfdfdf);
         }
       }
     }

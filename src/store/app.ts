@@ -47,7 +47,12 @@ export const useAppStore = defineStore('app', {
     platform:null|'linux'| 'darwin'| 'ios'| 'freebsd'| 'dragonfly'| 'netbsd'| 'openbsd'| 'solaris'| 'android'| 'win32',
     visible:{
       outliner:boolean,
+      folder:boolean,
     },
+    sidebar:{
+      visible:boolean,
+      active: 'outliner'|'folder',
+    }
     keyBinding:KeyBindingBuilder|null,
     menuKey:number,
     permissionGranted:boolean,
@@ -61,6 +66,11 @@ export const useAppStore = defineStore('app', {
     recentFiles:JSON.parse(localStorage.getItem('recent')||'[]'),
     visible:{
       outliner:false,
+      folder:false,
+    },
+    sidebar:{
+      visible:false,
+      active: 'outliner',
     },
     keyBinding:null,
     menuKey:0,

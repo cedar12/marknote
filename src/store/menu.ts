@@ -5,7 +5,7 @@ import { appWindow } from '@tauri-apps/api/window';
 import { ask,confirm } from '@tauri-apps/api/dialog';
 import { exit } from '@tauri-apps/api/process';
 import {openFile,saveAs} from '../api/dialog';
-import {read} from '../api/file';
+import {exportHTML, read} from '../api/file';
 import i18n from '../i18n';
 import { openAbout, openPreferences, openWindow } from '../api/window';
 import {
@@ -69,6 +69,7 @@ const events = {
   openFile() {
     const editorStore=useEditorStore();
     editorStore.loading=true;
+    // @ts-ignore
     const title=t('openFile');
     openFile(title).then((resp:any)=>{
       if (resp.code === 0) {
@@ -96,6 +97,7 @@ const events = {
   saveAs() {
     const editorStore = useEditorStore();
     const appStore = useAppStore();
+    // @ts-ignore
     saveAs( editorStore.editor?.storage.markdown.getMarkdown(),t('saveAs')).then((res:any) => { 
       if(res.code===0){
         appStore.setFilepath(res.info);
@@ -106,7 +108,12 @@ const events = {
   html(){
     const editorStore=useEditorStore();
     const html=editorStore.editor.getHTML();
-    console.log('html',html);
+    const appStore = useAppStore();
+    if(appStore.filepath&&appStore.isSave){
+      exportHTML(appStore.filepath+'.html',html);
+    }
+    
+    // console.log('html',html);
   },
 
   preferences() {
@@ -125,10 +132,11 @@ const events = {
     editorStore.editor?.commands.redo();
   },
 
-  outliner(item:Menu){
-    console.log(item)
+  
+  sidebar(item:Menu){
     const appStore=useAppStore();
-    appStore.visible.outliner=item.checked||false;
+    appStore.sidebar.visible=item.checked||false;
+    // appStore.visible.folder=item.checked||false;
   },
 
   quit() {

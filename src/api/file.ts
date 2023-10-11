@@ -16,3 +16,7 @@ export function saveImage(mdPath:string,filename:string,base64:string){
 export function saveImagePath(mdPath:string,imgPath:string){
   return invoke('save_image_path', { mdPath,imgPath});
 }
+
+export function exportHTML(path:string,html:string){
+  return invoke('export_html', { path,html});
+}

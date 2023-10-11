@@ -46,6 +46,7 @@ export default {
   
 
   view: '视图',
+  sidebar: '侧边栏',
   outliner:'大纲',
   folder:'文件夹',
 

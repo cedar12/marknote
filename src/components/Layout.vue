@@ -1,8 +1,12 @@
 <template>
   <div class="marknote-layout">
-    <div class="layout-outliner" v-if="appStore.visible.outliner">
+    <!-- <div class="layout-outliner" v-if="appStore.visible.outliner">
       <Outliner></Outliner>
     </div>
+    <div class="layout-folder" v-if="appStore.visible.folder">
+      <Folder></Folder>
+    </div> -->
+    <Sidebar></Sidebar>
     <div class="layout-content" :class="'code-theme-'+editor.codeTheme">
       <ContextMenu :menu="menuItems">
         <ElScrollbar height="calc(100vh - var(--titleBarHeight))">
@@ -21,14 +25,16 @@ import ContextMenu from "./contextMenu/index.vue";
 import { ContextMenuItem } from "./contextMenu/useContextMenu";
 import { useI18n } from 'vue-i18n';
 import { useEditorStore } from '../store/editor';
-import Outliner from './Toc.vue';
-import {useAppStore} from '../store/app';
+// import Outliner from './Toc.vue';
+// import Folder from './Folder.vue';
+import Sidebar from './sidebar/Sidebar.vue';
+// import {useAppStore} from '../store/app';
 import {readText,writeText} from '@tauri-apps/api/clipboard';
 import {ElScrollbar} from 'element-plus';
 import Dialog from './dialog/index.vue';
 
 const { t } = useI18n();
-const appStore=useAppStore();
+// const appStore=useAppStore();
 
 const editor = useEditorStore();
 
@@ -88,6 +94,10 @@ const menuItems = ref<ContextMenuItem[]>([
   display: flex;
 
   .layout-outliner {
+    flex-basis: 200px;
+    height: 100vh;
+  }
+  .layout-folder {
     flex-basis: 200px;
     height: 100vh;
   }
