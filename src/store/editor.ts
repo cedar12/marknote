@@ -69,7 +69,6 @@ export const useEditorStore = defineStore('editor', {
       this.editor.view.dispatch(transaction)
 
       this.headings=items;
-      console.log('headings',this.headings);
     }
   }
 

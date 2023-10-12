@@ -32,6 +32,10 @@
 
 ![image.png](https://cdn.jsdelivr.net/gh/cedar12/picgo@main/images/image.png)
 
+![marknote-light.png](https://cdn.jsdelivr.net/gh/cedar12/picgo@main/images/202310122323992.png)
+
+![](https://cdn.jsdelivr.net/gh/cedar12/picgo@main/images/202310122323635.png)
+
 ```javascript
 console.log('marknote');
 ```
@@ -50,6 +54,16 @@ abc [marknote](https://github.com/cedar12/marknote)
 fn main(){
   println!("marknote");
 }
+```
+
+```shell
+git clone https://github.com/cedar12/marknote.git
+```
+
+```shell
+cd marknote
+yarn
+yarn tauri dev
 ```
 
 # **Keyboard Shortcuts**

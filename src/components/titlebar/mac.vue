@@ -1,5 +1,5 @@
 <template>
-    <div data-tauri-drag-region class="titlebar-bg macos" os="macos">
+    <div data-tauri-drag-region class="titlebar-bg macos" os="macos"  :style="`--titlbarSidebarWidth: ${appStore.sidebar.visible?'var(--sidebarWidth)':'0'}`">
         <div data-tauri-drag-region class="titlebar">
             <div data-tauri-drag-region class="titlebar-info">
                 <span data-tauri-drag-region class="marknote-title" 
@@ -44,6 +44,7 @@ const appStore = useAppStore();
     .titlebar {
         position: relative;
         user-select: none;
+        -webkit-user-select: none;
         background: linear-gradient(to right, var(--primaryBackgroundColor) 0, var(--primaryBackgroundColor) var(--titlbarSidebarWidth,0), var(--contentBackgroundColor,#ffffff) var(--titlbarSidebarWidth,0), var(--contentBackgroundColor,#ffffff) 100%) !important;
         width: 100vw;
         height: var(--barHeight);

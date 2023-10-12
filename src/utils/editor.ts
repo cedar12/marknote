@@ -67,6 +67,7 @@ function createEditor() {
       },
       handleKeyDown(_view, event) {
         const keys = [];
+        console.log('key down',event);
         const appStore = useAppStore();
         if (event.metaKey) {
           keys.push(appStore.platform === 'darwin' ? 'command' : 'win');
@@ -84,7 +85,7 @@ function createEditor() {
         } else {
           keys.push(event.key);
           const key = keys.join('+').toLocaleLowerCase();
-          // console.log('handleKeyDown',event,key);
+          console.log('handleKeyDown',event,key);
           hotkeys.trigger(key, 'file');
           hotkeys.trigger(key, 'view');
         }
