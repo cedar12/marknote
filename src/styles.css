@@ -12,6 +12,8 @@
   --contentTextColor: #3e3e3e;
   --primaryBorderColor: #52b5f9;
   --contentBorderColor: #9b9b9b;
+  --contentTextColorActive: #bebebe;
+  --contentTextColorHover: #c4c4c4;
 
 
   --menuBackgroundColor: var(--contentBackgroundColor);
@@ -71,4 +73,8 @@ body{
 
 .el-tree{
   background-color: transparent;
+}
+
+.marknote.min-height{
+  min-height: calc(100vh - var(--titleBarHeight));
 }

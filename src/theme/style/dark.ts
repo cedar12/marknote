@@ -13,7 +13,7 @@ const dark: ThemeItem = {
     primaryTextColorActive: '#1e9fca',
     contentBackgroundColor: '#282828',
     contentBackgroundColorActive: '#454545',
-    contentTextColor: '#bfb5b5',
+    contentTextColor: '#cbcbcb',
     primaryBorderColor: '#52b5f9',
     contentBorderColor: '#9b9b9b',
     contentBackgroundColorHover: '#c7c7c7',

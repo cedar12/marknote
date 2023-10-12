@@ -62,16 +62,20 @@ const unexpand=()=>{
       .menu-item{
         padding: 4px 0;
         position: relative;
+        &::before{
+          content: '';
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          width: 4px;
+          height: 100%;
+          transition: all .2s ease-in-out;
+        }
         &.active{
           color: var(--primaryTextColorActive);
+          
           &::before{
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
             background-color: var(--primaryTextColor);
           }
         }
@@ -95,6 +99,9 @@ const unexpand=()=>{
         left: 0;
         padding: 6px 0;
         box-sizing: border-box;
+        &:hover{
+          color: var(--primaryTextColorHover);
+        }
       }
     }
     .sidebar-content{
@@ -110,7 +117,7 @@ const unexpand=()=>{
   cursor: col-resize;
   &:hover{
     z-index: 99999;
-    background-color: #4e86c7;
+    background-color: var(--primaryTextColorActive,#4e86c7);
   }
 }
 </style>

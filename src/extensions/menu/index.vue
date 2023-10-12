@@ -1,5 +1,6 @@
 <template>
   <BubbleMenu v-if="editor" plugin-key="text-bubble-menu" :should-show="shouldShow" :editor="editor" :tippy-options="{ duration: 100 }">
+    <div class="bubble-menu-group">
       <ElButtonGroup>
         <ElTooltip content="加粗">
           <ElButton size="small" :icon="TextBold" @click="editor.chain().focus().toggleBold().run()"></ElButton>
@@ -15,6 +16,7 @@
         </ElTooltip>
         
       </ElButtonGroup>
+    </div>
   </BubbleMenu>
 </template>
 <script  lang="ts" setup>
@@ -54,3 +56,8 @@ const onClickLink=()=>{
   }
 }
 </script>
+<style>
+.bubble-menu-group{
+  background-color: var(--contentBackgroundColor);
+}
+</style>

@@ -3,6 +3,7 @@ export default {
   menu:'菜单',
   file:'文件',
   newTab:'新建标签页',
+  newFile: '新建文档',
   newWindow:'新建窗口',
   openFile:'打开文件',
   openFolder:'打开文件夹',

@@ -7,17 +7,17 @@ export interface  DragSidebarOps{
   maxWidth:number|MaxWidthFn;
 }
 
-export const useDragSidebar = (resizeRef: Ref<HTMLElement | undefined>,ops:DragSidebarOps={minWidth:220,maxWidth:()=>document.body.clientWidth-20}) => {
+export const useDragSidebar = (resizeRef: Ref<HTMLElement | undefined>,ops:DragSidebarOps={minWidth:220,maxWidth:()=>document.body.clientWidth-90}) => {
     const width = ref(ops.minWidth);
     const down = ref(false);
 
     function handleMouseDown(ev:MouseEvent){
       down.value=true;
-      document.body.style.cursor='col-resize';
+      // document.body.style.cursor='col-resize';
     }
     function handleMouseUp(ev:MouseEvent){
       down.value=false;
-      document.body.style.cursor='default';
+      // document.body.style.cursor='none';
     }
 
     function handleMouseMove(ev:MouseEvent){

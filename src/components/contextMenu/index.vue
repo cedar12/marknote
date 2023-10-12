@@ -113,8 +113,7 @@ function handleAfterEnter(e:Element) {
             z-index: 997;
             font-size: 14px;
             background-color: var(--menuBackgroundColor, #fff);
-            
-            color: var(--menuColor,#202124);
+            color: var(--menuTextColor,#202124);
             // box-shadow: 2px 2px 13px var(--menuShadowColor,#b8b8b8);
             // border: 1px solid var(--menuShadowColor);
             border: 1px solid var(--menuBorderColor);

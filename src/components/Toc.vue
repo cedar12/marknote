@@ -20,27 +20,19 @@
 </template>
   
 <script lang="ts" setup>
-import { ref, onMounted,nextTick,watch } from 'vue';
-import { useEditorStore } from '../store/editor';
-import { useAppStore } from '../store/app';
+// import { onMounted,nextTick,watch } from 'vue';
+import { useEditorStore,Heading } from '../store/editor';
+// import { useAppStore } from '../store/app';
 import { storeToRefs } from 'pinia';
 import {ElScrollbar} from 'element-plus';
 import {Plus,Minus} from '@icon-park/vue-next';
 
-const appStore=useAppStore();
+// const appStore=useAppStore();
 const editorStore = useEditorStore();
-const { editor } = storeToRefs(editorStore);
+const { editor,headings } = storeToRefs(editorStore);
 
-interface Heading{
-  level: number,
-  text: string,
-  id: string,
-  status:'open'|'close',
-  show:boolean,
-}
-const headings = ref<Heading[]>([]);
-
-
+// const headings = ref<Heading[]>([]);
+/*
 function handleUpdate() {
   headings.value = [];
 
@@ -74,16 +66,17 @@ function handleUpdate() {
   editor.value.view.dispatch(transaction)
 
   headings.value=items;
-}
-onMounted(() => {
-  editor.value.on('update', handleUpdate);
-  nextTick(handleUpdate);
-})
+  console.log('headings',editorStore.headings);
+}*/
+// onMounted(() => {
+//   editor.value.on('update', editorStore.updateHeadings);
+//   nextTick(editorStore.updateHeadings);
+// })
 
 
-watch(()=>appStore.filepath,()=>{
-  handleUpdate();
-})
+// watch(()=>appStore.filepath,()=>{
+//   editorStore.updateHeadings();
+// })
 
 const onClickIcon=(heading:Heading)=>{
   if(heading.status==='open'){
@@ -115,7 +108,6 @@ const showChild=(heading:Heading,show:boolean)=>{
     hs.push({...h});
   }
   headings.value=hs;
-  console.log(headings.value);
 }
 </script>
   
@@ -132,19 +124,23 @@ const showChild=(heading:Heading,show:boolean)=>{
         height: calc(100vh - var(--titleBarHeight));
         overflow: hidden;
         .outliner-item{
-            padding: 2px 0 2px 0;
+          user-select: none;
+            padding: 2px 0 4px 0;
             display: flex;
             align-items: center;
-            cursor: pointer;
             .outliner-hash{
               text-decoration: none;
               outline: none;
+              cursor: pointer;
               color: var(--primaryTextColor);
             }
             .outliner-icon{
               display: inline-block;
               padding-right: 2px;
               color: #a8a8a8;
+              .i-icon{
+                cursor: pointer;
+              }
               &>span{
                 display: flex;
                 justify-content: center;

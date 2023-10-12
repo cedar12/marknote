@@ -17,8 +17,8 @@ const light:ThemeItem={
       contentBorderColor: '#babec1',
       contentBackgroundColorActive: '#ececec',
       contentBackgroundColorHover: '#ececec',
-      contentTextColorActive: '#616161',
-      contentTextColorHover: '#616161'
+      contentTextColorActive: '#bebebe',
+      contentTextColorHover: '#c4c4c4'
   }
 }
 

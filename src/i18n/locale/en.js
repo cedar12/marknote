@@ -3,6 +3,7 @@ export default {
   menu:'Menu',
   file:'File',
   newTab:'New tab',
+  newFile: 'New Markdown Document',
   newWindow:'New Window',
   openFile:'Open File',
   openFolder:'Open Folder',

@@ -77,6 +77,11 @@ const loadMenuData=()=>{
         //   type: 'checkbox'
         // },
         {
+          label: t('newFile'),
+          key: 'newFile',
+          shortcut:appStore.keyBinding?.getKey('file.newFile')?.key
+        },
+        {
           label: t('newWindow'),
           key: 'newWindow',
           split: true,

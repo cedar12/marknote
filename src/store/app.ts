@@ -92,6 +92,9 @@ export const useAppStore = defineStore('app', {
         this.title=paths[paths.length-1];
         this.isSave=true;
         appWindow.setTitle(filepath);
+      }else{
+        this.title=null;
+        this.isSave=true;
       }
     },
 
@@ -104,6 +107,7 @@ export const useAppStore = defineStore('app', {
     },
 
     init(){
+      
       this.isSave=true;
       appWindow.show();
       const autoTheme=localStorage.getItem('autoTheme');

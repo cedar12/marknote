@@ -11,9 +11,10 @@
     <ElButtonGroup>
       <ElTooltip content="打开链接">
 
-        <el-button size="small">
+        <el-button size="small" @click="openLink">
+
           <a :href="props.href" :target="target()">
-            <Open></Open>
+            <WebPage></WebPage>
           </a>
 
         </el-button>
@@ -27,10 +28,13 @@
 </template>
 <script lang="ts" setup>
 import { ElPopover, ElButton, ElButtonGroup, ElTooltip } from 'element-plus';
-import { Open, Edit } from '@icon-park/vue-next';
+import { WebPage, Edit } from '@icon-park/vue-next';
 import { Editor } from '@tiptap/vue-3';
 import { ref } from 'vue';
 import { appWindow } from '@tauri-apps/api/window';
+import { useEditorStore } from '../../store/editor';
+
+const editorStore=useEditorStore();
 
 const visible = ref(false);
 
@@ -58,6 +62,15 @@ const target = () => {
     return '_blank';
   }
   return '';
+}
+
+const openLink=()=>{
+  if(props.href.startsWith('#')){
+    const id=editorStore.headings.find(h=>`#${h.text.toLocaleLowerCase().replace(/\s+/g,'-')}`==props.href);
+    if(id){
+      location.hash=id.id;
+    }
+  }
 }
 
 

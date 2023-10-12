@@ -4,21 +4,28 @@
   <EditorContent :editor="editor" v-loading="editorStore.loading"></EditorContent>
 </template>
 <script lang="ts" setup> 
-import {onMounted,nextTick} from 'vue';
+import {onMounted,watch,nextTick} from 'vue';
 import {EditorContent} from '@tiptap/vue-3';
 import {useEditorStore} from '../store/editor';
+import {useAppStore} from '../store/app';
 import { storeToRefs } from 'pinia';
 import Menu from '../extensions/menu/index.vue';
 
 // import {createEditor} from '../utils/editor';
-
+const appStore=useAppStore();
 const editorStore=useEditorStore();
 
 // const editor=createEditor();
 
 const {editor} = storeToRefs(editorStore);
-  
+
+
+watch(()=>appStore.filepath,()=>{
+  editorStore.updateHeadings();
+})
+
 onMounted(()=>{
+  
 /*
   const content=`
   # marknote
@@ -55,6 +62,8 @@ onMounted(()=>{
   nextTick(()=>{
     // editorStore.setContent(content);
     editor.value.commands.focus();
+    editor.value.on('update', editorStore.updateHeadings);
+    editorStore.updateHeadings();
   })
   
 })

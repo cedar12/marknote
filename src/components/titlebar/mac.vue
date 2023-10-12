@@ -2,8 +2,9 @@
     <div data-tauri-drag-region class="titlebar-bg macos" os="macos">
         <div data-tauri-drag-region class="titlebar">
             <div data-tauri-drag-region class="titlebar-info">
-                <span data-tauri-drag-region class="marknote-title" :class="{ 'not-save': appStore.isSave !== true }"
+                <span data-tauri-drag-region class="marknote-title" 
                     :title="appStore.filepath || ''">{{ appStore.title ||'Untitled.md' }}</span>
+                <span :class="{'not-save':appStore.isSave!==true}"></span>
             </div>
             
             <div class="titlebar-toolbar">
@@ -43,7 +44,7 @@ const appStore = useAppStore();
     .titlebar {
         position: relative;
         user-select: none;
-        background: transparent;
+        background: linear-gradient(to right, var(--primaryBackgroundColor) 0, var(--primaryBackgroundColor) var(--titlbarSidebarWidth,0), var(--contentBackgroundColor,#ffffff) var(--titlbarSidebarWidth,0), var(--contentBackgroundColor,#ffffff) 100%) !important;
         width: 100vw;
         height: var(--barHeight);
         box-sizing: border-box;
@@ -66,8 +67,19 @@ const appStore = useAppStore();
             padding: 0 calc(var(--barHeight) * 3);
 
             .marknote-title {
-                &.not-save::after{
-                    content: '';
+                mix-blend-mode: difference;
+                color: rgba(255, 255, 255, 0.7);
+                // &.not-save::after{
+                //     content: '';
+                //     display: inline-block;
+                //     width: 10px;
+                //     height: 10px;
+                //     margin-left: 4px;
+                //     background-color:var(--notSavedColor,rgb(66, 212, 21));
+                //     border-radius: 50%;
+                // }
+
+                &+span.not-save{
                     display: inline-block;
                     width: 10px;
                     height: 10px;

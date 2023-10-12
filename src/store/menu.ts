@@ -66,6 +66,13 @@ const events = {
     const appStore = useAppStore();
     appStore.closeWindow();
   },
+  newFile(){
+    const appStore = useAppStore();
+    appStore.setFilepath(null);
+    const editorStore=useEditorStore();
+    editorStore.editor.commands.clearContent(false);
+    editorStore.editor.commands.focus();
+  },
   openFile() {
     const editorStore=useEditorStore();
     editorStore.loading=true;

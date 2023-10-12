@@ -28,7 +28,8 @@
         
       </div>
       <div data-tauri-drag-region class="titlebar-info">
-        <span data-tauri-drag-region class="marknote-title" :class="{'not-save':appStore.isSave!==true}" :title="appStore.filepath||''">{{ appStore.title||'Untitled.md' }}</span>
+        <span data-tauri-drag-region class="marknote-title" :title="appStore.filepath||''">{{ appStore.title||'Untitled.md' }}</span>
+        <span :class="{'not-save':appStore.isSave!==true}"></span>
       </div>
       <div class="titlebar-buttons">
         <div class="titlebar-button" @click="appWindow.minimize()">
@@ -71,17 +72,15 @@ const mode=ref('words');
   // --barHeight:var(--titleBarHeight,30px);
   height: var(--titleBarHeight);
   --titlbarSidebarWidth:var(--sidebarWidth,0);
-  background: linear-gradient(to right, var(--primaryBackgroundColor) 0, var(--primaryBackgroundColor) var(--titlbarSidebarWidth,0), var(--contentBackgroundColor,#ffffff) var(--titlbarSidebarWidth,0), var(--contentBackgroundColor,#ffffff) 100%) !important;
-  
   position: relative;
   left: 0;
   top: 0;
   right: 0;
   .titlebar{
-    mix-blend-mode: difference;
     position:fixed;
     user-select: none;
-    background: transparent;
+    // background: transparent;
+    background: linear-gradient(to right, var(--primaryBackgroundColor) 0, var(--primaryBackgroundColor) var(--titlbarSidebarWidth,0), var(--contentBackgroundColor,#ffffff) var(--titlbarSidebarWidth,0), var(--contentBackgroundColor,#ffffff) 100%) !important;
     height: var(--titleBarHeight);
     box-sizing: border-box;
     left: 0;
@@ -101,7 +100,6 @@ const mode=ref('words');
         line-height: var(--titleBarHeight);
         text-align: center;
         cursor: pointer;
-        color: #a8a8a8;
         z-index: 4;
         
         transition: .4s ease-in-out;
@@ -147,14 +145,20 @@ const mode=ref('words');
       box-sizing: border-box;
       overflow: hidden;
       padding: 0 calc(var(--titleBarHeight) * 3 + 20px);
-      // background-color: transparent;
-      // mix-blend-mode: difference;
+
       span.marknote-title{
         mix-blend-mode: difference;
-        // isolation: isolate;
-        color: #a8a8a8;
-        &.not-save::after{
-          content: '';
+        color: rgba(255, 255, 255, 0.7);
+        // &.not-save::after{
+        //   content: '';
+        //   display: inline-block;
+        //   width: 10px;
+        //   height: 10px;
+        //   margin-left: 4px;
+        //   background-color:var(--notSavedColor,rgb(66, 212, 21));
+        //   border-radius: 50%;
+        // }
+        &+span.not-save{
           display: inline-block;
           width: 10px;
           height: 10px;
@@ -181,9 +185,9 @@ const mode=ref('words');
         width: var(--titleBarHeight);
         height: var(--titleBarHeight);
         cursor: pointer;
-        color: #a8a8a8;
+        color: var(--contentTextColor);
         &:hover {
-          background: #46464685;//var(--titlebarBgHover,#dfdfdf);
+          background: var(--contentTextColorHover,#dfdfdf);
         }
       }
     }

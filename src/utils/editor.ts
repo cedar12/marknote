@@ -59,7 +59,7 @@ function createEditor() {
     content: '',
     editorProps: {
       attributes: {
-        class: 'marknote'
+        class: 'marknote min-height'
       },
 
       handleDrop: (view, e) => {
@@ -75,6 +75,9 @@ function createEditor() {
         }
         if(event.altKey){
           keys.push('alt');
+        }
+        if(event.shiftKey){
+          keys.push('shift');
         }
         if (event.key === 'Process' && event.ctrlKey) {
           hotkeys.trigger('ctrl+.', 'file');
@@ -147,13 +150,12 @@ function createEditor() {
 
     },
     onUpdate: () => {
-      // const editorStore = useEditorStore();
+      
       const appStore = useAppStore();
       appStore.isSave = false;
       // editorStore.tree = getTree();
     },
     onCreate: () => {
-      // const editorStore = useEditorStore();
       // editorStore.tree = getTree();
       // console.log(editorStore.tree)
     },

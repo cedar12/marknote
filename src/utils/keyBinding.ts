@@ -12,6 +12,10 @@ export interface KeyBinding{
 const defaultKeyBinding:KeyBinding[]=[
   {
     description:['file','newWindow'],
+    key:'Mod+Shift+N',
+  },
+  {
+    description:['file','newFile'],
     key:'Mod+N',
   },
   {
@@ -111,7 +115,7 @@ const defaultKeyBinding:KeyBinding[]=[
   },
   {
     description:['view','sidebar'],
-    key:'Alt+S',
+    key:'Alt+Z',
   }
 ];
 
