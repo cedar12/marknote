@@ -20,3 +20,8 @@ export function saveImagePath(mdPath:string,imgPath:string){
 export function exportHTML(path:string,html:string){
   return invoke('export_html', { path,html});
 }
+
+
+export function ls(path:string){
+  return invoke('ls_md', { path});
+}

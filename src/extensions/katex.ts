@@ -2,7 +2,6 @@
 import { mergeAttributes, Node, nodeInputRule } from '@tiptap/core';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
 import KatexWrapper from './wrapper/KatexWrapper.vue';
-import {} from '@tiptap/pm/commands';
 
 export type IKatexAttrs = {
   text?: string;

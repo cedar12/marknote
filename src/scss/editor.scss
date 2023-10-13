@@ -41,7 +41,7 @@
     }
 
     @for $i from 1 through 6{
-        h#{$i}{
+        &>h#{$i}{
             line-height: 1.1;
             position: relative;
             &::before{
@@ -72,7 +72,11 @@
         padding: 0.2em 0.4em;
         margin: 0 0.2em;
         border-radius: 4px;
-        font-family: 'JetBrainsMono', monospace;
+        // font-family: 'JetBrainsMono', monospace;
+        
+    }
+    code{
+        font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
     }
 
     img {
@@ -81,11 +85,12 @@
     }
 
     blockquote {
+        box-sizing: border-box;
         margin-top: 0.75em !important;
-        padding-left: 1rem;
+        padding:0 1em;
         margin: 0;
-        border-left: 0.4em solid var(--contentBorderColor,#1b3954);
-        background-color: var(--editorHighlightBackgroundColor,#f1f3f5);
+        border-left: 0.25em solid var(--contentBorderColor,#1b3954);
+        // background-color: var(--editorHighlightBackgroundColor,#f1f3f5);
         // border-top-right-radius: 0.5rem; 
         // border-bottom-right-radius: 0.5rem;
         p{
@@ -109,9 +114,10 @@
     table {
         border-collapse: collapse;
         table-layout: fixed;
+        // position: relative;
         width: 100%;
         margin: 0;
-        --gripWidth: 8px;
+        --gripWidth: 4px;
         --gripColor:var(--contentBorderColor,#f1f3f5);
         --gripColorActive: var(--contentTextColorHover,#616161);
 
@@ -124,15 +130,19 @@
             }
         }
         .grip-table{
-            top: calc(0px - (var(--gripWidth) + 2px));
-            left:  calc(0px - (var(--gripWidth) + 2px));
+            // top: calc(0px - (var(--gripWidth) + 2px));
+            // left:  calc(0px - (var(--gripWidth) + 2px));
+            top:0px;
+            left: 0px;
+            z-index: 2;
             width: var(--gripWidth);
             height: var(--gripWidth);
             background-color: var(--gripColor);
         }
         .grip-row{
             top: 0;
-            left: calc(0px - (var(--gripWidth) + 2px));
+            // left: calc(0px - (var(--gripWidth) + 2px));
+            left:0px;
             width: var(--gripWidth);
             height: 100%;
             background-color:var(--gripColor);
@@ -142,7 +152,8 @@
             }
         }
         .grip-column{
-            top: calc(0px - (var(--gripWidth) + 2px));
+            // top: calc(0px - (var(--gripWidth) + 2px));
+            top:0px;
             left: 0;
             width: 100%;
             height: var(--gripWidth);
@@ -293,7 +304,7 @@
     overflow-y: hidden;
     box-sizing: border-box;
     &.has-focus{
-        padding: 12px 0 0 12px;
+        // padding: 12px 0 0 12px;
     }
     table{
         tr:first-child{

@@ -281,3 +281,80 @@ pub fn open_with(win:Window){
     win.emit("open", args[1].clone()).unwrap();
   }
 }
+
+
+#[derive(Debug,Clone,serde::Serialize)]
+pub struct PathInfo{
+  pub path:String,
+  pub dir:bool,
+  pub file:bool,
+  pub name:String,
+  pub children:Vec<PathInfo>,
+}
+
+impl PathInfo{
+  pub fn new(path:&str)->anyhow::Result<Self>{
+    let root_meta=fs::metadata(path)?;
+    let mut root_name=String::new();
+    if let Some(name)=PathBuf::from(path).file_name(){
+      root_name.push_str(name.to_str().unwrap_or_else(||""));
+    }
+    Ok(Self{
+      path:path.clone().to_string(),
+      dir:root_meta.is_dir(),
+      file:root_meta.is_file(),
+      name: root_name,
+      children: vec![],
+    })
+  }
+}
+
+
+pub fn ls_depth_path(path_info: &mut PathInfo) -> anyhow::Result<()> {
+  if path_info.dir{
+    for child_dir in fs::read_dir(&path_info.path)? {
+      let child=child_dir?;
+      let file_type=child.file_type()?;
+      if let Some(path) = child.path().to_str() {
+        if  file_type.is_dir()||path.to_lowercase().ends_with(".md"){
+          let mut child_path_info=PathInfo::new(path)?;
+          ls_depth_path(&mut child_path_info)?;
+          path_info.children.push(child_path_info);
+        }
+        
+        
+      }
+    }
+  }
+  
+  Ok(())
+}
+
+
+pub fn ls_path(path_info: &mut PathInfo) -> anyhow::Result<()> {
+  if path_info.dir{
+    for child_dir in fs::read_dir(&path_info.path)? {
+      let child=child_dir?;
+      let file_type=child.file_type()?;
+      if let Some(path) = child.path().to_str() {
+        if file_type.is_dir()||path.to_lowercase().ends_with(".md"){
+          let child_path_info=PathInfo::new(path)?;
+          path_info.children.push(child_path_info);
+        }
+        
+      }
+    }
+  }
+  path_info.children.sort_by_key(|k|k.file);
+  Ok(())
+}
+
+
+#[test]
+fn test_all_path()->anyhow::Result<()>{
+  let path="D:\\";
+  let mut path_info=PathInfo::new(path)?;
+  ls_path(&mut path_info)?;
+  println!("{:?}",path_info);
+  Ok(())
+}

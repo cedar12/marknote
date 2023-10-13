@@ -1,6 +1,6 @@
 [package]
 name = "marknote"
-version = "0.0.3"
+version = "0.0.4"
 description = "MarkNote"
 authors = ["cedar12.zxd@qq.com"]
 license = "MIT"
@@ -10,10 +10,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.4", features = [] }
+tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
-tauri = { version = "1.4", features = [ "global-shortcut-all", "process-relaunch", "updater", "protocol-all", "window-set-title", "notification-all", "window-set-always-on-top", "clipboard-write-text", "clipboard-read-text", "process-exit", "path-all", "dialog-all", "window-maximize", "window-minimize", "window-unminimize", "window-hide", "window-close", "window-start-dragging", "window-unmaximize", "window-show", "os-all", "shell-open", "global-shortcut"] }
+tauri = { version = "1.5", features = [ "global-shortcut-all", "process-relaunch", "updater", "protocol-all", "window-set-title", "notification-all", "window-set-always-on-top", "clipboard-write-text", "clipboard-read-text", "process-exit", "path-all", "dialog-all", "window-maximize", "window-minimize", "window-unminimize", "window-hide", "window-close", "window-start-dragging", "window-unmaximize", "window-show", "os-all", "shell-open", "global-shortcut"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 base64 = "0.21.0"

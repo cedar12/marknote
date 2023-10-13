@@ -8,7 +8,7 @@ const dark: ThemeItem = {
     primaryBackgroundColor: '#323232',
     primaryBackgroundColorHover: '#30364a',
     primaryBackgroundColorActive: '#424242',
-    primaryTextColor: '#f6f6f6',
+    primaryTextColor: '#a3a3a3',
     primaryTextColorHover: '#4fb8db',
     primaryTextColorActive: '#1e9fca',
     contentBackgroundColor: '#282828',
@@ -18,7 +18,7 @@ const dark: ThemeItem = {
     contentBorderColor: '#9b9b9b',
     contentBackgroundColorHover: '#c7c7c7',
     contentTextColorActive: '#f4f4f4',
-    contentTextColorHover: '#e6e6e6'
+    contentTextColorHover: '#333333'
   },
 }
 

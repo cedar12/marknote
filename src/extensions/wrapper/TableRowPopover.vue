@@ -1,7 +1,9 @@
 <template>
-  <el-popover v-model:visible="visible"  size="small" placement="top" :offset="0" trigger="hover" :persistent="false" popper-class="table-row-wrapper" >
+  <!-- :popper-style="{top:top+'px',left:left+'px'}" -->
+  <el-popover  v-model:visible="visible"  size="small" placement="top" :offset="6" trigger="hover" :persistent="false" popper-class="table-row-wrapper" >
       <template #reference>
-        <a :class="props.className" @mousedown="onMouseDown"></a>
+        <a :class="props.className" @mousedown="onMouseDown" ></a>
+        
       </template>
       <div class="table-row-tools" >
         <el-button  size="small" :icon="Left" @click="props.editor.chain().focus().addColumnBefore().run()"/>
@@ -18,7 +20,6 @@ import {  selectColumn } from '../utils/table';
 import {ref} from 'vue';
 
 const visible=ref(false);
-
 const props=defineProps<{editor:Editor,className:string,index:number}>();
 
 const hide = () => {
@@ -27,12 +28,12 @@ const hide = () => {
 
 const onMouseDown=(event:MouseEvent) => {
     event.preventDefault();
-    event.stopImmediatePropagation();
+    // event.stopImmediatePropagation();
     props.editor.view.dispatch(
       // @ts-ignore
       selectColumn(props.index)(props.editor.state.tr)
     );
-
+    
 };
 
 </script>

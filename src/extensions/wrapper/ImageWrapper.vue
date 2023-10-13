@@ -76,6 +76,7 @@ onMounted(()=>{
     imgSrc.value=convertFileSrc(value.value);
   }else if(appStroe.filepath){
     const dir=getDir(appStroe.filepath);
+    console.log(dir+value.value,convertFileSrc);
     imgSrc.value=convertFileSrc(dir+value.value);
   }
   srcList.value[0]=imgSrc.value;

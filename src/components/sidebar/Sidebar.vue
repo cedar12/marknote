@@ -3,18 +3,18 @@
 
     <div class="sidebar-menu">
       <div class="menu-item" :class="{ 'active': appStore.sidebar.active === 'outliner' }" @click="changeActive('outliner')">
-        <MindmapList></MindmapList>
+        <MindmapList  ></MindmapList>
       </div>
       <div class="menu-item" :class="{ 'active': appStore.sidebar.active === 'folder' }" @click="changeActive('folder')">
-        <Notes></Notes>
+        <Notes  ></Notes>
       </div>
       <div class="menu-bottom" @click="unexpand">
-        <ExpandRight></ExpandRight>
+        <ExpandRight  ></ExpandRight>
       </div>
     </div>
     <div class="sidebar-content">
-      <Toc v-if="appStore.sidebar.active === 'outliner'"></Toc>
-      <FolderView v-else-if="appStore.sidebar.active === 'folder'"></FolderView>
+      <Toc v-show="appStore.sidebar.active === 'outliner'"></Toc>
+      <FolderView v-show="appStore.sidebar.active === 'folder'"></FolderView>
     </div>
   </div>
   <div class="dragbar-resize" ref="resizeRef"></div>
@@ -50,15 +50,17 @@ const unexpand = () => {
   user-select: none;
   -webkit-user-select: none;
   flex-basis: var(--sidebarWidth, 220px);
+  width:var(--sidebarWidth, 220px);
   height: 100vh;
   background-color: var(--primaryBackgroundColor);
   color: var(--primaryTextColor);
   padding-top: var(--titleBarHeight);
   box-sizing: border-box;
   display: flex;
-
+  overflow: hidden;
   .sidebar-menu {
     flex-basis: 40px;
+    min-width: 40px;
     position: relative;
     height: 100%;
 
@@ -117,6 +119,7 @@ const unexpand = () => {
 
   .sidebar-content {
     flex: 1;
+    width: calc(var(--sidebarWidth, 220px) - 40px);
     height: calc(100vh - var(--titleBarHeight));
   }
 

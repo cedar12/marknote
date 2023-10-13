@@ -1,7 +1,8 @@
 <template>
   <NodeViewWrapper class="marknote-codeblock" ref="wrapperRef">
-    <div class="codeblock-wrapper" contenteditable="false" v-if="props.editor.isActive('codeBlock')&&isFocus()">
-      <ElSelect filterable size="small" v-model="value" placeholder=" "
+    <!-- <div class="codeblock-wrapper" contenteditable="false" v-if="props.editor.isActive('codeBlock')&&isFocus()"> -->
+    <div class="codeblock-wrapper" contenteditable="false" >
+      <ElSelect clearable filterable size="small" v-model="value" placeholder=" " :style="{width:value==''?'40px':'110px'}"
         :disabled="!isEditable" @change="props.updateAttributes({ language: value })">
         <ElOption v-for="item in props.extension.options.lowlight.listLanguages()" :key="item" :label="item" :value="item"></ElOption>
       </ElSelect>
@@ -34,12 +35,12 @@ const value = ref(props.node.attrs.language || '');
 const contentRef=ref<HTMLElement>();
 const wrapperRef=ref<HTMLElement>();
 
-const isFocus=()=>{
-  const {anchor}=props.editor.state.selection;
-  const node=props.node;
-  const pos=props.getPos();
-  return anchor >= pos && anchor <= pos + node.nodeSize - 1;
-}
+// const isFocus=()=>{
+//   const {anchor}=props.editor.state.selection;
+//   const node=props.node;
+//   const pos=props.getPos();
+//   return anchor >= pos && anchor <= pos + node.nodeSize - 1;
+// }
 
 const handleClick=()=>{
   
@@ -58,17 +59,28 @@ const handleClick=()=>{
   .codeblock-wrapper {
     display: flex;
     justify-content: space-between;
-
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 4px 0 4px;
+    position: absolute;
+    top: 0;
     .el-select {
       width: 110px;
+      --el-select-border-color-hover: #ffffff00;
+      --el-select-input-focus-border-color: #ffffff00;
     }
-
-    .n-button {}
+    .el-input__wrapper{
+      background-color: transparent;
+      box-shadow: none;
+    }
+    .el-button{
+      background-color: transparent;
+    }
   }
   div{
     height: auto !important;
     code {
-      padding: 1em;
+      padding: 2em 1em;
       margin: 0;
       pointer-events: all;
       // background-color: #f1f3f5;

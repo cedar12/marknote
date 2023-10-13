@@ -52,7 +52,7 @@ const onClickLink=()=>{
   if(editor.value.isActive('link')){
     editor.value.commands.unsetLink();
   }else{
-    editor.value.commands.setLink({href:'https://www.baidu.com'});
+    editor.value.commands.setLink({href:''});
   }
 }
 </script>

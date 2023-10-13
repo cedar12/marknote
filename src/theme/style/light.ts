@@ -6,7 +6,7 @@ const light:ThemeItem={
   type:'light',
   style:{
       primaryBackgroundColor: '#2e3a62',
-      primaryBackgroundColorHover: '#30364a',
+      primaryBackgroundColorHover: '#334789',
       primaryBackgroundColorActive: '#1f294a',
       contentBackgroundColor: '#ffffff',
       primaryTextColor: '#74bcd4',
@@ -17,7 +17,7 @@ const light:ThemeItem={
       contentBorderColor: '#babec1',
       contentBackgroundColorActive: '#ececec',
       contentBackgroundColorHover: '#ececec',
-      contentTextColorActive: '#bebebe',
+      contentTextColorActive: '#4e4e4e',
       contentTextColorHover: '#c4c4c4'
   }
 }

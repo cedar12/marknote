@@ -84,7 +84,7 @@ const handleClick=(k:string)=>{
         text-align: center;
         line-height: var(--barHeight);
         &:hover{
-            background: var(--titlebarBgHover,#dfdfdf);
+            background: var(--contentTextColorHover,#dfdfdf);
         }
     }
 }

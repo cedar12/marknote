@@ -505,6 +505,7 @@ For example, this:
 ```html
 Example text here...
 ```
+
 ```
 
 Appears like this when viewed in a browser:
@@ -558,6 +559,7 @@ grunt.initConfig({
   }
 });
 ```
+
 ```
 
 Which renders to:
@@ -597,9 +599,9 @@ To paste, please press <kbd>CmdOrCtrl</kbd>+<kbd>V</kbd>
 
 Which renders to:
 
-To copy, please press <kbd>CmdOrCtrl</kbd>+<kbd>C</kbd>
+To copy, please press CmdOrCtrl+C
 
-To paste, please press <kbd>CmdOrCtrl</kbd>+<kbd>V</kbd>
+To paste, please press CmdOrCtrl+V
 
 ## Emojis
 
@@ -826,6 +828,7 @@ Class01 : int chimp
 Class01 : int gorilla
 Class08 <--> C2: Cool label
 ```
+
 ```
 
 ## Raw HTML

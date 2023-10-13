@@ -3,10 +3,8 @@
 #[macro_use]
 extern crate lazy_static;
 
-use std::sync::{Arc, Mutex};
 
-use tauri::{Manager, GlobalShortcutManager};
-use utils::open_with;
+use tauri::Manager;
 
 use crate::utils::{set_shadow, IS_MACOS};
 
@@ -35,6 +33,7 @@ fn main() {
             cmd::file::save_image,
             cmd::file::save_image_path,
             cmd::file::export_html,
+            cmd::file::ls_md,
             cmd::dialog::save_as_md,
             cmd::dialog::open_file,
             cmd::window::open_window,
