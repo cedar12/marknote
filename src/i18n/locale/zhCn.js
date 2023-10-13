@@ -19,6 +19,7 @@ export default {
   alwaysOnTop:'置顶窗口',
   closeTab:'关闭标签页',
   closeWindow:'关闭窗口',
+  closeFolder:'关闭文件夹',
   quit:'退出',
 
   edit:'编辑',

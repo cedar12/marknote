@@ -1,5 +1,5 @@
 
-import { Editor, JSONContent } from '@tiptap/vue-3';
+import { Editor } from '@tiptap/vue-3';
 import { defineStore } from 'pinia';
 
 export interface Heading{

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { useEditorStore } from './editor';
 import { useAppStore } from './app';
 import { appWindow } from '@tauri-apps/api/window';
-import { ask,confirm } from '@tauri-apps/api/dialog';
+import { ask,confirm, open } from '@tauri-apps/api/dialog';
 import { exit } from '@tauri-apps/api/process';
 import {openFile,saveAs} from '../api/dialog';
 import {exportHTML, read} from '../api/file';
@@ -89,6 +89,24 @@ const events = {
    }).catch(()=>{
     editorStore.loading=false;
    });
+  },
+  openFolder(){
+    async function dir() {
+      const selected = await open({
+        directory:true,
+      });
+      const appStore=useAppStore();
+      if(!Array.isArray(selected)){
+        appStore.folder=selected;
+      }
+      
+    }
+    dir();
+  },
+  closeFolder(){
+    const appStore=useAppStore();
+    appStore.folder=null;
+    console.log('close folder');
   },
   clearRecent(){
     const appStore = useAppStore();

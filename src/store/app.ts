@@ -58,6 +58,7 @@ export const useAppStore = defineStore('app', {
     permissionGranted:boolean,
     theme:ThemeItem|undefined,
     autoTheme:boolean,
+    folder:string|null,
   }=>({
     title:null,
     filepath: null,
@@ -77,6 +78,7 @@ export const useAppStore = defineStore('app', {
     permissionGranted:false,
     theme:getTheme(),
     autoTheme:false,
+    folder:null,
   }),
   actions:{
     setFilepath(filepath:string|null){

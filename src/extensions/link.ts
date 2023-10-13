@@ -127,7 +127,7 @@ export const Link = BuiltInLink.extend({
             // }
             return false;
           },
-          handleDoubleClick(view, pos, event) {
+          handleDoubleClick() {
             const marks=editor.state.selection.$head.marks();
             console.log(marks);
             marks.forEach(mark=>{

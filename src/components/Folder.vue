@@ -1,16 +1,15 @@
 <template>
 <div class="folder-container">
   <ElScrollbar style="height:100%;">
-    <el-tree ref="tree" :load="loadNode" lazy :data="treeData" node-key="path" :props="props" empty-text="" @node-click="nodeClick" v-loading="loading">
+    <el-tree :key="appStore.folder||undefined" ref="tree" :load="loadNode" lazy :data="treeData" node-key="path" :props="props" empty-text="" @node-click="nodeClick" v-loading="loading">
       <template #empty>
-        <ElButton size="">打开文件夹</ElButton>
+        <!-- <ElButton size="">打开文件夹</ElButton> -->
       </template>
       <template #default="{ node, data }">
         <span class="folder-tree-node">
           <span class="file-type-icon" :class="{'file-type-dir':data.dir}">
             <FolderOpen theme="filled" v-if="data.dir&&node.expanded"></FolderOpen>
             <FolderClose theme="filled" v-else-if="data.dir"></FolderClose>
-            <!-- <DocDetail theme="filled" v-else></DocDetail> -->
             <img theme="filled" :src="logoPng" v-else class="img-icon"/>
           </span>
           <span :title="data.path">{{ node.label }}</span>
@@ -23,7 +22,7 @@
 <script lang="ts" setup>
 import {onMounted,ref} from 'vue';
 import { ls, read } from '../api/file';
-import {ElTree,ElScrollbar,ElButton} from 'element-plus';
+import {ElTree,ElScrollbar} from 'element-plus';
 import {FolderClose,FolderOpen} from '@icon-park/vue-next';
 import type Node from 'element-plus/es/components/tree/src/model/node';
 import {useEditorStore} from '../store/editor';
@@ -72,7 +71,10 @@ async function loadDirData(root:string):Promise<Tree[]>{
 
 const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
   if (node.level === 0) {
-    var data=await loadDirData('D:\\');
+    if(!appStore.folder){
+      return resolve([]);
+    }
+    var data=await loadDirData(appStore.folder);
     return resolve(data)
   }
   var data=await loadDirData(node.data.path);

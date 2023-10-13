@@ -17,7 +17,7 @@
       <FolderView v-show="appStore.sidebar.active === 'folder'"></FolderView>
     </div>
   </div>
-  <div class="dragbar-resize" ref="resizeRef"></div>
+  <div class="dragbar-resize" ref="resizeRef" :class="{'resize-visible':appStore.sidebar.visible}"></div>
 </template>
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
@@ -126,13 +126,17 @@ const unexpand = () => {
 }
 
 .dragbar-resize {
-  flex-basis: 4px;
-  width: 4px;
+  flex-basis: 0px;
+  width: 0px;
   height: 100vh;
   cursor: col-resize;
 
-  &:hover {
-    z-index: 99999;
-    background-color: var(--primaryTextColorActive, #4e86c7);
+  &.resize-visible{
+    flex-basis: 4px;
+    width: 4px;
+    &:hover {
+      z-index: 99999;
+      background-color: var(--primaryTextColorActive, #4e86c7);
+    }
   }
 }</style>

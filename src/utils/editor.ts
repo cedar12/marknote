@@ -23,7 +23,6 @@ import { Html } from '../extensions/html';
 import { TableOfContents } from '../extensions/tableOfContents';
 import CharacterCount from '@tiptap/extension-character-count'
 import { useAppStore } from '../store/app';
-import { useEditorStore } from '../store/editor';
 import hotkeys from 'hotkeys-js';
 
 const MarknoteTable = Table.extend({

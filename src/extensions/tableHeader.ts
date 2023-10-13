@@ -38,7 +38,6 @@ export const TableHeader = Node.create<TableHeaderOptions, { clearCallbacks: Arr
       colwidth: {
         default: null,
         parseHTML: (element) => {
-          console.log('table header',element);
           const colwidth = element.getAttribute('colwidth');
           const value = colwidth ? [parseInt(colwidth, 10)] : null;
 

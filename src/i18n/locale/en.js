@@ -19,6 +19,7 @@ export default {
   alwaysOnTop:'Alway On Top',
   closeTab:'Close Tab',
   closeWindow:'Close Window',
+  closeFolder:'Close Folder',
   quit:'Quit',
 
   edit:'Edit',

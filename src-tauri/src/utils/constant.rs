@@ -2,8 +2,8 @@
 
 pub static IS_MACOS: bool = cfg!(target_os = "macos");
 
-pub const WIDTH:f64=600f64;
-pub const HEIGHT:f64=600f64;
+pub const WIDTH:f64=800f64;
+pub const HEIGHT:f64=800f64;
 pub const MIN_WIDTH:f64=500f64;
 pub const MIN_HEIGTH:f64=400f64;
 

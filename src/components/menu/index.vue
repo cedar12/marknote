@@ -153,10 +153,10 @@ const loadMenuData=()=>{
           split: true,
           type:'checkbox'
         },
-        // {
-        //   label: t('closeTab'),
-        //   key: 'closeTab',
-        // },
+        {
+          label: t('closeFolder'),
+          key: 'closeFolder',
+        },
         {
           label: t('closeWindow'),
           key: 'closeWindow',

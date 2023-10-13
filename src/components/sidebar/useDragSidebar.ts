@@ -11,11 +11,11 @@ export const useDragSidebar = (resizeRef: Ref<HTMLElement | undefined>,ops:DragS
     const width = ref(ops.minWidth);
     const down = ref(false);
 
-    function handleMouseDown(ev:MouseEvent){
+    function handleMouseDown(_ev:MouseEvent){
       down.value=true;
       // document.body.style.cursor='col-resize';
     }
-    function handleMouseUp(ev:MouseEvent){
+    function handleMouseUp(_ev:MouseEvent){
       down.value=false;
       // document.body.style.cursor='none';
     }
