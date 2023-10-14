@@ -14,6 +14,7 @@ import { createPinia } from 'pinia'
 import {component} from "./utils/index";
 import {ElLoadingDirective} from 'element-plus';
 
+
 //isPreferences?Preferences:App
 createApp(component(App,{Preferences,About})).directive('loading',ElLoadingDirective).use(i18n).use(createPinia()).mount("#app");
 

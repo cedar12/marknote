@@ -56,7 +56,7 @@ import {ref,watch} from 'vue';
 import {useAppStore} from '../../store/app';
 import {useI18n} from 'vue-i18n';
 import {ElSelect,ElOption,ElColorPicker,ElTag,ElTooltip} from 'element-plus';
-import { requestPermission } from '@tauri-apps/api/notification';
+import { requestPermission } from '@tauri-apps/plugin-notification';
 import {locales} from '../../i18n';
 // import { ftype } from '../../api/preferences';
 // import { Command } from '@tauri-apps/api/shell';

@@ -49,12 +49,14 @@
 <script lang="ts" setup>
 import {ElPopover} from 'element-plus';
 import {HamburgerButton,Close,Minus,Square} from '@icon-park/vue-next';
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrent } from '@tauri-apps/plugin-window';
 import {useMenuStore} from '../../store/menu';
 import {useAppStore} from '../../store/app';
 import {useEditorStore} from '../../store/editor';
 import {useI18n} from 'vue-i18n';
 import {ref} from 'vue';
+
+const appWindow=getCurrent();
 
 const {t}=useI18n();
 const menuStore=useMenuStore();

@@ -88,7 +88,7 @@ fn from_env_level()->LevelFilter{
                 }
             }
         }
-        Err(_)=>LevelFilter::Off
+        Err(_)=>LevelFilter::Info
     }
     
 }

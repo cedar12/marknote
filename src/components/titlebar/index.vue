@@ -1,6 +1,6 @@
 <template>
-  <teleport to='#marknote-titlbar'>
-    <mac v-if="appStore.platform==='darwin'" @contextmenu.prevent=""/>
+  <teleport to='#marknote-titlbar' v-if="appStore.platform">
+    <mac v-if="appStore.platform==='macos'" @contextmenu.prevent=""/>
     <windows v-else @contextmenu.prevent=""/>
   </teleport>
 </template>

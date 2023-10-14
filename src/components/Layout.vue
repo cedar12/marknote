@@ -29,7 +29,7 @@ import { useEditorStore } from '../store/editor';
 // import Folder from './Folder.vue';
 import Sidebar from './sidebar/Sidebar.vue';
 // import {useAppStore} from '../store/app';
-import {readText,writeText} from '@tauri-apps/api/clipboard';
+import {readText,writeText} from '@tauri-apps/plugin-clipboard-manager';
 import {ElScrollbar} from 'element-plus';
 import Dialog from './dialog/index.vue';
 

@@ -1,7 +1,7 @@
 {
   "build": {
-    "beforeDevCommand": "yarn dev",
     "beforeBuildCommand": "yarn build",
+    "beforeDevCommand": "yarn dev",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": false
@@ -10,71 +10,36 @@
     "productName": "MarkNote",
     "version": "../package.json"
   },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true,
-        "scope": [
-          {
-            "name": "Windows-ftype",
-            "cmd": "ftype",
-            "args": true
-          }
-        ]
-      },
-      "os": {
-        "all": true
-      },
-      "clipboard": {
-        "all": false,
-        "readText": true,
-        "writeText": true
-      },
-      "process": {
-        "all": false,
-        "exit": true,
-        "relaunch": true,
-        "relaunchDangerousAllowSymlinkMacos": false
-      },
-      "window": {
-        "all": false,
-        "close": true,
-        "hide": true,
-        "show": true,
-        "maximize": true,
-        "minimize": true,
-        "unmaximize": true,
-        "unminimize": true,
-        "startDragging": true,
-        "create": false,
-        "setDecorations": false,
-        "setTitle": true,
-        "setAlwaysOnTop": true
-      },
-      "dialog": {
-        "all": true
-      },
-      "path": {
-        "all": true
-      },
-      "protocol": {
-        "all": true,
-        "asset": true,
-        "assetScope": ["**"]
-      },
-      "notification": {
-        "all": true
-      },
-      "globalShortcut": {
-        "all": true
-      }
+  "plugins": {
+    "shell": {
+      "open": true,
+      "scope": [
+        {
+          "args": true,
+          "cmd": "ftype",
+          "name": "Windows-ftype",
+          "sidecar": false
+        }
+      ]
     },
+    "updater": {
+      "endpoints": [
+        "https://ghproxy.com/https://github.com/cedar12/marknote/releases/download/updater/update.json",
+        "https://github.com/cedar12/marknote/releases/download/updater/update.json"
+      ],
+      "windows": {
+        "installerArgs": []
+      }
+    }
+  },
+  "tauri": {
     "bundle": {
       "active": true,
-      "targets": "all",
-      "identifier": "com.github.marknote",
+      "fileAssociations": [{
+        "ext": ["md","markdown"],
+        "name": "Markdown document",
+        "role": "Editor"
+      }],
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -82,41 +47,49 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
+      "identifier": "com.github.marknote",
+      "targets": "all",
+      "updater": {
+        "active": true,
+        "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM2MUE1NDQyQTJDNkFBREIKUldUYnFzYWlRbFFhTmtJU3NoL1o3UVp4ZERqbEV0SXNQaFVBUDZSUVR4Y1Y0ejJLRFdqMkZLQnUK",
+        "windows": {
+          "installMode": "passive"
+        }
+      },
       "windows": {
         "nsis": {
-          "languages": ["SimpChinese", "English"],
-          "displayLanguageSelector": true
+          "displayLanguageSelector": true,
+          "languages": [
+            "SimpChinese",
+            "English"
+          ]
         }
       }
     },
     "security": {
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "**"
+        ]
+      },
       "csp": null
     },
     "windows": [
       {
+        "center": true,
+        "decorations": true,
         "fullscreen": false,
+        "height": 800,
+        "hiddenTitle": true,
+        "minHeight": 400,
+        "minWidth": 500,
         "resizable": true,
         "title": "marknote",
-        "width": 800,
-        "height": 800,
-        "minWidth": 500,
-        "minHeight": 400,
-        "decorations": true,
-        "center": true,
-        "hiddenTitle": true,
         "titleBarStyle": "Overlay",
-        "visible": false
+        "visible": false,
+        "width": 800
       }
-    ],
-    "updater": {
-      "active": true,
-      "dialog": false,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM2MUE1NDQyQTJDNkFBREIKUldUYnFzYWlRbFFhTmtJU3NoL1o3UVp4ZERqbEV0SXNQaFVBUDZSUVR4Y1Y0ejJLRFdqMkZLQnUK",
-      "endpoints": ["https://ghproxy.com/https://github.com/cedar12/marknote/releases/download/updater/update.json","https://github.com/cedar12/marknote/releases/download/updater/update.json"],
-      "windows": {
-        "installMode": "passive",
-        "installerArgs": []
-      }
-    }
+    ]
   }
 }

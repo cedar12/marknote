@@ -92,14 +92,15 @@ export const Image = BuiltInImage.extend({
                     const appStore=useAppStore();
                     // @ts-ignore
                     const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+                    console.log('paste',items);
                     for (const item of items) {
-                        if (item.type.indexOf("image") === 0) {
+                      if (item.type.indexOf("image") === 0) {
                             event.preventDefault();
                             const {schema} = view.state;
-
+                            
                             const image = item.getAsFile();
                             const reader = new FileReader();
-                            reader.readAsDataURL(image);
+                            
                             reader.onload = (e) => {
                               const base64=e.target?.result;
                               // console.log('reader image',base64);
@@ -123,19 +124,11 @@ export const Image = BuiltInImage.extend({
                               }
                               
                             };
-                            // const src=URL.createObjectURL(image);
-                            // console.log('paste image',image);
-                            
-
-                            // uploadFunction(image).then(src => {
-                            //     const node = schema.nodes.image.create({
-                            //         src: src,
-                            //     });
-                            //     const transaction = view.state.tr.replaceSelectionWith(node);
-                            //     view.dispatch(transaction)
-                            // });
-
-                        }
+                            reader.onerror = function (e) {
+                              console.error(e);
+                            }
+                            reader.readAsDataURL(image);
+                      }
                     }
                 },
 

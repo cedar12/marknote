@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div class="marknote-menus" ref="menusRef" v-if="menuStore.visible">
       <div class="marknote-menu-mask" @click="onReset"  @contextmenu.prevent="onReset"></div>
-      <div class="menus menus-level-1  glass" :class="{ 'right-menu': appStore.platform === 'darwin' }" @contextmenu.prevent="">
+      <div class="menus menus-level-1  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" @contextmenu.prevent="">
         <div class="menu-item" :class="{ split: item.split }" v-for="item in menus" :key="item.key">
           <div class="menu-content" :class="{ 'has-children': item.children && item.children.length > 0 }"
             @click="onClick($event, item, 1)">
@@ -11,7 +11,7 @@
               <Right v-if="item.children && item.children.length > 0"></Right>
             </i>
           </div>
-          <div class="menus menus-level-2  glass" :class="{ 'right-menu': appStore.platform === 'darwin' }" v-if="key1 === item.key">
+          <div class="menus menus-level-2  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" v-if="key1 === item.key">
             <div class="menu-item" :class="{ split: item2.split }" v-for="item2 in item.children" :key="item2.key">
               <div class="menu-content" @click="onClick($event, item2, 2)">
                 <label class="menu-checkbox">
@@ -23,7 +23,7 @@
                   <Right v-if="item2.children && item2.children.length > 0"></Right>
                 </i>
               </div>
-              <div class="menus  menus-level-3  glass" :class="{ 'right-menu': appStore.platform === 'darwin' }" v-if="key2 === item2.key">
+              <div class="menus  menus-level-3  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" v-if="key2 === item2.key">
                 <div class="menu-item" :class="{ split: item3.split }" v-for="item3 in item2.children" :key="item3.key">
                   <div class="menu-content" @click="onClick($event, item3, 3)" :title="item3.label">
                     <label class="menu-title">{{ item3.label }}</label>
@@ -385,8 +385,8 @@ watch(()=>appStore.sidebar.visible,()=>{
 
 function replaceShortcut(shortcut?:string){
   if(!shortcut)return '';
-  const mod=appStore.platform==='darwin'?'Cmd':'Ctrl';
-  const alt=appStore.platform==='darwin'?'Option':'Alt';
+  const mod=appStore.platform==='macos'?'Cmd':'Ctrl';
+  const alt=appStore.platform==='macos'?'Option':'Alt';
   const key=shortcut.replace(/Mod/g,mod).replace(/Alt/g,alt);
   console.log('key->',key);
   return key;

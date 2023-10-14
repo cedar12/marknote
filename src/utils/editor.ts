@@ -69,7 +69,7 @@ function createEditor() {
         console.log('key down',event);
         const appStore = useAppStore();
         if (event.metaKey) {
-          keys.push(appStore.platform === 'darwin' ? 'command' : 'win');
+          keys.push(appStore.platform === 'macos' ? 'command' : 'win');
         } else if (event.ctrlKey) {
           keys.push('ctrl');
         }

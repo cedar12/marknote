@@ -10,10 +10,18 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.5", features = [] }
+tauri-build = { version = "2.0.0-alpha.9", features = [] }
 
 [dependencies]
-tauri = { version = "1.5", features = [ "global-shortcut-all", "process-relaunch", "updater", "protocol-all", "window-set-title", "notification-all", "window-set-always-on-top", "clipboard-write-text", "clipboard-read-text", "process-exit", "path-all", "dialog-all", "window-maximize", "window-minimize", "window-unminimize", "window-hide", "window-close", "window-start-dragging", "window-unmaximize", "window-show", "os-all", "shell-open", "global-shortcut"] }
+tauri = { version = "2.0.0-alpha.11", features = [ "protocol-asset"] }
+tauri-plugin-dialog = "2.0.0-alpha"
+tauri-plugin-window="2.0.0-alpha"
+tauri-plugin-notification="2.0.0-alpha"
+tauri-plugin-os="2.0.0-alpha"
+tauri-plugin-updater = "2.0.0-alpha"
+tauri-plugin-process = "2.0.0-alpha"
+tauri-plugin-app = "2.0.0-alpha"
+tauri-plugin-clipboard-manager = "2.0.0-alpha"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 base64 = "0.21.0"
@@ -28,6 +36,8 @@ chrono="0.4.31"
 log = "0.4.14"
 log4rs = "1.0.0"
 cron="0.5"
+dirs-next="2.0.0"
+url = "2"
 
 #[target.'cfg(windows)'.dependencies]
 [features]
@@ -41,3 +51,6 @@ codegen-units = 1
 lto = true
 incremental = false
 opt-level = "z"
+
+#[lib]
+#crate-type = ["staticlib", "cdylib", "rlib"]

@@ -1,7 +1,7 @@
 <template>
     <teleport to='#marknote-titlbar'>
         <div data-tauri-drag-region class="preferences-header">
-            <div class="header-btn" v-if="appStore.platform!=='darwin'" @click="appWindow.close()">
+            <div class="header-btn" v-if="appStore.platform!=='macos'" @click="appWindow.close()">
                 <Close></Close>
             </div>
         </div>
@@ -39,7 +39,7 @@
 import {ref,watch} from 'vue';
 import {Close} from '@icon-park/vue-next';
 import {useAppStore} from '../store/app';
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrent } from '@tauri-apps/plugin-window'
 import General from './preferences/General.vue';
 import Editor from './preferences/Editor.vue';
 import Image from './preferences/Image.vue';
@@ -47,6 +47,7 @@ import Theme from './preferences/Theme.vue';
 import { ElConfigProvider } from 'element-plus';
 import * as elementPlusLocales from 'element-plus/es/locale/index';
 
+const appWindow=getCurrent();
 
 const appStore=useAppStore();
 appStore.init();

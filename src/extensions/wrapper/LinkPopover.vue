@@ -31,8 +31,10 @@ import { ElPopover, ElButton, ElButtonGroup, ElTooltip } from 'element-plus';
 import { WebPage, Edit } from '@icon-park/vue-next';
 import { Editor } from '@tiptap/vue-3';
 import { ref } from 'vue';
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrent } from '@tauri-apps/plugin-window';
 import { useEditorStore } from '../../store/editor';
+
+const appWindow = getCurrent();
 
 const editorStore=useEditorStore();
 

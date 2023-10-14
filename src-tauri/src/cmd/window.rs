@@ -91,6 +91,7 @@ pub async fn open_preferences(handle: tauri::AppHandle){
             )
             .decorations(IS_MACOS)
             .min_inner_size(600f64, 400f64)
+            .inner_size(800f64, 600f64)
             .title_bar_style(tauri::TitleBarStyle::Overlay)
             .hidden_title(true)
             .visible(false)

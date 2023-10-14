@@ -1,22 +1,23 @@
+// @ts-nocheck
 import { defineStore } from 'pinia'
 import { useEditorStore } from './editor';
 import { useAppStore } from './app';
-import { appWindow } from '@tauri-apps/api/window';
-import { ask,confirm, open } from '@tauri-apps/api/dialog';
-import { exit } from '@tauri-apps/api/process';
+
+import { getCurrent } from '@tauri-apps/plugin-window';
+import { ask,confirm, open } from '@tauri-apps/plugin-dialog';
+import { exit } from '@tauri-apps/plugin-process';
 import {openFile,saveAs} from '../api/dialog';
 import {exportHTML, read} from '../api/file';
 import i18n from '../i18n';
 import { openAbout, openPreferences, openWindow } from '../api/window';
 import {
-  checkUpdate,
-  installUpdate,
-  onUpdaterEvent,
-} from '@tauri-apps/api/updater';
-import { relaunch } from '@tauri-apps/api/process';
-import { sendNotification } from '@tauri-apps/api/notification';
+  check as checkUpdate,
+} from '@tauri-apps/plugin-updater';
+import { relaunch } from '@tauri-apps/plugin-process';
+import { sendNotification } from '@tauri-apps/plugin-notification';
 import { log } from '../api/utils';
 
+const appWindow=getCurrent();
 // @ts-ignore
 const { t } = i18n.global;
 
@@ -175,14 +176,35 @@ const events = {
   checkUpdate(){
     const fn=()=>{
       return new Promise(async (resolve,reject)=>{
-        const unlisten = await onUpdaterEvent(({ error, status }) => {
-          // This will log all updater events, including status updates and errors.
-          console.log('Updater event', error, status)
-        })
+        // const unlisten = await onUpdaterEvent(({ error, status }) => {
+        //   // This will log all updater events, including status updates and errors.
+        //   console.log('Updater event', error, status)
+        // })
         
         try {
-          const { shouldUpdate, manifest } = await checkUpdate()
-        
+          const manifest = await checkUpdate();
+          if(manifest){
+            console.log('Update', manifest);
+            const yes=await ask(`MarkNote ${manifest?.version} 现在可用，是否现在安装？\n发布时间: ${manifest?.date}\n说明: ${manifest?.body||''}`,'marknote的新版本可用！');
+            if(yes){
+              console.log(
+                `Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
+              )
+          
+              // Install the update. This will also restart the app on Windows!
+              // await installUpdate()
+              await manifest.downloadAndInstall();
+          
+              // On macOS and Linux you will need to restart the app manually.
+              // You could use this step to display another confirmation dialog.
+              await relaunch()
+            }
+            
+          }else{
+            sendNotification({ title: '检查更新', body: '已经是最新版本!' });
+          }
+          
+          /*
           if (shouldUpdate) {
             
             // You could show a dialog asking the user if they want to install the update here.
@@ -201,18 +223,18 @@ const events = {
             }
           }else{
             sendNotification({ title: '检查更新', body: '已经是最新版本!' });
-          }
+          }*/
         } catch (error) {
-          unlisten();
+          // unlisten();
           reject(error);
         }
         // you need to call unlisten if your handler goes out of scope, for example if the component is unmounted.
         // unlisten()
-        resolve(unlisten);
+        resolve();
       })
     }
-    fn().then((unlisten:any)=>{
-      unlisten();
+    fn().then(()=>{
+      // unlisten();
     }).catch(error=>{
       alert(error);
       console.error(error);

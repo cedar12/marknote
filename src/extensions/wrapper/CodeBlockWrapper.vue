@@ -24,7 +24,7 @@ import { ref } from 'vue';
 import {ElSelect,ElOption,ElButton,ElTooltip} from 'element-plus';
 import { Copy } from '@icon-park/vue-next';
 import { NodeViewContent, NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3';
-import { writeText } from '@tauri-apps/api/clipboard';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import {useI18n} from 'vue-i18n';
 const {t}=useI18n();
 const props = defineProps(nodeViewProps);

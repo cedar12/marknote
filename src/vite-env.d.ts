@@ -7,6 +7,10 @@ declare module "*.vue" {
 }
 
 
+
+
 declare interface Window {
   editor: ShallowRef<Editor | undefined>;
+  filesOpen:any;
+  onFileOpen:(files)=>void;
 }

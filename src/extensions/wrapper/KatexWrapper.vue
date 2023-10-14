@@ -20,8 +20,11 @@ import { ref,onMounted,watch,nextTick } from 'vue';
 import {ElButton,ElTooltip} from 'element-plus';
 import katex from 'katex';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrent } from '@tauri-apps/plugin-window';
 import {useI18n} from 'vue-i18n';
+
+const appWindow=getCurrent();
+
 const props = defineProps(nodeViewProps);
 const {  text } = props.node.attrs;
 

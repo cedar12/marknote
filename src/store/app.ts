@@ -1,20 +1,21 @@
 import { defineStore } from 'pinia'
-import { sep } from '@tauri-apps/api/path';
-import { platform } from '@tauri-apps/api/os';
+import { platform } from '@tauri-apps/plugin-os';
 import { emit, listen,TauriEvent } from '@tauri-apps/api/event'
-import { appWindow } from '@tauri-apps/api/window'
+import { getCurrent } from '@tauri-apps/plugin-window'
 import { useI18n } from "vue-i18n";
 import {useEditorStore} from './editor';
 import { KeyBindingBuilder } from '../utils/keyBinding';
 import { isImage } from '../utils';
 import { read, save, saveImagePath } from '../api/file';
 import { saveAs} from '../api/dialog';
-import { isPermissionGranted, requestPermission } from '@tauri-apps/api/notification';
-import { confirm } from '@tauri-apps/api/dialog';
+import { isPermissionGranted, requestPermission } from '@tauri-apps/plugin-notification';
+import { confirm } from '@tauri-apps/plugin-dialog';
 import i18n from '../i18n';
-import { args } from '../api/utils';
+// import { args } from '../api/utils';
 import { findThemeByType, setTheme, ThemeItem } from '../theme';
+import { args, log } from '../api/utils';
 
+const appWindow=getCurrent();
 // @ts-ignore
 const { t } = i18n.global;
 
@@ -44,7 +45,7 @@ export const useAppStore = defineStore('app', {
     filepath:string|null,
     isSave:boolean,
     recentFiles:string[],
-    platform:null|'linux'| 'darwin'| 'ios'| 'freebsd'| 'dragonfly'| 'netbsd'| 'openbsd'| 'solaris'| 'android'| 'win32',
+    platform:null|'linux'| 'macos'| 'ios'| 'freebsd'| 'dragonfly'| 'netbsd'| 'openbsd'| 'solaris'| 'android'| 'win32',
     visible:{
       outliner:boolean,
       folder:boolean,
@@ -59,6 +60,7 @@ export const useAppStore = defineStore('app', {
     theme:ThemeItem|undefined,
     autoTheme:boolean,
     folder:string|null,
+    loading:boolean,
   }=>({
     title:null,
     filepath: null,
@@ -79,6 +81,7 @@ export const useAppStore = defineStore('app', {
     theme:getTheme(),
     autoTheme:false,
     folder:null,
+    loading:true,
   }),
   actions:{
     setFilepath(filepath:string|null){
@@ -90,6 +93,7 @@ export const useAppStore = defineStore('app', {
         }
         this.recentFiles.splice(0,0, filepath);
         localStorage.setItem('recent',JSON.stringify(this.recentFiles));
+        const sep=this.platform==='win32'?'\\':'/';
         var paths=filepath.split(sep);
         this.title=paths[paths.length-1];
         this.isSave=true;
@@ -109,6 +113,11 @@ export const useAppStore = defineStore('app', {
     },
 
     init(){
+
+      window.onFileOpen = (files) => {
+        alert(files?files.join(','):'undefined');
+        log.info(files?files.join(','):'undefined');
+      }
       
       this.isSave=true;
       appWindow.show();
@@ -119,11 +128,47 @@ export const useAppStore = defineStore('app', {
         setTheme(findThemeByType(isDarkTheme.matches?'dark':'light') as any);
       }
 
+      const { locale } = useI18n();
+      platform().then(async (p:any)=>{
+        this.platform=p;
+        this.keyBinding=new KeyBindingBuilder();
+        this.menuKey=this.menuKey+1;
+
+        this.permissionGranted = await isPermissionGranted();
+        if (!this.permissionGranted) {
+          const permission = await requestPermission();
+          this.permissionGranted = permission === 'granted';
+        }
+
+        this.loading=false;
+        
+      });
+
       if(appWindow.label==='main'){
         const editorStore=useEditorStore();
+        // this.args=window.filesOpen||[];
+        // log.debug(window.filesOpen);
+        
         args().then(async (payload:string[])=>{
-          if(payload.length>1){
-            const path=payload[1];
+          if(payload.length===1){
+            let path=payload[0];
+            if(path.startsWith('file://')){
+              path=payload[0].substring(7);
+            }
+            
+            editorStore.loading=true;
+            const resp:any=await read(path);
+            if (resp.code === 0) {
+              const appStore = useAppStore();
+              appStore.setFilepath(path);
+              editorStore.setContent(resp.data);
+            }
+            editorStore.loading=false;
+          }else if(payload.length>1){
+            let path=payload[1];
+            if(path.startsWith('file://')){
+              path=payload[1].substring(7);
+            }
             editorStore.loading=true;
             const resp:any=await read(path);
             if (resp.code === 0) {
@@ -136,21 +181,10 @@ export const useAppStore = defineStore('app', {
         }).catch(()=>{
           editorStore.loading=false;
         });
+        
       }
 
-      const { locale } = useI18n();
-      platform().then(async platform=>{
-        this.platform=platform;
-        this.keyBinding=new KeyBindingBuilder();
-        this.menuKey=this.menuKey+1;
-
-        this.permissionGranted = await isPermissionGranted();
-        if (!this.permissionGranted) {
-          const permission = await requestPermission();
-          this.permissionGranted = permission === 'granted';
-        }
-        
-      });
+      
 
       if(appWindow.label!=='preferences'&&appWindow.label!=='about'){
 
@@ -163,7 +197,7 @@ export const useAppStore = defineStore('app', {
         appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async (_ev)=>{
           // console.log(ev);
           if(this.isSave){
-            appWindow.close();
+            await appWindow.close();
           }else{
             try{
               // @ts-ignore
@@ -171,7 +205,7 @@ export const useAppStore = defineStore('app', {
               if(yes===false){
                 this.save();
               }else{
-                appWindow.close();
+                await appWindow.close();
               }
             }catch(e){
               console.log(e);
@@ -181,7 +215,7 @@ export const useAppStore = defineStore('app', {
         });
         
         appWindow.listen(TauriEvent.WINDOW_FILE_DROP,async (ev)=>{
-          // console.log('ev',ev);
+          console.log('ev',ev);
           if(!this.filepath)return;
           const editorStore=useEditorStore();
           // @ts-ignore
@@ -189,8 +223,8 @@ export const useAppStore = defineStore('app', {
           const { schema } = state;
 
           const payload=ev.payload as any;
-          for (let i = 0; i < payload.length; i++) {
-            const src = payload[i];
+          for (let i = 0; i < payload.paths.length; i++) {
+            const src = payload.paths[i];
             if(isImage(src)){
               console.log(state,view);
               try{
@@ -232,6 +266,7 @@ export const useAppStore = defineStore('app', {
         
       });
 
+      
       listen<ThemeItem>('theme', async (event) => {
         const value=event.payload;
         setTheme(value);
@@ -262,6 +297,7 @@ export const useAppStore = defineStore('app', {
           }
         }).catch(e => console.error(e));
       }else{
+        //@ts-ignore
         saveAs(md ,t('save')).then((res:any) => { 
           console.log('save',res);
           if(res.code===0){

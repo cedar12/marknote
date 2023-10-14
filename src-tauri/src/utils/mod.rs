@@ -6,8 +6,7 @@ use std::{path::PathBuf, fs};
 
 use anyhow::anyhow;
 use reqwest::Client;
-use tauri::Window;
-use tauri::{api::path, Config};
+use tauri::{Window, Config, path};
 
 use std::fs::File;
 use std::io::{ Write};
@@ -28,7 +27,8 @@ pub fn set_shadow(win: Window) {
 
 
 pub fn get_path()->PathBuf{
-  match path::app_data_dir(&Config::default()){
+  
+  match dirs_next::data_dir(){
     Some(p)=>{
       let p=p.join("com.github.marknote");
       if !p.exists(){
@@ -42,7 +42,7 @@ pub fn get_path()->PathBuf{
 }
 
 pub fn get_cache_dir()->PathBuf{
-  match path::app_cache_dir(&Config::default()){
+  match dirs_next::cache_dir(){
     Some(p)=>{
       let p=p.join("com.github.marknote");
       if !p.exists(){
@@ -56,7 +56,7 @@ pub fn get_cache_dir()->PathBuf{
 }
 
 pub fn get_log_dir()->PathBuf{
-  match path::app_log_dir(&Config::default()){
+  match dirs_next::cache_dir(){
     Some(p)=>{
       let p=p.join("com.github.marknote");
       if !p.exists(){

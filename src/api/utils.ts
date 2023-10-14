@@ -1,4 +1,6 @@
-import { invoke } from "@tauri-apps/api/tauri";
+// import { invoke } from "@tauri-apps/api/tauri";
+
+const invoke=window.__TAURI_INVOKE__;
 
 
 export function args():Promise<string[]>{

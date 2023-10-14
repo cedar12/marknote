@@ -1,6 +1,6 @@
 import hotkeys, { HotkeysEvent } from 'hotkeys-js';
 import {useAppStore} from '../store/app';
-import * as globalShortcut from '@tauri-apps/api/globalShortcut';
+import * as globalShortcut from '@tauri-apps/plugin-global-shortcut';
 
 export interface KeyBinding{
   description:string[],
@@ -43,7 +43,6 @@ const defaultKeyBinding:KeyBinding[]=[
     description:['file','quit'],
     key:'Mod+Q',
   }
-
   ,
   {
     description:['edit','cut'],
@@ -115,7 +114,7 @@ const defaultKeyBinding:KeyBinding[]=[
   },
   {
     description:['view','sidebar'],
-    key:'Alt+Z',
+    key:'Mod+Shift+E',
   }
 ];
 
@@ -158,7 +157,7 @@ export class KeyBindingBuilder{
           }
         });
       }else{
-        const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,appStore.platform==='darwin'?'command':'ctrl').toLocaleLowerCase();
+        const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,appStore.platform==='macos'?'command':'ctrl').toLocaleLowerCase();
         hotkeys(key, bind.description[0], (event, handler)=>{
           if(this.fn){
             const result=this.fn(bind,handler);

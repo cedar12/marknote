@@ -1,10 +1,18 @@
 use std::process::Command;
 
+use tauri::{State, AppHandle, Manager};
+
+use crate::OpenedUrls;
+
 
 #[tauri::command]
-pub fn cmd_args()->Vec<String>{
-  let args: Vec<String> = std::env::args().collect();
-  args
+pub fn cmd_args(state: State<OpenedUrls>)->Vec<url::Url>{
+  // let args: Vec<String> = std::env::args().collect();
+  let res=state.0.lock().unwrap();
+  if let Some(urls) = res.as_ref() {
+      return urls.clone();
+  }
+  vec![]
 }
 
 #[tauri::command]

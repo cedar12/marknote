@@ -6,7 +6,7 @@ import { findMarkPosition } from './utils/mark';
 import LinkPopover from './wrapper/LinkPopover.vue';
 import {render,h} from 'vue';
 import { useEditorStore } from '../store/editor';
-import {open} from '@tauri-apps/api/shell';
+import {open} from '@tauri-apps/plugin-shell';
 
 const extractHrefFromMatch = (match:RegExpExecArray) => {
   return { href: match.groups?.href };

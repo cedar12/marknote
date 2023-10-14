@@ -36,9 +36,12 @@ document.oncontextmenu = function (event: any) {
 </script>
 
 <template>
-  <Titlebar></Titlebar>
-  <Layout></Layout>
-  <Menu :key="key"></Menu>
+<div v-loading="appStore.loading">
+    <Titlebar></Titlebar>
+    <Layout></Layout>
+    <Menu :key="key"></Menu>
+</div>
+  
 </template>
 
 <style scoped>
