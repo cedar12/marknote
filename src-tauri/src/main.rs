@@ -29,28 +29,19 @@ fn main() {
             {
                 // NOTICE: `args` may include URL protocol (`your-app-protocol://`) or arguments (`--`) if app supports them.
                 let mut urls = Vec::new();
-                for arg in env::args().skip(1) {
-                if let Ok(url) = url::Url::parse(&arg) {
-                    urls.push(url);
-                }
+                let args: Vec<String> = std::env::args().skip(1).collect();
+                for arg in args {
+                    if let Ok(url) = url::Url::parse(&arg) {
+                        urls.push(url);
+                    }
                 }
 
                 if !urls.is_empty() {
-                app.state::<OpenedUrls>().0.lock().unwrap().replace(urls);
+                    app.state::<OpenedUrls>().0.lock().unwrap().replace(urls);
                 }
             }
 
-            let opened_urls = if let Some(urls) = &*app.state::<OpenedUrls>().0.lock().unwrap() {
-                urls
-                .iter()
-                .map(|u| u.as_str().replace("\\", "\\\\"))
-                .collect::<Vec<_>>()
-                .join(", ")
-            } else {
-                "".into()
-            };
             let window = app.get_window("main").unwrap();
-            // let _=window.eval(&format!("setTimeout(window.onFileOpen(`{opened_urls}`),100)"));
             window.set_decorations(IS_MACOS).unwrap();
             #[cfg(debug_assertions)]
             window.open_devtools();
@@ -91,16 +82,6 @@ fn main() {
         .run(|app, event| {
             #[cfg(any(target_os = "macos", target_os = "ios"))]
             if let tauri::RunEvent::Opened { urls } = event {
-                /*
-                if let Some(w) = app.get_window("main") {
-                    let urls = urls
-                        .iter()
-                        .map(|u| u.as_str())
-                        .collect::<Vec<_>>()
-                        .join(",");
-                    let _ = w.eval(&format!("window.onFileOpen(`{urls}`)"));
-                } */
-
                 app.state::<OpenedUrls>().0.lock().unwrap().replace(urls);
             }
         });
