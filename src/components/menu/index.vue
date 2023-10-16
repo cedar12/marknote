@@ -49,7 +49,6 @@ import { useI18n } from 'vue-i18n';
 import { Menu, useMenuStore } from '../../store/menu';
 import {useAppStore} from '../../store/app';
 import { Check, Right } from '@icon-park/vue-next';
-import {ElScrollbar} from 'element-plus';
 import '../../scss/menu.scss';
 
 
