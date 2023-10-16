@@ -13,15 +13,19 @@ const appWindow=getCurrent();
 const {t}=useI18n();
 const visible=ref(false);
 const value=ref<string|null>(null);
+const from=ref<number>();
+const to=ref<number>();
 
-appWindow.listen<string>('dialog-link-visible',event=>{
+appWindow.listen<{href:string,from:number,to:number}>('dialog-link-visible',event=>{
     console.log(event);
     visible.value=true;
-    value.value=event.payload;
+    value.value=event.payload.href;
+    from.value=event.payload.from;
+    to.value=event.payload.to;
 });
 
 const onChange=()=>{
-  appWindow.emit('dialog-link-value',value.value);
+  appWindow.emit('dialog-link-value',{href:value.value,from:from.value,to:to.value});
 }
 
 

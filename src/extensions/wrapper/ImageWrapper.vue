@@ -1,5 +1,5 @@
 <template>
-  <NodeViewWrapper class="marknote-image" >
+  <NodeViewWrapper class="marknote-image">
     <ElPopover trigger="hover" placement="top">
       
       <template #reference>
@@ -86,6 +86,9 @@ onMounted(()=>{
 <style lang="scss">
 .marknote-image {
   position: relative;
+  display: inline-block;
+  user-select: all;
+  // padding: 0 .2em;
   img{
     min-width: 30px;
     min-height: 30px;

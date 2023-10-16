@@ -1,6 +1,4 @@
-// import { invoke } from "@tauri-apps/api/tauri";
-
-const invoke=window.__TAURI_INVOKE__;
+import { invoke } from "@tauri-apps/api/tauri";
 
 
 export function openWindow(){

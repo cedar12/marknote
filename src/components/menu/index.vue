@@ -12,6 +12,7 @@
             </i>
           </div>
           <div class="menus menus-level-2  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" v-if="key1 === item.key">
+            
             <div class="menu-item" :class="{ split: item2.split }" v-for="item2 in item.children" :key="item2.key">
               <div class="menu-content" @click="onClick($event, item2, 2)">
                 <label class="menu-checkbox">
@@ -24,6 +25,7 @@
                 </i>
               </div>
               <div class="menus  menus-level-3  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" v-if="key2 === item2.key">
+                
                 <div class="menu-item" :class="{ split: item3.split }" v-for="item3 in item2.children" :key="item3.key">
                   <div class="menu-content" @click="onClick($event, item3, 3)" :title="item3.label">
                     <label class="menu-title">{{ item3.label }}</label>
@@ -47,6 +49,7 @@ import { useI18n } from 'vue-i18n';
 import { Menu, useMenuStore } from '../../store/menu';
 import {useAppStore} from '../../store/app';
 import { Check, Right } from '@icon-park/vue-next';
+import {ElScrollbar} from 'element-plus';
 import '../../scss/menu.scss';
 
 
@@ -323,7 +326,7 @@ const loadMenuData=()=>{
 
   nextTick(()=>{
     appStore.keyBinding?.on((bind)=>{
-      console.log('按下',bind);
+      // console.log('按下',bind);
       var temp=menus.value;
       for (let i = 0; i < bind.description.length-1; i++) {
         const b = bind.description[i];

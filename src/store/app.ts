@@ -13,7 +13,7 @@ import { confirm } from '@tauri-apps/plugin-dialog';
 import i18n from '../i18n';
 // import { args } from '../api/utils';
 import { findThemeByType, setTheme, ThemeItem } from '../theme';
-import { args, log } from '../api/utils';
+import { args } from '../api/utils';
 
 const appWindow=getCurrent();
 // @ts-ignore
@@ -45,7 +45,7 @@ export const useAppStore = defineStore('app', {
     filepath:string|null,
     isSave:boolean,
     recentFiles:string[],
-    platform:null|'linux'| 'macos'| 'ios'| 'freebsd'| 'dragonfly'| 'netbsd'| 'openbsd'| 'solaris'| 'android'| 'win32',
+    platform:null|'linux'| 'macos'| 'ios'| 'freebsd'| 'dragonfly'| 'netbsd'| 'openbsd'| 'solaris'| 'android'| 'windows',
     visible:{
       outliner:boolean,
       folder:boolean,
@@ -53,6 +53,7 @@ export const useAppStore = defineStore('app', {
     sidebar:{
       visible:boolean,
       active: 'outliner'|'folder',
+      width: number,
     }
     keyBinding:KeyBindingBuilder|null,
     menuKey:number,
@@ -61,6 +62,7 @@ export const useAppStore = defineStore('app', {
     autoTheme:boolean,
     folder:string|null,
     loading:boolean,
+
   }=>({
     title:null,
     filepath: null,
@@ -74,6 +76,8 @@ export const useAppStore = defineStore('app', {
     sidebar:{
       visible:false,
       active: 'outliner',
+      // @ts-ignore
+      width: localStorage.getItem('sidebarWidth')?parseInt(localStorage.getItem('sidebarWidth')):220,
     },
     keyBinding:null,
     menuKey:0,
@@ -92,9 +96,14 @@ export const useAppStore = defineStore('app', {
           this.recentFiles.splice(index,1);
         }
         this.recentFiles.splice(0,0, filepath);
+        if(this.recentFiles.length>10){
+          this.recentFiles=this.recentFiles.splice(10,this.recentFiles.length-10);
+        }
         localStorage.setItem('recent',JSON.stringify(this.recentFiles));
-        const sep=this.platform==='win32'?'\\':'/';
+        const sep=this.platform==='windows'?'\\':'/';
+
         var paths=filepath.split(sep);
+        
         this.title=paths[paths.length-1];
         this.isSave=true;
         appWindow.setTitle(filepath);
@@ -113,11 +122,7 @@ export const useAppStore = defineStore('app', {
     },
 
     init(){
-
-      window.onFileOpen = (files) => {
-        alert(files?files.join(','):'undefined');
-        log.info(files?files.join(','):'undefined');
-      }
+      document.documentElement.style.setProperty('--sidebarWidth', this.sidebar.width + 'px');
       
       this.isSave=true;
       appWindow.show();

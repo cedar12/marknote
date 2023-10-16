@@ -1,5 +1,5 @@
 <template>
-  <div ref="sidebarRef" class="layout-sidebar" v-if="appStore.sidebar.visible" :style="`--sidebarWidth:${width}px`">
+  <div ref="sidebarRef" class="layout-sidebar" v-if="appStore.sidebar.visible" :style="`--sidebarWidth:${appStore.sidebar.width}px`">
 
     <div class="sidebar-menu">
       <div class="menu-item" :class="{ 'active': appStore.sidebar.active === 'outliner' }" @click="changeActive('outliner')">
@@ -34,7 +34,9 @@ const appStore = useAppStore();
 const { width } = useDragSidebar(resizeRef);
 
 watch(() => width.value, () => {
+  appStore.sidebar.width=width.value;
   document.documentElement.style.setProperty('--sidebarWidth', width.value + 'px');
+  localStorage.setItem('sidebarWidth',''+width.value);
 })
 
 const changeActive = (active: "outliner" | "folder") => {

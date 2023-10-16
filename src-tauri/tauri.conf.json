@@ -13,14 +13,7 @@
   "plugins": {
     "shell": {
       "open": true,
-      "scope": [
-        {
-          "args": true,
-          "cmd": "ftype",
-          "name": "Windows-ftype",
-          "sidecar": false
-        }
-      ]
+      "scope": []
     },
     "updater": {
       "endpoints": [

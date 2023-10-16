@@ -1,7 +1,8 @@
 
-import { mergeAttributes, Node, nodeInputRule } from '@tiptap/core';
+import { mergeAttributes, Node, nodeInputRule,nodePasteRule } from '@tiptap/core';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
 import KatexWrapper from './wrapper/KatexWrapper.vue';
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 export type IKatexAttrs = {
   text?: string;
@@ -81,13 +82,39 @@ export const Katex = Node.create<IKatexOptions>({
   addInputRules() {
     return [
       nodeInputRule({
-        find: /^\${2}\s$/,
+        find: /^\${2}\s*?\n(.+)$/,
         type: this.type,
-        getAttributes: () => {
+        getAttributes: (match) => {
+          console.log('input katex',match);
           return { defaultShowPicker: true };
         },
       }),
     ];
+  },
+
+  addPasteRules() {
+    return [
+      nodePasteRule({
+        find: /\${2}(.+)\${2}/g,
+        type: this.type,
+        getAttributes: (match, pasteEvent) => {
+          // const html = pasteEvent?.clipboardData?.getData('text/html')
+          // const hrefRegex = /$$\s*\n(.*)"/
+
+          // const existingLink = html?.match(hrefRegex)
+
+          // if (existingLink) {
+          //   return {
+          //     text: existingLink[1],
+          //   }
+          // }
+          console.log('katex',match,pasteEvent);
+          return {
+            text: ''//match.data?.text,
+          }
+        },
+      }),
+    ]
   },
 
   addNodeView() {
@@ -103,6 +130,53 @@ export const Katex = Node.create<IKatexOptions>({
         // return this.editor.commands.toggleKatex()
       },
     }  
-  }
+  },
+  // @ts-ignore
+  addProseMirrorPlugins() {
+    return [
+      
+      new Plugin({
+        key: new PluginKey('katexVSCodeHandler'),
+        props: {
+          handlePaste: (view, event) => {
+            if (!event.clipboardData) {
+              return false
+            }
+
+            if (this.editor.isActive(this.type.name)) {
+              return false
+            }
+
+            const text = event.clipboardData.getData('text/plain')
+
+            if (!text) {
+              return false
+            }
+
+            const { tr,schema } = view.state
+
+            const reg=/^\${2}\s*?\n(.+)\n\${2}/igs;
+            
+
+            const matches=reg.exec(text);
+            if(!matches){
+              return false;
+            }
+            // create an empty
+            // const ntr=tr.replaceSelectionWith(this.type.create({ text:matches[1] }))
+            const node = schema.nodes.katex.create({
+              text: matches[1],
+            });
+            const transaction = tr.replaceSelectionWith(node);
+            transaction.setMeta('paste', true)
+            view.dispatch(transaction)
+            
+
+            return true
+          },
+        },
+      }),
+    ]
+  },
 
 });

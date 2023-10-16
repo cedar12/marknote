@@ -1,6 +1,4 @@
-// import { invoke } from "@tauri-apps/api/tauri";
-
-const invoke=window.__TAURI_INVOKE__;
+import { invoke } from "@tauri-apps/api/tauri";
 
 export function save(save_type:string,path:string){
   return invoke('save_image_type', { saveType:save_type,path:path });

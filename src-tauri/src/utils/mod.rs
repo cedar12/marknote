@@ -20,9 +20,9 @@ pub use constant::*;
 
 
 pub fn set_shadow(win: Window) {
-  if cfg!(windows) {
-      window_shadows::set_shadow(&win, true).expect("Unsupported platform!");
-  }
+  // if cfg!(windows) {
+  //     window_shadows::set_shadow(&win, true).expect("Unsupported platform!");
+  // }
 }
 
 
