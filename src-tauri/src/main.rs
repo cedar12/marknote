@@ -4,9 +4,10 @@
 extern crate lazy_static;
 
 
-use std::{sync::Mutex, slice::Windows};
+use std::sync::Mutex;
 
 use tauri::Manager;
+use tauri_plugin_log::{TargetKind, Target};
 
 use crate::utils::{set_shadow, IS_MACOS};
 
@@ -21,10 +22,12 @@ pub struct OpenedUrls(Mutex<Option<Vec<url::Url>>>);
 
 
 fn main() {
-    log_conf::init();
+    
     tauri::Builder::default()
         .manage(OpenedUrls(Default::default()))
         .setup(|app| {
+            #[cfg(desktop)]
+            app.handle().plugin(tauri_plugin_global_shortcut::Builder::default().build())?;
             #[cfg(any(windows, target_os = "linux"))]
             {
                 // NOTICE: `args` may include URL protocol (`your-app-protocol://`) or arguments (`--`) if app supports them.
@@ -78,6 +81,11 @@ fn main() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_app::init())
+        .plugin(tauri_plugin_log::Builder::default().targets([
+            Target::new(TargetKind::LogDir{file_name:Some("marknote.log".into())}),
+            Target::new(TargetKind::Stdout),
+            Target::new(TargetKind::Webview),
+        ]).build())
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(|app, event| {

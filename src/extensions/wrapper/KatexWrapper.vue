@@ -1,12 +1,15 @@
 <template>
   <NodeViewWrapper class="marknote-katex" >
     <div class="katex-wrapper" contenteditable="false" v-if="isFocus()">
-      <!-- <ElInput v-model="value" autosize ref="inputRef"
-    type="textarea"  @change="onChangeText" @keydown="onKeydown"></ElInput> -->
+    <!-- <div class="hljs katex-wrapper" contenteditable="true"  @input="onChangeText">
+      <code >{{ value }}</code>
+    </div> -->
+      <ElInput v-model="value" autosize ref="inputRef"
+    type="textarea"  @change="onChangeText" @keydown="onkeyDown"></ElInput>
       
-      <ElTooltip size="small " :content="t('edit')">
+      <!-- <ElTooltip size="small " :content="t('edit')">
           <ElButton size="small" :icon="Edit" @click="onEdit"></ElButton>
-      </ElTooltip>
+      </ElTooltip> -->
     </div>
     <div className="katex-content" v-if="value&&value.trim()!=''" v-html="formatText()"></div>
     <div className="katex-content" v-else>
@@ -17,7 +20,7 @@
 <script lang="ts" setup>
 import {Edit} from '@icon-park/vue-next';
 import { ref,onMounted,watch,nextTick } from 'vue';
-import {ElButton,ElTooltip} from 'element-plus';
+import {ElButton,ElTooltip,ElInput} from 'element-plus';
 import katex from 'katex';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
 import { getCurrent } from '@tauri-apps/plugin-window';
@@ -48,7 +51,8 @@ const isFocus=()=>{
   const {anchor}=props.editor.state.selection;
   const node=props.node;
   const pos=props.getPos();
-  const is=props.editor.isActive('katex')&&(anchor >= pos && anchor <= pos + node.nodeSize - 1);
+  //console.log(anchor,pos,node.nodeSize,node);
+  const is=props.editor.isActive('katex')&&(anchor == pos && anchor <= pos + node.nodeSize - 1);
   if(is&&inputRef.value){
     nextTick(()=>{
       inputRef.value.focus();
@@ -62,6 +66,13 @@ const onChangeText=()=>{
   // console.log('katex change text',value.value,rr);
   
   props.updateAttributes({ text: value.value });
+}
+
+const onkeyDown=(e:KeyboardEvent)=>{
+  console.log(e);
+  if(e.key==='Backspace'&&value.value===''){
+    props.editor.commands.deleteSelection();
+  }
 }
 
 appWindow.listen<string>('dialog-katex-text',(event)=>{
@@ -89,9 +100,26 @@ const formatText = ():string => {
 <style lang="scss">
 .marknote-katex {
   position: relative;
+  
   .katex-wrapper{
-    display: flex;
-    justify-content: end;
+    //display: flex;
+    //justify-content: end;
+    //display: none;
+    outline: none;
+    background-color: var(--contentBackgroundColorActive);
+    color: var(--contentColorActive);
+    padding: .4em;
+    
+    .el-textarea__inner{
+      --el-input-bg-color:var(--contentBackgroundColorActive);
+      --el-input-text-color:var(--contentColorActive);
+      outline:none;
+      border:none;
+      resize:none;
+      &:focus{
+        box-shadow: none;
+      }
+    }
   }
   .katex-html{
       display: none;

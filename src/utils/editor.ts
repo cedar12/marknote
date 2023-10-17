@@ -25,6 +25,7 @@ import CharacterCount from '@tiptap/extension-character-count'
 import { useAppStore } from '../store/app';
 import hotkeys from 'hotkeys-js';
 
+
 const MarknoteTable = Table.extend({
   addInputRules() {
     let inputRule = wrappingInputRule({
@@ -65,8 +66,8 @@ function createEditor() {
         console.log('drop', view, e);
       },
       handleKeyDown(_view, event) {
+        
         const keys = [];
-        console.log('key down',event);
         const appStore = useAppStore();
         if (event.metaKey) {
           keys.push(appStore.platform === 'macos' ? 'command' : 'win');
@@ -88,14 +89,9 @@ function createEditor() {
           hotkeys.trigger(key, 'file');
           hotkeys.trigger(key, 'view');
         }
+        
+      },
 
-      },
-      handleDOMEvents: {
-        drop: (view, e) => {
-          e.preventDefault();
-          console.log('drop', view, e);
-        },
-      },
     },
     extensions: [
       StarterKit,

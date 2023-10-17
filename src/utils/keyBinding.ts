@@ -1,6 +1,7 @@
 import hotkeys, { HotkeysEvent } from 'hotkeys-js';
 import {useAppStore} from '../store/app';
 import * as globalShortcut from '@tauri-apps/plugin-global-shortcut';
+import {getCurrent,Window} from '@tauri-apps/plugin-window';
 
 export interface KeyBinding{
   description:string[],
@@ -151,14 +152,21 @@ export class KeyBindingBuilder{
       if(bind.system===true){
         const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,'CommandOrControl').toLocaleLowerCase();
         globalShortcut.unregister(key);
-        globalShortcut.register(key,()=>{
+        globalShortcut.register(key,async ()=>{
           if(this.fn){
-            this.fn(bind);
+            const focused=await Window.getFocusedWindow();
+            if(focused.label===getCurrent().label){
+              this.fn(bind);
+            }
+            
           }
         });
       }else{
         const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,appStore.platform==='macos'?'command':'ctrl').toLocaleLowerCase();
-        hotkeys(key, bind.description[0], (event, handler)=>{
+        hotkeys(key, {
+          scope:bind.description[0],
+          capture:true,
+        }, (event, handler)=>{
           if(this.fn){
             const result=this.fn(bind,handler);
             if(result===true&&event){
