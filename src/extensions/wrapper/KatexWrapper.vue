@@ -18,20 +18,20 @@
   </NodeViewWrapper>
 </template>
 <script lang="ts" setup>
-import {Edit} from '@icon-park/vue-next';
+// import {Edit} from '@icon-park/vue-next';
 import { ref,onMounted,watch,nextTick } from 'vue';
-import {ElButton,ElTooltip,ElInput} from 'element-plus';
+import {ElInput} from 'element-plus';
 import katex from 'katex';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
 import { getCurrent } from '@tauri-apps/plugin-window';
-import {useI18n} from 'vue-i18n';
+// import {useI18n} from 'vue-i18n';
 
 const appWindow=getCurrent();
 
 const props = defineProps(nodeViewProps);
 const {  text } = props.node.attrs;
 
-const {t}=useI18n();
+// const {t}=useI18n();
 
 const value=ref(text);
 const inputRef=ref();
@@ -68,9 +68,9 @@ const onChangeText=()=>{
   props.updateAttributes({ text: value.value });
 }
 
-const onkeyDown=(e:KeyboardEvent)=>{
-  console.log(e);
-  if(e.key==='Backspace'&&value.value===''){
+const onkeyDown=(e:KeyboardEvent|Event)=>{
+  // console.log(e);
+  if(e instanceof KeyboardEvent&&e.key==='Backspace'&&value.value===''){
     props.editor.commands.deleteSelection();
   }
 }
@@ -80,9 +80,9 @@ appWindow.listen<string>('dialog-katex-text',(event)=>{
   onChangeText();
 })
 
-const onEdit=()=>{
-  appWindow.emit('dialog-katex-visible',value.value);
-}
+// const onEdit=()=>{
+//   appWindow.emit('dialog-katex-visible',value.value);
+// }
 const formatText = ():string => {
   return katex.renderToString(`${value.value}`,{throwOnError:false,displayMode:true});
     // try {

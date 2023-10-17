@@ -155,7 +155,7 @@ export class KeyBindingBuilder{
         globalShortcut.register(key,async ()=>{
           if(this.fn){
             const focused=await Window.getFocusedWindow();
-            if(focused.label===getCurrent().label){
+            if(focused&&focused.label===getCurrent().label){
               this.fn(bind);
             }
             
