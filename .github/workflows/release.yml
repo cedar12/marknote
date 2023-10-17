@@ -13,6 +13,9 @@ jobs:
       fail-fast: false
       matrix:
         platform: [macos-latest, ubuntu-latest, windows-latest]
+        arch:
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout repository
@@ -22,12 +25,16 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 18
- 
+      - name: Install Rust stable (macos only)
+        if: matrix.platform == 'macos-latest'
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.arch }}
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
- 
       - name: Install Dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-latest'
         run: |
@@ -44,7 +51,7 @@ jobs:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{secrets.TAURI_KEY_PASSWORD}}
         with:
-          args: --target aarch64-apple-darwin
+          args: --target ${{matrix.arch}}
           tagName: v__VERSION__
           releaseName: v__VERSION__
 
