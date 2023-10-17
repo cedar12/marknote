@@ -6,17 +6,16 @@ on:
       - 'v*'
  
 jobs:
-  release:
+  macos-release:
     permissions:
         contents: write
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-latest, windows-latest]
         arch:
           - x86_64-apple-darwin
           - aarch64-apple-darwin
-    runs-on: ${{ matrix.platform }}
+    runs-on: macos-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -25,26 +24,14 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 18
-      - name: Install Rust stable (macos only)
-        if: matrix.platform == 'macos-latest'
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.arch }}
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - name: Install Dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y javascriptcoregtk-4.1 libgtk-3-dev webkit2gtk-4.1 libappindicator3-dev librsvg2-dev patchelf
- 
+          target: ${{ matrix.arch }}
       - run: yarn
  
-      - name: Build Tauri (macos only)
-        if: matrix.platform == 'macos-latest'
+      - name: Build Tauri
         uses: tauri-apps/tauri-action@dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,9 +41,57 @@ jobs:
           args: --target ${{matrix.arch}}
           tagName: v__VERSION__
           releaseName: v__VERSION__
-
+  windows-release:
+    permissions:
+        contents: write
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+  
+      - name: Install Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - run: yarn
+  
       - name: Build Tauri
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{secrets.TAURI_KEY_PASSWORD}}
+        with:
+          tagName: v__VERSION__
+          releaseName: v__VERSION__
+  linux-release:
+    permissions:
+        contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+  
+      - name: Install Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y javascriptcoregtk-4.1 libgtk-3-dev webkit2gtk-4.1 libappindicator3-dev librsvg2-dev patchelf
+      - run: yarn
+  
+      - name: Build Tauri
+        uses: tauri-apps/tauri-action@dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
@@ -67,7 +102,7 @@ jobs:
   update:
     permissions:
         contents: write
-    needs: release
+    needs: [macos-release,windows-release,linux-release]
     runs-on: macos-latest
     steps:
       - name: Checkout repository
