@@ -57,6 +57,7 @@ fn main() {
             cmd::file::save_image,
             cmd::file::save_image_path,
             cmd::file::export_html,
+            cmd::file::export_image,
             cmd::file::ls_md,
             cmd::dialog::save_as_md,
             cmd::dialog::open_file,
@@ -82,7 +83,7 @@ fn main() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_app::init())
         .plugin(tauri_plugin_log::Builder::default().targets([
-            Target::new(TargetKind::LogDir{file_name:Some("marknote.log".into())}),
+            Target::new(TargetKind::LogDir{file_name:Some("marknote".into())}),
             Target::new(TargetKind::Stdout),
             Target::new(TargetKind::Webview),
         ]).build())

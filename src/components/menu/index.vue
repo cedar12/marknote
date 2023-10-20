@@ -140,6 +140,10 @@ const loadMenuData=()=>{
             {
               label: 'HTML',
               key: 'html',
+            },
+            {
+              label: t('image'),
+              key: 'image',
             }
           ]
         },

@@ -12,6 +12,14 @@
         cursor:col-resize;
     }
 
+    &>.has-focus{
+        .katex-content{
+            padding: .4em;
+            border: 1px solid var(--contentTextColorActive);
+        }
+        
+    }
+
     >*+* {
         margin-top: 0.75em;
     }

@@ -7,9 +7,9 @@
       <Folder></Folder>
     </div> -->
     <Sidebar></Sidebar>
-    <div class="layout-content" :class="'code-theme-'+editor.codeTheme">
+    <div class="layout-content" :class="`code-theme-${editor.codeTheme} ${appStore.exporting?'exporting':''}`" v-loading="appStore.exporting">
       <ContextMenu :menu="menuItems">
-        <ElScrollbar height="calc(100vh - var(--titleBarHeight))">
+        <ElScrollbar class="layout-scrollbar" height="calc(100vh - var(--titleBarHeight))">
           <Editor></Editor>
         </ElScrollbar>
       </ContextMenu>
@@ -28,13 +28,13 @@ import { useEditorStore } from '../store/editor';
 // import Outliner from './Toc.vue';
 // import Folder from './Folder.vue';
 import Sidebar from './sidebar/Sidebar.vue';
-// import {useAppStore} from '../store/app';
+import {useAppStore} from '../store/app';
 import {readText,writeText} from '@tauri-apps/plugin-clipboard-manager';
 import {ElScrollbar} from 'element-plus';
 import Dialog from './dialog/index.vue';
 
 const { t } = useI18n();
-// const appStore=useAppStore();
+const appStore=useAppStore();
 
 const editor = useEditorStore();
 

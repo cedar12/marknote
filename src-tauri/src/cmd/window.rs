@@ -61,10 +61,12 @@ pub async fn open_preferences(handle: tauri::AppHandle) {
             window.set_focus().unwrap();
         }
         None => {
+            let win_url=WindowUrl::App("index.html?preferences=open".into());
+            println!("{:?}",win_url.to_string());
             let win = tauri::WindowBuilder::new(
                 &handle,
                 "preferences", /* the unique window label */
-                WindowUrl::App("index.html?preferences=open".into()),
+                win_url,
             )
             .decorations(IS_MACOS)
             .min_inner_size(600f64, 400f64)

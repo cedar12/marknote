@@ -20,6 +20,9 @@ export function saveImagePath(mdPath:string,imgPath:string){
 export function exportHTML(path:string,html:string){
   return invoke('export_html', { path,html});
 }
+export function exportImage(path:string,base64:string){
+  return invoke('export_image', { path,base64});
+}
 
 
 export function ls(path:string){

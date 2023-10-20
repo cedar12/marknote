@@ -8,7 +8,7 @@
 
 
     </template>
-    <ElButtonGroup>
+    <ElButtonGroup class="link-popover-btns">
       <ElTooltip content="打开链接">
 
         <el-button size="small" @click="openLink">
@@ -94,6 +94,10 @@ const openLink=()=>{
   width: auto !important;
   box-shadow: none;
   border: none;
+
+  .link-popover-btns{
+    background: var(--contentBackgroundColor);
+  }
 
   a {
     color: inherit;

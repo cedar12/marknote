@@ -88,4 +88,14 @@ const handleClick=()=>{
     }
   }
   
-}</style>
+}
+.exporting{
+  .marknote-codeblock{
+    .codeblock-wrapper {
+      .el-button,.el-input__suffix{
+        opacity: 0;
+      }
+    }
+  }
+}
+</style>

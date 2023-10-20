@@ -4,10 +4,11 @@ import { useEditorStore } from './editor';
 import { useAppStore } from './app';
 
 import { getCurrent } from '@tauri-apps/plugin-window';
-import { ask,confirm, open } from '@tauri-apps/plugin-dialog';
+import { ask,confirm, open,save } from '@tauri-apps/plugin-dialog';
+import * as appLog from '@tauri-apps/plugin-log';
 import { exit } from '@tauri-apps/plugin-process';
 import {openFile,saveAs} from '../api/dialog';
-import {exportHTML, read} from '../api/file';
+import {exportHTML, exportImage, read} from '../api/file';
 import i18n from '../i18n';
 import { openAbout, openPreferences, openWindow } from '../api/window';
 import {
@@ -16,6 +17,8 @@ import {
 import { relaunch } from '@tauri-apps/plugin-process';
 import { sendNotification } from '@tauri-apps/plugin-notification';
 import { log } from '../api/utils';
+import {toImage} from '../utils';
+import { nextTick } from 'vue';
 
 const appWindow=getCurrent();
 // @ts-ignore
@@ -132,6 +135,7 @@ const events = {
 
   },
   html(){
+    
     const editorStore=useEditorStore();
     const html=editorStore.editor.getHTML();
     const appStore = useAppStore();
@@ -140,6 +144,41 @@ const events = {
     }
     
     // console.log('html',html);
+  },
+
+  image(){
+    save({
+      title:'导出图片',
+      filters:[{name:'图片',extensions:['png']}]
+    }).then(path=>{
+      if(!path)return;
+      const div=document.querySelector('.layout-scrollbar>.el-scrollbar__wrap');
+      // const titleBarHeight=document.documentElement.style.getPropertyValue('--titleBarHeight');
+      const appStore=useAppStore();
+      appStore.exporting=true;
+      const editorStore=useEditorStore();
+      editorStore.editor.commands.blur();
+      appWindow.setResizable(false);
+      nextTick(() =>{
+        toImage(div,window.innerHeight-30).then(async (canvas) => {
+          appStore.exporting=false;
+          appWindow.setResizable(true);
+          const imgData = canvas.toDataURL('image/jpeg', 1.0);
+          console.log((imgData));
+          try{
+            const res=await exportImage(path,imgData);
+            sendNotification('导出图片成功',path);
+          }catch(e){
+            appLog.error(e);
+          }
+          
+        }).catch(e=>{
+          appWindow.setResizable(true);
+          appStore.exporting=false;
+          console.error(e);
+        });
+      });
+    })
   },
 
   preferences() {

@@ -114,7 +114,7 @@ export const Image = BuiltInImage.extend({
                                     //   src='img:///'+src;
                                     // }
                                     const node = schema.nodes.image.create({
-                                        src: src,
+                                        src: src.replace(/\\/g,'/'),
                                         alt: image.name
                                     });
                                     const transaction = view.state.tr.replaceSelectionWith(node);

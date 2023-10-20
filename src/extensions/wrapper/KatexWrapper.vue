@@ -19,7 +19,7 @@
 </template>
 <script lang="ts" setup>
 // import {Edit} from '@icon-park/vue-next';
-import { ref,onMounted,watch,nextTick } from 'vue';
+import { ref,onMounted,watch } from 'vue';
 import {ElInput} from 'element-plus';
 import katex from 'katex';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
@@ -53,12 +53,13 @@ const isFocus=()=>{
   const pos=props.getPos();
   //console.log(anchor,pos,node.nodeSize,node);
   const is=props.editor.isActive('katex')&&(anchor == pos && anchor <= pos + node.nodeSize - 1);
+  /*
   if(is&&inputRef.value){
     nextTick(()=>{
       inputRef.value.focus();
     });
     
-  }
+  }*/
   return is;
 }
 const onChangeText=()=>{

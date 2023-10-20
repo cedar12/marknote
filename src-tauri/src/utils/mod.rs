@@ -85,19 +85,23 @@ pub fn get_extension_from_filename(path: String) -> anyhow::Result<String> {
   }
 }
 
-pub fn write_image(filename:String,base64:String)->anyhow::Result<PathBuf>{
+pub fn write_image(path:String,base64:String)->anyhow::Result<PathBuf>{
   let split_str: Vec<&str> = base64.split(",").collect();
 
   let img_data = general_purpose::STANDARD
   .decode(split_str[1])?;
   
-  let path=get_cache_dir().join(filename);
   println!("{:?}", path);
   let mut img_file = File::create(path.clone())?;
   img_file.write_all(&img_data)?;
-  Ok(path)
+  Ok(PathBuf::from(path))
 }
 
+pub fn write_cache_image(filename:String,base64:String)->anyhow::Result<PathBuf>{
+  let path=get_cache_dir().join(filename);
+  let path_str=path.to_str().unwrap();
+  write_image(path_str.to_string(),base64)
+}
 
 
 pub enum ImageSaveType{

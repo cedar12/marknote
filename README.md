@@ -6,29 +6,16 @@
 
 ---
 
-- [x] 多窗口
+# Features
 
-- [x] GFM语法
-
-- [x] 代码块多种语法高亮、语法主题
-
-- [ ] 导入markdown
-
-- [ ] 导出markdown
-
-- [x] 多主题
-
-- [x] 字词统计
-
-- [x] 支持从剪贴板粘贴图片、拖拽外部图片插入
-
-- [x] `PicGo`图床和本地图片存储
-
-- [x] Katex公式
-
-- [ ] 流程图
-
-- [x] 侧边栏支持拖动改变宽度
+- Multiple Window
+- Multiple Themes
+- Support CommonMark Spec, GitHub Flavored Markdown Spec
+- Support paragraphs and inline style shortcuts
+- Document Character and Word Statistics
+- Supports pasting images from the clipboard and dragging external images for insertion
+- Markdown extensions such as math expressions (KaTeX)
+- [PicGO](https://molunerfinn.com/PicGo/)
 
 # Preview
 
@@ -73,11 +60,11 @@ yarn tauri dev
 
 ### Light
 
-![image.png](README.md.assets\20231016105324.image.png)
+![image.png](README.md.assets/20231016105324.image.png)
 
 ### Dark
 
-![image.png](README.md.assets\20231016105421.image.png)
+![image.png](README.md.assets/20231016105421.image.png)
 
 ## Custom Theme
 

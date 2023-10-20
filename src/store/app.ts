@@ -62,7 +62,7 @@ export const useAppStore = defineStore('app', {
     autoTheme:boolean,
     folder:string|null,
     loading:boolean,
-
+    exporting:boolean,
   }=>({
     title:null,
     filepath: null,
@@ -86,6 +86,7 @@ export const useAppStore = defineStore('app', {
     autoTheme:false,
     folder:null,
     loading:true,
+    exporting:false,
   }),
   actions:{
     setFilepath(filepath:string|null){
@@ -237,7 +238,7 @@ export const useAppStore = defineStore('app', {
                 console.log(resp);
                 if(resp.code===0){
                   const node = schema.nodes.image.create({
-                    src: resp.info,
+                    src: resp.info.replace(/\\/g,'/'),
                   });
                   console.log(node);
                   const transaction = view.state.tr.insert(state.selection.anchor, node);
