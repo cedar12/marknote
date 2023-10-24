@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/primitives";
 
 export function save(save_type:string,path:string){
   return invoke('save_image_type', { saveType:save_type,path:path });

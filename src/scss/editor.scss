@@ -12,6 +12,11 @@
         cursor:col-resize;
     }
 
+    p .marknote-image{
+        display: inline-block;
+        margin-left: .25em;
+    }
+
     &>.has-focus{
         .katex-content{
             padding: .4em;
@@ -27,6 +32,8 @@
     a{
         color:var(--primaryTextColor,#00c4ff);
     }
+
+    
 
     .bold-wrapper,.code-wrapper,.strike-wrapper,.italic-wrapper,.link-wrapper{
         color:var(--editorEchoTextColor,#ccc);

@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { useEditorStore } from './editor';
 import { useAppStore } from './app';
 
-import { getCurrent } from '@tauri-apps/plugin-window';
+import { getCurrent } from '@tauri-apps/api/window'
 import { ask,confirm, open,save } from '@tauri-apps/plugin-dialog';
 import * as appLog from '@tauri-apps/plugin-log';
 import { exit } from '@tauri-apps/plugin-process';

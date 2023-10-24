@@ -29,7 +29,7 @@ import { ElPopover, ElButton, ElButtonGroup, ElTooltip } from 'element-plus';
 import { WebPage, Edit } from '@icon-park/vue-next';
 import { Editor } from '@tiptap/vue-3';
 import { ref } from 'vue';
-import { getCurrent } from '@tauri-apps/plugin-window';
+import { getCurrent } from '@tauri-apps/api/window';
 import { useEditorStore } from '../../store/editor';
 import * as shell from '@tauri-apps/plugin-shell';
 

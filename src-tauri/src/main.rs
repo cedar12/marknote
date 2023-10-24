@@ -72,11 +72,11 @@ fn main() {
             cmd::utils::log_error,
             cmd::utils::log_debug,
             cmd::utils::open_explorer,
+            cmd::utils::platform,
         ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_window::init())
         .plugin(tauri_plugin_notification::init())
-        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_clipboard_manager::init())

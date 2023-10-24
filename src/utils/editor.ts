@@ -57,6 +57,7 @@ function createEditor() {
 
   const editor = useEditor({
     content: '',
+    injectCSS:false,
     editorProps: {
       attributes: {
         class: 'marknote min-height'

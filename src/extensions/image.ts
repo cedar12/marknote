@@ -29,6 +29,9 @@ export const Image = BuiltInImage.extend({
       atom: true,
     };
   },
+  selectable:true,
+  draggable:true,
+  atom:true,
 
   addAttributes() {
     return {

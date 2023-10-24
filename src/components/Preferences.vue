@@ -39,7 +39,7 @@
 import {ref,watch} from 'vue';
 import {Close} from '@icon-park/vue-next';
 import {useAppStore} from '../store/app';
-import { getCurrent } from '@tauri-apps/plugin-window'
+import { getCurrent } from '@tauri-apps/api/window';
 import General from './preferences/General.vue';
 import Editor from './preferences/Editor.vue';
 import Image from './preferences/Image.vue';

@@ -1,8 +1,12 @@
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/primitives";
 
+export type PlatformType="linux"|"macos"|"ios"|"freebsd"|"dragonfly"|"netbsd"|"openbsd"|"solaris"|"android"|"windows";
 
 export function args():Promise<string[]>{
   return invoke('cmd_args');
+}
+export function platform():Promise<PlatformType>{
+  return invoke('platform');
 }
 
 

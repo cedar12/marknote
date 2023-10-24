@@ -10,23 +10,22 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-alpha.9", features = [] }
+tauri-build = { version = "2.0.0-alpha.10", features = [] }
 
 #[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
 
 
 [dependencies]
-tauri = { version = "2.0.0-alpha.15", features = [ "protocol-asset", "windows7-compat"] }
+tauri = { version = "2.0.0-alpha.16", features = ["protocol-asset"] }
 tauri-plugin-dialog = "2.0.0-alpha.2"
 tauri-plugin-window="2.0.0-alpha.2"
-tauri-plugin-notification="2.0.0-alpha.2"
-tauri-plugin-os="2.0.0-alpha.2"
+tauri-plugin-notification = "2.0.0-alpha.4"
 tauri-plugin-updater = "2.0.0-alpha.2"
 tauri-plugin-process = "2.0.0-alpha.2"
 tauri-plugin-app = "2.0.0-alpha.2"
 tauri-plugin-clipboard-manager = "2.0.0-alpha.2"
 tauri-plugin-shell = "2.0.0-alpha.2"
-tauri-plugin-log = "2.0.0-alpha.2"
+tauri-plugin-log = { version = "2.0.0-alpha.3" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 base64 = "0.21.0"

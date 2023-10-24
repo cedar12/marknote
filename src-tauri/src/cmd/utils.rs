@@ -42,3 +42,8 @@ pub fn open_explorer(path:&str){
   }
   
 }
+
+#[tauri::command]
+pub fn platform()->&'static str{
+  std::env::consts::OS
+}

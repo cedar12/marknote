@@ -3,7 +3,7 @@
     <ElPopover trigger="hover" placement="top">
       
       <template #reference>
-        <el-image :src="imgSrc" :preview-src-list="srcList" :width="width" :height="height" :alt="alt" :title="title">
+        <el-image :src="imgSrc" :width="width" :height="height" :alt="alt" :title="title">
           <template #error>
             <div class="image-slot">
               <el-icon><ImageFiles fill="#dfdfdf"/></el-icon>
@@ -23,7 +23,7 @@ import { ref,onMounted,watch } from 'vue';
 import {ImageFiles} from '@icon-park/vue-next';
 import {ElInput,ElPopover,ElImage,ElIcon} from 'element-plus';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
-import { convertFileSrc } from '@tauri-apps/api/tauri';
+import { convertFileSrc } from '@tauri-apps/api/primitives';
 import {useAppStore} from '../../store/app';
 const appStroe=useAppStore();
 const props = defineProps(nodeViewProps);
@@ -42,10 +42,10 @@ watch(()=>value.value,()=>{
 
     imgSrc.value=convertFileSrc(value.value);
   }
-  srcList.value[0]=imgSrc.value;
+  // srcList.value[0]=imgSrc.value;
 })
 
-const srcList=ref([imgSrc.value]);
+//const srcList=ref([imgSrc.value]);
 
 const setImageSrc=()=>{
   props.updateAttributes({src:value.value});
@@ -79,7 +79,7 @@ onMounted(()=>{
     console.log(dir+value.value,convertFileSrc);
     imgSrc.value=convertFileSrc(dir+value.value);
   }
-  srcList.value[0]=imgSrc.value;
+  // srcList.value[0]=imgSrc.value;
 })
 </script>
 

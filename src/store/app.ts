@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { platform } from '@tauri-apps/plugin-os';
+// import { platform } from '@tauri-apps/plugin-os';
 import { emit, listen,TauriEvent } from '@tauri-apps/api/event'
-import { getCurrent } from '@tauri-apps/plugin-window'
+import { getCurrent } from '@tauri-apps/api/window'
 import { useI18n } from "vue-i18n";
 import {useEditorStore} from './editor';
 import { KeyBindingBuilder } from '../utils/keyBinding';
@@ -13,7 +13,7 @@ import { confirm } from '@tauri-apps/plugin-dialog';
 import i18n from '../i18n';
 // import { args } from '../api/utils';
 import { findThemeByType, setTheme, ThemeItem } from '../theme';
-import { args } from '../api/utils';
+import { args,platform } from '../api/utils';
 
 const appWindow=getCurrent();
 // @ts-ignore

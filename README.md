@@ -1,6 +1,6 @@
 # MarkNote
 
-![](https://img.shields.io/github/stars/cedar12/marknote)![](https://img.shields.io/github/forks/cedar12/marknote)![](https://img.shields.io/github/downloads/cedar12/marknote/total)
+![](https://img.shields.io/github/stars/cedar12/marknote)![](https://img.shields.io/github/forks/cedar12/marknote)![](https://img.shields.io/github/downloads/cedar12/marknote/total)[![Release](https://github.com/cedar12/marknote/actions/workflows/release.yml/badge.svg)](https://github.com/cedar12/marknote/actions/workflows/release.yml)
 
 🎉A simple `WYSIWYG` markdown editor, available for Linux, macOS and Windows.
 
@@ -67,6 +67,10 @@ yarn tauri dev
 ![image.png](README.md.assets/20231016105421.image.png)
 
 ## Custom Theme
+
+### Install Theme
+
+### Uninstall Theme
 
 # License
 

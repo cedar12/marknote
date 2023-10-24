@@ -30,7 +30,7 @@
 <script lang=ts setup>
 import {ref,watch,onBeforeMount} from 'vue';
 import {useAppStore} from '../store/app';
-import { getCurrent } from '@tauri-apps/plugin-window';
+import { getCurrent } from '@tauri-apps/api/window';
 import { getName,getVersion,getTauriVersion } from '@tauri-apps/plugin-app';
 import {Close} from '@icon-park/vue-next';
 

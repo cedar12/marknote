@@ -23,7 +23,7 @@ import { ref,onMounted,watch } from 'vue';
 import {ElInput} from 'element-plus';
 import katex from 'katex';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
-import { getCurrent } from '@tauri-apps/plugin-window';
+import { getCurrent } from '@tauri-apps/api/window';
 // import {useI18n} from 'vue-i18n';
 
 const appWindow=getCurrent();

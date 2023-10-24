@@ -6,20 +6,20 @@ use std::{path::PathBuf, fs};
 
 use anyhow::anyhow;
 use reqwest::Client;
-use tauri::{Window, Config, path};
+use tauri::Window;
 
 use std::fs::File;
-use std::io::{ Write};
+use std::io::Write;
 use base64::{Engine as _, engine::general_purpose};
 use chrono::Local;
-use crate::{db, resp};
+use crate::db;
 
 pub mod constant;
 pub use constant::*;
 
 
 
-pub fn set_shadow(win: Window) {
+pub fn set_shadow(_win: Window) {
   // if cfg!(windows) {
   //     window_shadows::set_shadow(&win, true).expect("Unsupported platform!");
   // }
