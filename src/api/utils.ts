@@ -8,6 +8,9 @@ export function args():Promise<string[]>{
 export function platform():Promise<PlatformType>{
   return invoke('platform');
 }
+export function findThemes():Promise<string[]>{
+  return invoke('themes');
+}
 
 
 export const log={

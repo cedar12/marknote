@@ -120,7 +120,7 @@ pub async fn open_about(handle: tauri::AppHandle) {
             )
             .decorations(IS_MACOS)
             // .min_inner_size(300f64, 200f64)
-            .inner_size(300f64,250f64)
+            .inner_size(350f64,250f64)
             .resizable(false)
             .visible(false)
             .center()
@@ -145,7 +145,7 @@ pub async fn open_about(handle: tauri::AppHandle){
                 WindowUrl::App("index.html?about=open".into()),
             )
             .decorations(IS_MACOS)
-            .inner_size(300f64,250f64)
+            .inner_size(350f64,250f64)
             .resizable(false)
             .title_bar_style(tauri::TitleBarStyle::Overlay)
             .hidden_title(true)

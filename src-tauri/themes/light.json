@@ -1,0 +1,21 @@
+{
+  "label": "Light Custom",
+  "value": "lightCustom",
+  "type": "light",
+  "style": {
+    "primaryBackgroundColor": "#2196f3",
+    "primaryBackgroundColorHover": "#2979ff",
+    "primaryBackgroundColorActive": "#2962ff",
+    "contentBackgroundColor": "#E3F2FD",
+    "primaryTextColor": "#041320",
+    "primaryTextColorHover": "#d2e3ff",
+    "primaryTextColorActive": "#e3ebff",
+    "contentTextColor": "#1d1f21",
+    "primaryBorderColor": "#0d47a1",
+    "contentBorderColor": "#babec1",
+    "contentBackgroundColorActive": "#90caf9",
+    "contentBackgroundColorHover": "#bbdefb",
+    "contentTextColorActive": "#4e4e4e",
+    "contentTextColorHover": "#271a20"
+  }
+}

@@ -26,11 +26,12 @@ export const Image = BuiltInImage.extend({
       group: 'block',
       draggable: true,
       selectable: true,
+      
       atom: true,
     };
   },
   selectable:true,
-  draggable:true,
+  // draggable:true,
   atom:true,
 
   addAttributes() {

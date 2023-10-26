@@ -1,9 +1,25 @@
 
 import light from './style/light';
 import dark from './style/dark';
+import { findThemes} from '../api/utils';
 
+const builtInThemes=[light,dark];
+const excludes=builtInThemes.map(t=>t.value);
 
-const themes=[light,dark];
+const themes=[...builtInThemes,...await getThemes()];
+
+async function getThemes(){
+  const themes:ThemeItem[]=[];
+  const s=await findThemes();
+  s.forEach(json=>{
+    const theme=JSON.parse(json) as ThemeItem;
+    if(excludes.includes(theme.value)){
+      return;
+    }
+    themes.push(theme);
+  })
+  return themes;
+}
 
 export default themes;
 

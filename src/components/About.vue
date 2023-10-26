@@ -16,22 +16,25 @@
           <li>{{t('version')}}: {{ version }}</li>
           <li>Tauri {{ t('version') }}: {{ tauriVersion }}</li>
           <li>{{ t('author') }}: <a href="mailto:cedar12.zxd@qq.com">cedar12</a></li>
+          <li>Source: <a href="https://github.com/cedar12/marknote" target="_blank">Github</a></li>
+          <li>License: MIT</li>
         </ul>
       </div>
     </div>
-    <div class="about-row" style="margin-top: 1em;">
+    <!-- <div class="about-row" style="margin-top: 1em;">
       <div>Source: <a href="https://github.com/cedar12/marknote" target="_blank">Github</a></div>
     </div>
     <div class="about-row"  style="margin-top: 1em;">
       <div>License: MIT</div>
-    </div>
+    </div> -->
   </div>
 </template>
 <script lang=ts setup>
 import {ref,watch,onBeforeMount} from 'vue';
 import {useAppStore} from '../store/app';
 import { getCurrent } from '@tauri-apps/api/window';
-import { getName,getVersion,getTauriVersion } from '@tauri-apps/plugin-app';
+import { getName,getVersion,getTauriVersion } from '@tauri-apps/api/app';
+// import { getName,getVersion,getTauriVersion } from '@tauri-apps/plugin-app';
 import {Close} from '@icon-park/vue-next';
 
 const appWindow=getCurrent();

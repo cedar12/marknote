@@ -14,9 +14,9 @@
         </ElTooltip>
       </div>
     </div>
-    <div ref="contentRef" class="hljs">
+    <pre ref="contentRef" class="hljs">
       <NodeViewContent as="code"></NodeViewContent>
-    </div>
+    </pre>
   </NodeViewWrapper>
 </template>
 <script lang="ts" setup>
@@ -75,6 +75,17 @@ const handleClick=()=>{
     }
     .el-button{
       background-color: transparent;
+    }
+  }
+  pre{
+    padding: 2em 1em;
+    white-space-collapse: unset;
+    code {
+      // padding: 2em 1em;
+      // margin: 0;
+      pointer-events: all;
+      // background-color: #f1f3f5;
+      display: block;
     }
   }
   div{

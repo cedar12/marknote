@@ -31,6 +31,7 @@
 
 
   --sidebarWidth: 220px;
+
 }
 
 :root.dark{
@@ -77,4 +78,9 @@ body{
 
 .marknote.min-height{
   min-height: calc(100vh - var(--titleBarHeight));
+}
+
+.el-loading-mask{
+  /* --el-mask-color: var(--contentBackgroundColor); */
+  --el-mask-color: rgba(255, 255, 255, 0);
 }

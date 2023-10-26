@@ -42,6 +42,7 @@ log4rs = "1.0.0"
 cron="0.5"
 dirs-next="2.0.0"
 url = "2"
+jsonschema = "0.17.1"
 
 
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]

@@ -1,7 +1,7 @@
 
 import { mergeAttributes, Node, nodeInputRule,nodePasteRule } from '@tiptap/core';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
-import KatexWrapper from './wrapper/KatexWrapper.vue';
+import KatexWrapper from './wrapper/InlineKatexWrapper.vue';
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 export type IKatexAttrs = {
@@ -21,17 +21,18 @@ declare module '@tiptap/core' {
   }
 }
 
-export const Katex = Node.create<IKatexOptions>({
-  name: 'katex',
-  group: 'block',
+export const InlineKatex = Node.create<IKatexOptions>({
+  name: 'inlineKatex',
+  group: 'inline',
   selectable: true,
   atom: true,
   draggable: true,
+  inline:true,
 
   addOptions() {
     return {
       HTMLAttributes: {
-        class: 'katex',
+        class: 'inline-katex',
       },
     };
   },
@@ -41,6 +42,10 @@ export const Katex = Node.create<IKatexOptions>({
       text: {
         default: '',
         parseHTML: (el)=>{
+          console.log(el);
+          // if(el.getAttribute('text')){
+          //   return el.getAttribute('text');
+          // }
           const tex=el.querySelector('annotation[encoding="application/x-tex"]') as HTMLElement;
           // console.log(el,tex,tex.textContent);
           return tex.textContent;
@@ -56,7 +61,7 @@ export const Katex = Node.create<IKatexOptions>({
   },
 
   parseHTML() {
-    return [{ tag: 'span.katex-display' }];
+    return [{ tag: 'span.katex' }];
   },
 
   renderHTML({ HTMLAttributes }) {
@@ -82,11 +87,11 @@ export const Katex = Node.create<IKatexOptions>({
   addInputRules() {
     return [
       nodeInputRule({
-        find: /^\${2}\s*?/,
+        find: /(\$\s*?(.+)\s*?\$)/,
         type: this.type,
         getAttributes: (match) => {
-          console.log('input katex',match);
-          return { defaultShowPicker: true };
+          console.log('input inline katex',match);
+          return { text:match[2] };
         },
       }),
     ];
@@ -95,9 +100,9 @@ export const Katex = Node.create<IKatexOptions>({
   addPasteRules() {
     return [
       nodePasteRule({
-        find: /\${2}(.+)\${2}/g,
+        find: /\$(.+)\$/g,
         type: this.type,
-        getAttributes: (_match, _pasteEvent) => {
+        getAttributes: (match, pasteEvent) => {
           // const html = pasteEvent?.clipboardData?.getData('text/html')
           // const hrefRegex = /$$\s*\n(.*)"/
 
@@ -108,7 +113,7 @@ export const Katex = Node.create<IKatexOptions>({
           //     text: existingLink[1],
           //   }
           // }
-          // console.log('katex',match,pasteEvent);
+          console.log('katex',match,pasteEvent);
           return {
             text: ''//match.data?.text,
           }
@@ -155,7 +160,7 @@ export const Katex = Node.create<IKatexOptions>({
 
             const { tr,schema } = view.state
 
-            const reg=/^\${2}\s*?\n(.+)\n\${2}/igs;
+            const reg=/^\$\s*?(.+)\s*?\$/g;
             
 
             const matches=reg.exec(text);
@@ -164,7 +169,7 @@ export const Katex = Node.create<IKatexOptions>({
             }
             // create an empty
             // const ntr=tr.replaceSelectionWith(this.type.create({ text:matches[1] }))
-            const node = schema.nodes.katex.create({
+            const node = schema.nodes.inlineKatex.create({
               text: matches[1],
             });
             const transaction = tr.replaceSelectionWith(node);

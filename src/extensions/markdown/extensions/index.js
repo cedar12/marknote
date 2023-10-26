@@ -14,6 +14,7 @@ import TaskItem from "./nodes/task-item";
 import TaskList from "./nodes/task-list";
 import Text from "./nodes/text";
 import Katex from "./nodes/katex";
+import InlineKatex from "./nodes/inlineKatex";
 
 import Bold from "./marks/bold";
 import Code from "./marks/code";
@@ -40,6 +41,7 @@ export default [
     TaskList,
     Text,
     Katex,
+    InlineKatex,
 
     Bold,
     Code,

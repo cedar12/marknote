@@ -57,7 +57,10 @@
             "English"
           ]
         }
-      }
+      },
+      "resources": [
+        "themes/*"
+      ]
     },
     "security": {
       "assetProtocol": {
@@ -81,7 +84,8 @@
         "title": "marknote",
         "titleBarStyle": "Overlay",
         "visible": false,
-        "width": 800
+        "width": 800,
+        "fileDropEnabled": true
       }
     ]
   }

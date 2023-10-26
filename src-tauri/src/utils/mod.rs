@@ -17,6 +17,7 @@ use crate::db;
 pub mod constant;
 pub use constant::*;
 
+pub mod schema;
 
 
 pub fn set_shadow(_win: Window) {
@@ -360,5 +361,14 @@ fn test_all_path()->anyhow::Result<()>{
   let mut path_info=PathInfo::new(path)?;
   ls_path(&mut path_info)?;
   println!("{:?}",path_info);
+  Ok(())
+}
+
+
+#[test]
+fn test_json_schema()->anyhow::Result<()>{
+  let str=fs::read_to_string("themes\\light.json")?;
+  // println!("{:?}",str);
+  schema::validate(str.as_str()).unwrap();
   Ok(())
 }

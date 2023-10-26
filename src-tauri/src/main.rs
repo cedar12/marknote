@@ -73,6 +73,7 @@ fn main() {
             cmd::utils::log_debug,
             cmd::utils::open_explorer,
             cmd::utils::platform,
+            cmd::utils::themes,
         ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_window::init())

@@ -12,13 +12,24 @@
         cursor:col-resize;
     }
 
+    // .is-empty{
+    //     position: relative;
+    //     &::before{
+    //         content: attr(data-placeholder);
+    //         color: #0377fb5e;
+    //         position: absolute;
+    //         top: 0;
+    //         left: 0;
+    //     }
+    // }
+
     p .marknote-image{
         display: inline-block;
         margin-left: .25em;
     }
 
     &>.has-focus{
-        .katex-content{
+        .katex-display .katex-content{
             padding: .4em;
             border: 1px solid var(--contentTextColorActive);
         }
@@ -35,7 +46,7 @@
 
     
 
-    .bold-wrapper,.code-wrapper,.strike-wrapper,.italic-wrapper,.link-wrapper{
+    .bold-wrapper,.code-wrapper,.strike-wrapper,.italic-wrapper,.link-wrapper,.mark-wrapper{
         color:var(--editorEchoTextColor,#ccc);
         user-select: none;
         -webkit-user-select: none;

@@ -124,7 +124,43 @@ type KeyBindingFn=(bind:KeyBinding,handler?: HotkeysEvent)=>boolean|void;
 export class KeyBindingBuilder{
   private binds:KeyBinding[];
   private fn:KeyBindingFn|null=null;
+  private preKey:string|null=null;
+  private preTime:number=0;
   constructor(binds=defaultKeyBinding){
+    hotkeys.filter = (event)=>{
+      var target = event.target || event.srcElement;
+      // @ts-ignore
+      var tagName = target.tagName;
+      
+      const keys = [];
+      const appStore = useAppStore();
+      if (event.metaKey) {
+        keys.push(appStore.platform === 'macos' ? 'command' : 'win');
+      } else if (event.ctrlKey) {
+        keys.push('ctrl');
+      }
+      if(event.altKey){
+        keys.push('alt');
+      }
+      if(event.shiftKey){
+        keys.push('shift');
+      }
+      
+      keys.push(event.key);
+      const key = keys.join('+').toLocaleLowerCase();
+      
+      const bind=binds.find(b=>b.key.replace(/Mod/g,appStore.platform === 'macos' ? 'command' : 'ctrl').toLocaleLowerCase()==key);
+      if(((Date.now()-this.preTime>200&&key==this.preKey)||key!==this.preKey)&&bind){
+        console.log('handleKeyDown',event,key);
+        this.preKey=key;
+        this.preTime=Date.now();
+        event.preventDefault();
+        hotkeys.trigger(key, 'file');
+        hotkeys.trigger(key, 'view');
+      }
+      
+      return !(tagName == 'INPUT' || tagName == 'SELECT' || tagName == 'TEXTAREA');
+    }
     this.binds=binds;
     this.bind();
   }
@@ -163,9 +199,10 @@ export class KeyBindingBuilder{
         });
       }else{
         const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,appStore.platform==='macos'?'command':'ctrl').toLocaleLowerCase();
+        console.log(key,bind.description[0]);
         hotkeys(key, {
           scope:bind.description[0],
-          capture:true,
+          // capture:true,
         }, (event, handler)=>{
           if(this.fn){
             const result=this.fn(bind,handler);

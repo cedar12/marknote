@@ -1,6 +1,6 @@
 <template>
   <NodeViewWrapper class="marknote-image">
-    <ElPopover trigger="hover" placement="top">
+    <ElPopover trigger="hover" placement="top" width="80%">
       
       <template #reference>
         <el-image :src="imgSrc" :width="width" :height="height" :alt="alt" :title="title">
@@ -13,7 +13,7 @@
         <!-- <img :src="src" :alt="alt" :title="title" /> -->
       </template>
       <div class="image-wrapper" >
-        <ElInput v-model="value" :disabled="!isEditable" @blur="setImageSrc"></ElInput>
+        <ElInput v-model="value" :disabled="!isEditable" @blur="setImageSrc" ></ElInput>
       </div>
     </ElPopover>
   </NodeViewWrapper>

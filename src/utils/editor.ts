@@ -4,6 +4,7 @@ import StarterKit from '@tiptap/starter-kit';
 import TaskList from '@tiptap/extension-task-list';
 import { Strike } from '../extensions/strike';
 import TaskItem from '@tiptap/extension-task-item';
+import {Placeholder} from '@tiptap/extension-placeholder';
 import { Markdown } from '../extensions/markdown';
 import { Table } from '../extensions/table';
 import { TableHeader } from '../extensions/tableHeader';
@@ -19,11 +20,11 @@ import { Code } from '../extensions/code';
 import { Focus } from '../extensions/focus';
 import { Image } from '../extensions/image';
 import { Katex } from '../extensions/katex';
+import { InlineKatex } from '../extensions/inlineKatex';
 import { Html } from '../extensions/html';
 import { TableOfContents } from '../extensions/tableOfContents';
 import CharacterCount from '@tiptap/extension-character-count'
 import { useAppStore } from '../store/app';
-import hotkeys from 'hotkeys-js';
 
 
 const MarknoteTable = Table.extend({
@@ -60,14 +61,14 @@ function createEditor() {
     injectCSS:false,
     editorProps: {
       attributes: {
-        class: 'marknote min-height'
+        class: 'marknote min-height',
       },
 
       handleDrop: (view, e) => {
         console.log('drop', view, e);
       },
-      handleKeyDown(_view, event) {
-        
+      handleKeyDown(_view, _event) {
+        /*
         const keys = [];
         const appStore = useAppStore();
         if (event.metaKey) {
@@ -90,7 +91,7 @@ function createEditor() {
           hotkeys.trigger(key, 'file');
           hotkeys.trigger(key, 'view');
         }
-        
+        */
       },
 
     },
@@ -104,6 +105,9 @@ function createEditor() {
       Html,
       Bold,
       Italic,
+      Placeholder.configure({
+        placeholder: '输入内容...',
+      }),
       Code.configure({
         HTMLAttributes:{
           class: 'inline'
@@ -114,6 +118,7 @@ function createEditor() {
       Image.configure({
         inline: true,
       }),
+      InlineKatex,
       Katex,
       TaskItem,
       TaskList.configure({

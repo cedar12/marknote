@@ -30,7 +30,7 @@ import { isTextSelection } from '@tiptap/core';
 const editorStore=useEditorStore();
 const {editor}=storeToRefs(editorStore);
 
-const excludes=['table','katex','codeBlock','image'];
+const excludes=['table','katex','codeBlock','image','horizontalRule'];
 
 //@ts-ignore
 const shouldShow=({ view, state, from, to }) => {

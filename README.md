@@ -27,7 +27,7 @@
 
 ### Windows
 
-You can download the lastest `MarkNote_%version%_x64-setup.exe` or `MarkNote_%version%_x64-en-US.msi` from the[ release page](https://github.com/cedar12/marknote/releases/latest)
+You can download the lastest `MarkNote_%version%_x64-setup.exe` or `MarkNote_%version%_x64-en-US.msi` from the [release page](https://github.com/cedar12/marknote/releases/latest)
 
 ### MacOS
 
@@ -35,7 +35,7 @@ You can download the lastest `MarkNote_%version%_x64.dmg` from the [release page
 
 ### Linux
 
-You can download the lastest Mar`kNote_%version%_x64.AppImage` from the[ release page](https://github.com/cedar12/marknote/releases/latest)
+You can download the lastest Mar`kNote_%version%_x64.AppImage` from the [release page](https://github.com/cedar12/marknote/releases/latest)
 
 # Development
 
@@ -69,6 +69,91 @@ yarn tauri dev
 ## Custom Theme
 
 ### Install Theme
+
+Theme JSON Schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+	"label": {
+	  "type":"string",
+	  "title":"主题标签",
+	},
+	"value": {
+	  "type":"string",
+	  "title":"主题值",
+	},
+	"type": {
+	  "type":"string",
+	  "title": "主题类型",
+	  "enum":["light","dark"]
+	},
+	"style": {
+	  "type":"object",
+	  "title": "主题样式",
+	  "properties": {
+		"primaryBackgroundColor": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"primaryBackgroundColorHover": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"primaryBackgroundColorActive": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"contentBackgroundColor": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"primaryTextColor": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"primaryTextColorHover": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"primaryTextColorActive": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"contentTextColor": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"primaryBorderColor": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"contentBorderColor": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"contentBackgroundColorActive": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"contentBackgroundColorHover": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"contentTextColorActive": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		},
+		"contentTextColorHover": {
+		  "type":"string",
+		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+		}
+	  }
+	}
+  }
+}
+```
 
 ### Uninstall Theme
 
