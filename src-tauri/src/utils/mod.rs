@@ -18,7 +18,7 @@ pub mod constant;
 pub use constant::*;
 
 pub mod schema;
-
+pub mod pdf;
 
 pub fn set_shadow(_win: Window) {
   // if cfg!(windows) {
@@ -372,3 +372,12 @@ fn test_json_schema()->anyhow::Result<()>{
   schema::validate(str.as_str()).unwrap();
   Ok(())
 }
+
+#[test]
+fn test_html2pdf()->anyhow::Result<()>{
+  let input=PathBuf::from("D:\\marknote\\docs\\test.html");
+  let output=PathBuf::from("D:\\marknote\\docs\\test.pdf");
+  pdf::html_to_pdf(input, output, pdf::pdf_options(), pdf::launch_options())?;
+  Ok(())
+}
+

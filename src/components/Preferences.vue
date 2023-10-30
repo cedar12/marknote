@@ -21,13 +21,14 @@
                 </div>
                 <div class="right">
                     <div class="preferences-content">
-                        <div style="padding: 0 1rem;">
-                            <General v-if="key==='general'"></General>
-                            <Editor v-if="key==='editor'"></Editor>
-                            <Image v-if="key==='image'"></Image>
-                            <Theme v-if="key==='theme'"></Theme>
-                        </div>
-                        
+                        <ElScrollbar height="calc(100vh - var(--titleBarHeight))">
+                            <div style="padding: 0 1rem;">
+                                <General v-if="key==='general'"></General>
+                                <Editor v-if="key==='editor'"></Editor>
+                                <Image v-if="key==='image'"></Image>
+                                <Theme v-if="key==='theme'"></Theme>
+                            </div>
+                        </ElScrollbar>
                     </div>
                 </div>
             </div>
@@ -44,7 +45,7 @@ import General from './preferences/General.vue';
 import Editor from './preferences/Editor.vue';
 import Image from './preferences/Image.vue';
 import Theme from './preferences/Theme.vue';
-import { ElConfigProvider } from 'element-plus';
+import { ElConfigProvider,ElScrollbar } from 'element-plus';
 import * as elementPlusLocales from 'element-plus/es/locale/index';
 
 const appWindow=getCurrent();

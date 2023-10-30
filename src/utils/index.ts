@@ -77,3 +77,46 @@ export function toImage(element:HTMLElement,windowHeight:number):Promise<HTMLCan
     
   })
 }
+
+
+export async function handleHtml(html:HTMLElement){
+  const cloned=html.cloneNode(true) as HTMLElement;
+  const images=cloned.querySelectorAll('img');
+  for(let i=0;i<images.length;i++){
+    if(!images[i].src.startsWith('data:image/')){
+      try{
+        const base64=await convertImageToBase64(images[i].src);
+        // console.log(base64);
+        images[i].src=base64;
+      }catch(e){
+        console.error(e);
+      }
+    }
+    
+  }
+  return cloned.innerHTML;
+}
+function convertImageToBase64(imgUrl:string):Promise<string> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin='anonymous';
+    image.onload = () => {
+      try{
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.height = image.naturalHeight;
+        canvas.width = image.naturalWidth;
+        ctx?.drawImage(image, 0, 0);
+        const dataUrl = canvas.toDataURL();
+        resolve(dataUrl);
+      }catch(err){
+        reject(err);
+      }
+    };
+    image.onerror = (err) => {
+      reject(err);
+    };
+    image.src = imgUrl;
+  });
+  
+}

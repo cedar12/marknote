@@ -1,10 +1,10 @@
 <template>
-  <NodeViewWrapper class="marknote-codeblock" ref="wrapperRef">
+  <NodeViewWrapper class="marknote-codeblock" :class="{'marknote-mermaid':isMermaid()}" ref="wrapperRef">
     <!-- <div class="codeblock-wrapper" contenteditable="false" v-if="props.editor.isActive('codeBlock')&&isFocus()"> -->
     <div class="codeblock-wrapper" contenteditable="false" >
       <ElSelect clearable filterable size="small" v-model="value" placeholder=" " :style="{width:value==''?'40px':'110px'}"
         :disabled="!isEditable" @change="props.updateAttributes({ language: value })">
-        <ElOption v-for="item in props.extension.options.lowlight.listLanguages()" :key="item" :label="item" :value="item"></ElOption>
+        <ElOption v-for="item in options()" :key="item" :label="item" :value="item"></ElOption>
       </ElSelect>
       <div>
         <ElTooltip size="small " :content="t('copy')">
@@ -17,15 +17,19 @@
     <pre ref="contentRef" class="hljs">
       <NodeViewContent as="code"></NodeViewContent>
     </pre>
+    <div v-if="isMermaid()" class="mermaid-render" v-html="mermaidValue"></div>
   </NodeViewWrapper>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref,onMounted,watch,nextTick } from 'vue';
 import {ElSelect,ElOption,ElButton,ElTooltip} from 'element-plus';
 import { Copy } from '@icon-park/vue-next';
 import { NodeViewContent, NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import {useI18n} from 'vue-i18n';
+import mermaid from 'mermaid';
+import { listen } from '@tauri-apps/api/event';
+
 const {t}=useI18n();
 const props = defineProps(nodeViewProps);
 
@@ -35,12 +39,17 @@ const value = ref(props.node.attrs.language || '');
 const contentRef=ref<HTMLElement>();
 const wrapperRef=ref<HTMLElement>();
 
-// const isFocus=()=>{
-//   const {anchor}=props.editor.state.selection;
-//   const node=props.node;
-//   const pos=props.getPos();
-//   return anchor >= pos && anchor <= pos + node.nodeSize - 1;
-// }
+const mermaidValue=ref<string>();
+
+const isMermaid=()=>{
+  return props.node.attrs.language==='mermaid';
+}
+
+const options=()=>{
+  const list=props.extension.options.lowlight.listLanguages();
+
+  return [...list,'mermaid'];
+}
 
 const handleClick=()=>{
   
@@ -49,6 +58,30 @@ const handleClick=()=>{
   if(text)
   writeText(text);
 }
+
+const renderMermaid=async ()=>{
+  if(props.node.attrs.language==='mermaid'){
+    const svg = await mermaid.render('dummy',props.node.textContent);
+    mermaidValue.value=svg.svg;
+  }
+}
+
+watch(()=>props.node.textContent,async ()=>{
+  renderMermaid();
+});
+
+onMounted(async ()=>{
+  console.log(props.node.attrs.language);
+  renderMermaid();
+  listen('theme', (event) => {
+    const value=event.payload;
+    mermaid.initialize({
+      theme: value.type==='light'?'default':'dark',
+    });
+    renderMermaid();
+    
+  });
+})
 
 </script>
 
@@ -97,6 +130,15 @@ const handleClick=()=>{
       // background-color: #f1f3f5;
       display: block;
     }
+  }
+  &.marknote-mermaid{
+    pre{
+      // visibility: hidden;
+    }
+  }
+  .mermaid-render{
+    display:flex;
+    justify-content: center;
   }
   
 }

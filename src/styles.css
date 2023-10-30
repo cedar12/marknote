@@ -81,6 +81,6 @@ body{
 }
 
 .el-loading-mask{
-  /* --el-mask-color: var(--contentBackgroundColor); */
-  --el-mask-color: rgba(255, 255, 255, 0);
+  --el-mask-color: var(--contentBackgroundColor);
+  /* --el-mask-color: rgba(255, 255, 255, 0); */
 }

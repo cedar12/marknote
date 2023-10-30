@@ -11,6 +11,9 @@ export function platform():Promise<PlatformType>{
 export function findThemes():Promise<string[]>{
   return invoke('themes');
 }
+export function openExplorer(path:string){
+  return invoke('open_explorer',{path});
+}
 
 
 export const log={

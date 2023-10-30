@@ -26,7 +26,7 @@ export const Italic=BuiltInItalic.extend({
                   span.className='italic-wrapper italic-start';
                   span.innerText='*';
                   return span;
-                },{side:-1}));
+                },{side:0}));
                 decorations.push(Decoration.widget(end,()=>{
                   const span=document.createElement('span');
                   span.className='italic-wrapper italic-end';

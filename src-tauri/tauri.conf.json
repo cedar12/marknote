@@ -81,7 +81,7 @@
         "minHeight": 400,
         "minWidth": 500,
         "resizable": true,
-        "title": "marknote",
+        "title": "MarkNote",
         "titleBarStyle": "Overlay",
         "visible": false,
         "width": 800,

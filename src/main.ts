@@ -14,6 +14,27 @@ import { createPinia } from 'pinia'
 import {component} from "./utils/index";
 import {ElLoadingDirective} from 'element-plus';
 
+if(import.meta.env.PROD){
+  document.oncontextmenu = function (event: any) {
+      if (window.event) {
+          event = window.event
+      }
+      try {
+          var the = event.srcElement
+          if (
+              !(
+                  (the.tagName == 'INPUT' && the.type.toLowerCase() == 'text') ||
+                  the.tagName == 'TEXTAREA'
+              )
+          ) {
+              return false
+          }
+          return true
+      } catch (e) {
+          return false
+      }
+  }
+}
 
 //isPreferences?Preferences:App
 createApp(component(App,{Preferences,About})).directive('loading',ElLoadingDirective).use(i18n).use(createPinia()).mount("#app");

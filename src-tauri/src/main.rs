@@ -58,6 +58,7 @@ fn main() {
             cmd::file::save_image_path,
             cmd::file::export_html,
             cmd::file::export_image,
+            cmd::file::export_pdf,
             cmd::file::ls_md,
             cmd::dialog::save_as_md,
             cmd::dialog::open_file,

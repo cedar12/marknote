@@ -3,7 +3,7 @@
     <ElPopover trigger="hover" placement="top" width="80%">
       
       <template #reference>
-        <el-image :src="imgSrc" :width="width" :height="height" :alt="alt" :title="title">
+        <el-image :src="imgSrc"  :alt="alt" :title="title" referrerpolicy="origin-when-cross-origin">
           <template #error>
             <div class="image-slot">
               <el-icon><ImageFiles fill="#dfdfdf"/></el-icon>
@@ -28,6 +28,7 @@ import {useAppStore} from '../../store/app';
 const appStroe=useAppStore();
 const props = defineProps(nodeViewProps);
 // ![图片](./vite.svg)
+// @ts-ignore
 const {  src, alt, title, width, height } = props.node.attrs;
 
 const isEditable = ref(props.editor.isEditable);

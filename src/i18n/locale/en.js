@@ -13,6 +13,8 @@ export default {
   saveAs:'Save As',
   autoSave:'Auto Save',
   rename:'Rename',
+  openExplorerWindows:'Reveal in File Explorer',
+  openExplorerMacos:'Reveal in Finder',
   import: 'Import',
   export:'Export',
   preferences:'Preferences',
@@ -21,6 +23,8 @@ export default {
   closeWindow:'Close Window',
   closeFolder:'Close Folder',
   quit:'Quit',
+  
+  html:'HTML',
 
   edit:'Edit',
   undo:'Undo',
@@ -31,6 +35,18 @@ export default {
   selectAll:'Select All',
   find:'Find',
   Replace:'Replace',
+
+  
+  format: 'Format',
+  bold: 'Bold',
+  italic: 'Italic',
+  underline: 'Underline',
+  strikethrough: 'Strikethrough',
+  subscript: 'Subscript',
+  superscript: 'Superscript',
+  inlineCode: 'Inline Code',
+  inlineMath: 'Inline Math',
+  clearFormat: 'Clear Format',
 
   paragraph:'Paragraph',
   normalText:'Normal Text',

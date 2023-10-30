@@ -4,7 +4,7 @@
 </div>
 </template>
 <script lang="ts" setup>
-import { ref,onMounted } from 'vue'
+import { ref,onMounted,onUnmounted } from 'vue'
 
 const props=defineProps(['value']);
 const emit = defineEmits(['update:value','change']);
@@ -21,12 +21,14 @@ const onChange=(event:Event)=>{
   emit('change',event.target?.value);
 }
 
+var fakeEle:null|HTMLElement=null;
+
 onMounted(()=>{
   if(!inputRef.value)return;
   const textboxEle = inputRef.value;
   const styles = window.getComputedStyle(textboxEle);
 
-  const fakeEle = document.createElement("div");
+  fakeEle = document.createElement("div");
   fakeEle.style.position = "absolute";
   fakeEle.style.top = "0";
   fakeEle.style.left = "-9999px";
@@ -50,17 +52,29 @@ onMounted(()=>{
   document.body.appendChild(fakeEle);
 
   const setWidth = function () {
-    const string =
+    if(fakeEle){
+      const string =
       textboxEle.value || textboxEle.getAttribute("placeholder") || "";
-    fakeEle.innerHTML = string.replace(/\s/g, "&nbsp;");
+      fakeEle.innerHTML = string.replace(/\s/g, "&nbsp;");
 
-    const fakeEleStyles = window.getComputedStyle(fakeEle);
-    textboxEle.style.width = fakeEleStyles.width;
+      const fakeEleStyles = window.getComputedStyle(fakeEle as Element);
+      textboxEle.style.width = fakeEleStyles.width;
+    }
+    
   };
 
   setWidth();
 
   textboxEle.addEventListener("input", setWidth);
+  
+});
+
+onUnmounted(()=>{
+  
+  if(fakeEle){
+    document.body.removeChild(fakeEle);
+  }
+
 });
 
 

@@ -9,6 +9,7 @@ pub fn cmd_args(state: State<OpenedUrls>) -> Vec<url::Url> {
     // let args: Vec<String> = std::env::args().collect();
     let res = state.0.lock().unwrap();
     if let Some(urls) = res.as_ref() {
+        log::info!("{:?}", urls);
         return urls.clone();
     }
     vec![]

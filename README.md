@@ -9,12 +9,13 @@
 # Features
 
 - Multiple Window
-- Multiple Themes
+- Multiple Themes, Support for custom themes
 - Support CommonMark Spec, GitHub Flavored Markdown Spec
 - Support paragraphs and inline style shortcuts
 - Document Character and Word Statistics
 - Supports pasting images from the clipboard and dragging external images for insertion
-- Markdown extensions such as math expressions (KaTeX)
+- Markdown extensions such as math expressions (KaTeX) and Mermaid Chart
+- Support for exporting images, HTML, and PDF documents
 - [PicGO](https://molunerfinn.com/PicGo/)
 
 # Preview
@@ -156,7 +157,7 @@ Theme JSON Schema
 ```
 
 ### Uninstall Theme
-
+Remove the JSON theme file from the themes directory
 # License
 
 [MIT](https://github.com/cedar12/marknote/blob/main/LICENSE)

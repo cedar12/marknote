@@ -13,20 +13,19 @@
       </div>
       <div class="about-info">
         <ul>
-          <li>{{t('version')}}: {{ version }}</li>
+          <li class="main-info">{{name}} {{ version }}</li>
+          
+          <li style="margin-top: 10px;">Mode: {{env.MODE}}</li>
+          <li>Platform: {{env.TAURI_PLATFORM}}</li>
+          <li>Arch: {{env.TAURI_ARCH}}</li>
+          <li>Platform {{ t('version') }}: {{env.TAURI_PLATFORM_VERSION}}</li>
           <li>Tauri {{ t('version') }}: {{ tauriVersion }}</li>
-          <li>{{ t('author') }}: <a href="mailto:cedar12.zxd@qq.com">cedar12</a></li>
+          <li style="margin-top:10px;">{{ t('author') }}: <a href="mailto:cedar12.zxd@qq.com">cedar12.zxd@qq.com</a></li>
           <li>Source: <a href="https://github.com/cedar12/marknote" target="_blank">Github</a></li>
           <li>License: MIT</li>
         </ul>
       </div>
     </div>
-    <!-- <div class="about-row" style="margin-top: 1em;">
-      <div>Source: <a href="https://github.com/cedar12/marknote" target="_blank">Github</a></div>
-    </div>
-    <div class="about-row"  style="margin-top: 1em;">
-      <div>License: MIT</div>
-    </div> -->
   </div>
 </template>
 <script lang=ts setup>
@@ -52,9 +51,13 @@ watch(()=>locale.value,()=>{
     appWindow.setTitle(t('about'));
 });
 
+const env=ref(import.meta.env);
+
 const name=ref('MarkNote');
 const version=ref('');
 const tauriVersion=ref('');
+
+console.log(env.value);
 
 onBeforeMount(async ()=>{
   name.value=await getName();
@@ -91,6 +94,8 @@ onBeforeMount(async ()=>{
     display: flex;
     justify-content: center;
     flex-basis: 90px;
+    user-select:none;
+    --webkit-user-select:none;
     img{
       width: 80px;
       height: 80px;
@@ -98,6 +103,7 @@ onBeforeMount(async ()=>{
   }
   .about-info{
     flex: 1;
+    font-size: 12px;
     ul{
       list-style: none;
       margin: 0;
@@ -105,6 +111,10 @@ onBeforeMount(async ()=>{
       li{
         padding: 4px;
       }
+    }
+    .main-info{
+      font-size: 16px;
+      font-size: bold;
     }
   }
 }

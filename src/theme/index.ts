@@ -2,6 +2,7 @@
 import light from './style/light';
 import dark from './style/dark';
 import { findThemes} from '../api/utils';
+import mermaid from 'mermaid';
 
 const builtInThemes=[light,dark];
 const excludes=builtInThemes.map(t=>t.value);
@@ -36,7 +37,9 @@ export function setTheme(value:ThemeItem){
   for(let key of keys){
     document.documentElement.style.setProperty('--'+key,(value.style as any)[key]);
   }
-
+  mermaid.initialize({
+    theme: value.type==='light'?'default':'dark',
+  });
   document.documentElement.className=value.type;
 }
 

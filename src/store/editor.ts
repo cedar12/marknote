@@ -17,7 +17,7 @@ export const useEditorStore = defineStore('editor', {
     headings:Heading[],
   }{
       return {
-        codeTheme:localStorage.getItem('codeTheme')||'default',
+        codeTheme:localStorage.getItem('codeTheme')||'nnfx-light',
         loading:false,
         headings:[],
       }

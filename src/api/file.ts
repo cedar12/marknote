@@ -23,6 +23,9 @@ export function exportHTML(path:string,html:string){
 export function exportImage(path:string,base64:string){
   return invoke('export_image', { path,base64});
 }
+export function exportPDF(path:string,html:string){
+  return invoke('export_pdf', { path,html});
+}
 
 
 export function ls(path:string){

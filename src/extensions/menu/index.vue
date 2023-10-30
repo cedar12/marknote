@@ -8,12 +8,16 @@
         <ElTooltip content="斜体">
           <ElButton size="small" :icon="TextItalic"  @click="editor.chain().focus().toggleItalic().run()"></ElButton>
         </ElTooltip>
+        <ElTooltip content="删除线">
+          <ElButton size="small" :icon="Minus" @click="editor.chain().focus().toggleStrike().run()"></ElButton>
+        </ElTooltip>
         <ElTooltip content="链接">
           <ElButton size="small" :icon="Link" @click="onClickLink"></ElButton>
         </ElTooltip>
         <ElTooltip content="代码">
           <ElButton size="small" :icon="Code" @click="editor.chain().focus().toggleCode().run()"></ElButton>
         </ElTooltip>
+        
         
       </ElButtonGroup>
     </div>
@@ -25,7 +29,7 @@ import {ElButtonGroup,ElButton,ElTooltip} from 'element-plus';
 // import {ref,reactive,watch} from 'vue';
 import {useEditorStore} from '../../store/editor';
 import {storeToRefs} from 'pinia';
-import {TextBold,TextItalic,Code,Link} from '@icon-park/vue-next';
+import {TextBold,TextItalic,Code,Link,Minus} from '@icon-park/vue-next';
 import { isTextSelection } from '@tiptap/core';
 const editorStore=useEditorStore();
 const {editor}=storeToRefs(editorStore);
@@ -45,7 +49,6 @@ const shouldShow=({ view, state, from, to }) => {
 
   return true;
 };
-
 
 
 const onClickLink=()=>{

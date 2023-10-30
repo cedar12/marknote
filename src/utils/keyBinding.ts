@@ -58,6 +58,22 @@ const defaultKeyBinding:KeyBinding[]=[
     key:'Mod+Y',
   },
   {
+    description:['format','bold'],
+    key:'Mod+B',
+  },
+  {
+    description:['format','italic'],
+    key:'Mod+I',
+  },
+  {
+    description:['format','strikethrough'],
+    key:'Mod+Shift+X',
+  },
+  {
+    description:['format','inlineCode'],
+    key:'Mod+E',
+  },
+  {
     description:['paragraph','normalText'],
     key:'Mod+Alt+0',
   },
@@ -199,7 +215,7 @@ export class KeyBindingBuilder{
         });
       }else{
         const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,appStore.platform==='macos'?'command':'ctrl').toLocaleLowerCase();
-        console.log(key,bind.description[0]);
+        // console.log(key,bind.description[0]);
         hotkeys(key, {
           scope:bind.description[0],
           // capture:true,

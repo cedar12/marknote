@@ -26,7 +26,7 @@ export const Bold=BuiltInBold.extend({
                   span.className='bold-wrapper bold-start';
                   span.innerText='**';
                   return span;
-                },{side:-1}));
+                },{side:0}));
                 decorations.push(Decoration.widget(end,()=>{
                   const span=document.createElement('span');
                   span.className='bold-wrapper bold-end';

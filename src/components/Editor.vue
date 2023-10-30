@@ -61,7 +61,7 @@ onMounted(()=>{
   */
   nextTick(()=>{
     // editorStore.setContent(content);
-    editor.value.commands.focus();
+    // editor.value.commands.focus();
     editor.value.on('update', editorStore.updateHeadings);
     editorStore.updateHeadings();
   })

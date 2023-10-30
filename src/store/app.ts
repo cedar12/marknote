@@ -126,7 +126,7 @@ export const useAppStore = defineStore('app', {
       document.documentElement.style.setProperty('--sidebarWidth', this.sidebar.width + 'px');
       
       this.isSave=true;
-      appWindow.show();
+      
       const autoTheme=localStorage.getItem('autoTheme');
       if(autoTheme=='true'){
         this.autoTheme=true;
@@ -136,6 +136,7 @@ export const useAppStore = defineStore('app', {
 
       const { locale } = useI18n();
       platform().then(async (p:any)=>{
+        appWindow.show();
         this.platform=p;
         this.keyBinding=new KeyBindingBuilder();
         this.menuKey=this.menuKey+1;

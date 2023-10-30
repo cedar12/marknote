@@ -71,6 +71,7 @@ pub async fn open_preferences(handle: tauri::AppHandle) {
             .decorations(IS_MACOS)
             .min_inner_size(600f64, 400f64)
             .visible(false)
+            .resizable(false)
             .build()
             .unwrap();
             set_shadow(win);
@@ -96,6 +97,7 @@ pub async fn open_preferences(handle: tauri::AppHandle){
             .inner_size(800f64, 600f64)
             .title_bar_style(tauri::TitleBarStyle::Overlay)
             .hidden_title(true)
+            .resizable(false)
             .visible(false)
             .build()
             .unwrap();
@@ -120,7 +122,7 @@ pub async fn open_about(handle: tauri::AppHandle) {
             )
             .decorations(IS_MACOS)
             // .min_inner_size(300f64, 200f64)
-            .inner_size(350f64,250f64)
+            .inner_size(350f64,300f64)
             .resizable(false)
             .visible(false)
             .center()
@@ -145,7 +147,7 @@ pub async fn open_about(handle: tauri::AppHandle){
                 WindowUrl::App("index.html?about=open".into()),
             )
             .decorations(IS_MACOS)
-            .inner_size(350f64,250f64)
+            .inner_size(350f64,300f64)
             .resizable(false)
             .title_bar_style(tauri::TitleBarStyle::Overlay)
             .hidden_title(true)

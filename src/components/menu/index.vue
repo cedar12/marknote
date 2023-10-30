@@ -3,9 +3,9 @@
     <div class="marknote-menus" ref="menusRef" v-if="menuStore.visible">
       <div class="marknote-menu-mask" @click="onReset"  @contextmenu.prevent="onReset"></div>
       <div class="menus menus-level-1  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" @contextmenu.prevent="">
-        <div class="menu-item" :class="{ split: item.split }" v-for="item in menus" :key="item.key">
+        <div class="menu-item" :class="{ split: item.split }" v-for="item in menus" :key="item.key" >
           <div class="menu-content" :class="{ 'has-children': item.children && item.children.length > 0 }"
-            @click="onClick($event, item, 1)">
+            @click="onClick($event, item, 1)"  v-if="item.platform==undefined||item.platform.includes(appStore.platform as any)">
             <label class="menu-title">{{ item.label }}</label>
             <i>
               <Right v-if="item.children && item.children.length > 0"></Right>
@@ -14,7 +14,7 @@
           <div class="menus menus-level-2  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" v-if="key1 === item.key">
             
             <div class="menu-item" :class="{ split: item2.split }" v-for="item2 in item.children" :key="item2.key">
-              <div class="menu-content" @click="onClick($event, item2, 2)">
+              <div class="menu-content" @click="onClick($event, item2, 2)" v-if="item2.platform==undefined||item2.platform.includes(appStore.platform as any)">
                 <label class="menu-checkbox">
                   <Check v-if="item2.checked"></Check>
                 </label>
@@ -26,8 +26,8 @@
               </div>
               <div class="menus  menus-level-3  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" v-if="key2 === item2.key">
                 
-                <div class="menu-item" :class="{ split: item3.split }" v-for="item3 in item2.children" :key="item3.key">
-                  <div class="menu-content" @click="onClick($event, item3, 3)" :title="item3.label">
+                <div class="menu-item" :class="{ split: item3.split }" v-for="item3 in item2.children" :key="item3.key" >
+                  <div class="menu-content" @click="onClick($event, item3, 3)" :title="item3.label"  v-if="item3.platform==undefined||item3.platform.includes(appStore.platform  as any)">
                     <label class="menu-title">{{ item3.label }}</label>
                     <span v-if="item3.shortcut">{{ replaceShortcut(item3.shortcut) }}</span>
                   </div>
@@ -123,27 +123,37 @@ const loadMenuData=()=>{
           shortcut:appStore.keyBinding?.getKey('file.saveAs')?.key,
           split: true
         },
+        // {
+        //   label: t('rename'),
+        //   key: 'rename',
+        //   split: true
+        // },
         {
-          label: t('rename'),
-          key: 'rename',
+          label: t(appStore.platform==='macos'?'openExplorerMacos':'openExplorerWindows'),
+          key: 'openExplorer',
+          platform: ['windows','macos'],
           split: true
         },
-        {
-          label: t('import'),
-          key: 'import',
-        },
+        // {
+        //   label: t('import'),
+        //   key: 'import',
+        // },
         {
           label: t('export'),
           key: 'export',
           split: true,
           children: [
             {
-              label: 'HTML',
+              label: t('html'),
               key: 'html',
             },
             {
               label: t('image'),
               key: 'image',
+            },
+            {
+              label: 'PDF',
+              key: 'exportPdf',
             }
           ]
         },
@@ -194,6 +204,42 @@ const loadMenuData=()=>{
           label: t('redo'),
           key: 'redo',
           shortcut:appStore.keyBinding?.getKey('edit.redo')?.key,
+        }
+      ]
+    },
+    {
+      label:t('format'),
+      key: 'format',
+      children:[
+        {
+          label: t('bold'),
+          key: 'bold',
+          shortcut:appStore.keyBinding?.getKey('format.bold')?.key,
+        },
+        {
+          label: t('italic'),
+          key: 'italic',
+          shortcut:appStore.keyBinding?.getKey('format.italic')?.key,
+        },
+        {
+          label: t('strikethrough'),
+          key: 'strikethrough',
+          shortcut:appStore.keyBinding?.getKey('format.strikethrough')?.key,
+          split:true,
+        },
+        {
+          label: t('inlineCode'),
+          key: 'inlineCode',
+          shortcut:appStore.keyBinding?.getKey('format.inlineCode')?.key,
+        },
+        {
+          label: t('inlineMath'),
+          key: 'inlineMath',
+          split:true,
+        },
+        {
+          label: t('clearFormat'),
+          key: 'clearFormat',
         }
       ]
     },

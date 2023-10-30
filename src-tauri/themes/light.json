@@ -3,19 +3,19 @@
   "value": "lightCustom",
   "type": "light",
   "style": {
-    "primaryBackgroundColor": "#2196f3",
-    "primaryBackgroundColorHover": "#2979ff",
-    "primaryBackgroundColorActive": "#2962ff",
-    "contentBackgroundColor": "#E3F2FD",
-    "primaryTextColor": "#041320",
+    "primaryBackgroundColor": "#8f8681",
+    "primaryBackgroundColorHover": "#434142",
+    "primaryBackgroundColorActive": "#434142",
+    "contentBackgroundColor": "#e1dcd9",
+    "primaryTextColor": "#f8f2ef",
     "primaryTextColorHover": "#d2e3ff",
     "primaryTextColorActive": "#e3ebff",
     "contentTextColor": "#1d1f21",
     "primaryBorderColor": "#0d47a1",
     "contentBorderColor": "#babec1",
-    "contentBackgroundColorActive": "#90caf9",
-    "contentBackgroundColorHover": "#bbdefb",
+    "contentBackgroundColorActive": "#cccccc",
+    "contentBackgroundColorHover": "#434142",
     "contentTextColorActive": "#4e4e4e",
-    "contentTextColorHover": "#271a20"
+    "contentTextColorHover": "#cccccc"
   }
 }

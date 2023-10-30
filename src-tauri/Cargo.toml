@@ -1,6 +1,6 @@
 [package]
 name = "marknote"
-version = "0.0.5"
+version = "0.0.6"
 description = "MarkNote"
 authors = ["cedar12.zxd@qq.com"]
 license = "MIT"
@@ -43,7 +43,8 @@ cron="0.5"
 dirs-next="2.0.0"
 url = "2"
 jsonschema = "0.17.1"
-
+headless_chrome = "1.0"
+regex = "1.5.4"
 
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
 tauri-plugin-global-shortcut = "2.0.0-alpha"

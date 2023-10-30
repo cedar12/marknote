@@ -8,7 +8,7 @@ import { ask,confirm, open,save } from '@tauri-apps/plugin-dialog';
 import * as appLog from '@tauri-apps/plugin-log';
 import { exit } from '@tauri-apps/plugin-process';
 import {openFile,saveAs} from '../api/dialog';
-import {exportHTML, exportImage, read} from '../api/file';
+import {exportHTML, exportImage,exportPDF, read} from '../api/file';
 import i18n from '../i18n';
 import { openAbout, openPreferences, openWindow } from '../api/window';
 import {
@@ -16,9 +16,10 @@ import {
 } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { sendNotification } from '@tauri-apps/plugin-notification';
-import { log } from '../api/utils';
-import {toImage} from '../utils';
+import { PlatformType, openExplorer } from '../api/utils';
+import {toImage,handleHtml} from '../utils';
 import { nextTick } from 'vue';
+import html2canvas from 'html2canvas';
 
 const appWindow=getCurrent();
 // @ts-ignore
@@ -31,6 +32,7 @@ export interface Menu {
   key: string,
   shortcut?: string,
   checked?: boolean,
+  platform?:PlatformType[],
   children?: Menu[]
 }
 
@@ -134,22 +136,66 @@ const events = {
     }).catch(e => console.error(e));
 
   },
-  html(){
-    
-    const editorStore=useEditorStore();
-    const html=editorStore.editor.getHTML();
+  openExplorer(){
     const appStore = useAppStore();
-    if(appStore.filepath&&appStore.isSave){
-      exportHTML(appStore.filepath+'.html',html);
+    if(appStore.filepath){
+      openExplorer(appStore.filepath);
     }
     
-    // console.log('html',html);
   },
 
+  html(){
+    save({
+      title:`${t('export')} ${t('html')}`,
+      filters:[{name:t('html'),extensions:['html']}]
+    }).then(async (path)=>{
+      if(!path)return;
+      const div=document.querySelector('div.marknote');
+      if(!div)return;
+      const editorStore=useEditorStore();
+      const html=await handleHtml(div);//div?.innerHTML;
+      // const html=editorStore.editor.getHTML();
+      const appStore = useAppStore();
+      if(appStore.filepath&&appStore.isSave){
+        
+        try{
+          await exportHTML(path,html);
+          sendNotification(`${t('export')} ${t('html')}`,path);
+        }catch(e){
+          appLog.error(e);
+        }
+      }
+    });
+    // console.log('html',html);
+  },
+  exportPdf(){
+    save({
+      title:`${t('export')} PDF`,
+      filters:[{name:'PDF',extensions:['pdf']}]
+    }).then(async (path)=>{
+      if(!path)return;
+      const div=document.querySelector('div.marknote');
+      if(!div)return;
+      const editorStore=useEditorStore();
+      const html=await handleHtml(div);//div?.innerHTML;
+      // const html=editorStore.editor.getHTML();
+      const appStore = useAppStore();
+      if(appStore.filepath&&appStore.isSave){
+        
+        try{
+          await exportPDF(path,html);
+          sendNotification(`${t('export')} PDF`,path);
+        }catch(e){
+          console.log(e);
+          appLog.error(e.toString());
+        }
+      }
+    });
+  },
   image(){
     save({
-      title:'导出图片',
-      filters:[{name:'图片',extensions:['png']}]
+      title:`${t('export')}${t('image')}`,
+      filters:[{name:t('image'),extensions:['png']}]
     }).then(path=>{
       if(!path)return;
       const div=document.querySelector('.layout-scrollbar>.el-scrollbar__wrap');
@@ -166,8 +212,8 @@ const events = {
           const imgData = canvas.toDataURL('image/jpeg', 1.0);
           console.log((imgData));
           try{
-            const res=await exportImage(path,imgData);
-            sendNotification('导出图片成功',path);
+            await exportImage(path,imgData);
+            sendNotification(`${t('export')}${t('image')}`,path);
           }catch(e){
             appLog.error(e);
           }
@@ -282,6 +328,23 @@ const events = {
     // appWindow.emit('tauri://update');
   },
 
+  bold(){
+    const editorStore=useEditorStore();
+    editorStore.editor.commands.toggleBold();
+  },
+  italic(){
+    const editorStore=useEditorStore();
+    editorStore.editor.commands.toggleItalic();
+  },
+  strikethrough(){
+    const editorStore=useEditorStore();
+    editorStore.editor.commands.toggleStrike();
+  },
+  clearFormat(){
+    const editorStore=useEditorStore();
+    editorStore.editor.commands.unsetMark();
+  },
+
   codeFences(){
     const editorStore=useEditorStore();
     editorStore.editor.commands.toggleCodeBlock();
@@ -352,7 +415,7 @@ function readMarkdownFile(path:string){
       appStore.setFilepath(path);
       editorStore.setContent(resp.data);
     }else{
-      log.error(resp.info);
+      appLog.error(resp.info);
     }
     editorStore.loading=false;
   }).catch(()=>{

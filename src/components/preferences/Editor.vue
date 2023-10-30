@@ -36,7 +36,7 @@ const appStore=useAppStore();
 const editorStore=useEditorStore();
 const {t} = useI18n();
 
-const options=['default','github','github-dark','idea','intellij-light','vs','xcode','googlecode','atom-one-dark','atom-one-light','codepen-embed','nnfx-dark','nnfx-light'];
+const options=['github','github-dark','idea','intellij-light','vs','xcode','googlecode','atom-one-dark','atom-one-light','codepen-embed','nnfx-dark','nnfx-light'];
 
 const onChange=(value:any)=>{
   // const value=e.target['value'];

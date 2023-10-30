@@ -13,26 +13,6 @@ const key=computed(()=>{
   return appStore.recentFiles.join(',')+'_'+appStore.menuKey;
 })
 
-document.oncontextmenu = function (event: any) {
-    if (window.event) {
-        event = window.event
-    }
-    try {
-        var the = event.srcElement
-        if (
-            !(
-                (the.tagName == 'INPUT' && the.type.toLowerCase() == 'text') ||
-                the.tagName == 'TEXTAREA'
-            )
-        ) {
-            return false
-        }
-        return true
-    } catch (e) {
-        return false
-    }
-}
-
 </script>
 
 <template>
