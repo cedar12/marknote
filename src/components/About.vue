@@ -16,7 +16,7 @@
           <li class="main-info">{{name}} {{ version }}</li>
           
           <li style="margin-top: 10px;">Mode: {{env.MODE}}</li>
-          <li>Platform: {{env.TAURI_PLATFORM}}</li>
+          <li>Platform: {{appStore.platform}}</li>
           <li>Arch: {{env.TAURI_ARCH}}</li>
           <li>Platform {{ t('version') }}: {{env.TAURI_PLATFORM_VERSION}}</li>
           <li>Tauri {{ t('version') }}: {{ tauriVersion }}</li>

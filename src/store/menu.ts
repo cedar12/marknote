@@ -105,6 +105,8 @@ const events = {
       if(!Array.isArray(selected)){
         appStore.folder=selected;
       }
+      appStore.sidebar.active='folder';
+      appStore.sidebar.visible=true;
       
     }
     dir();

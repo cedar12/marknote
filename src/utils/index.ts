@@ -81,12 +81,15 @@ export function toImage(element:HTMLElement,windowHeight:number):Promise<HTMLCan
 
 export async function handleHtml(html:HTMLElement){
   const cloned=html.cloneNode(true) as HTMLElement;
-  const images=cloned.querySelectorAll('img');
+  const images=cloned.querySelectorAll('img.el-image__inner');
   for(let i=0;i<images.length;i++){
+    // @ts-ignore
     if(!images[i].src.startsWith('data:image/')){
       try{
+        // @ts-ignore
         const base64=await convertImageToBase64(images[i].src);
         // console.log(base64);
+        // @ts-ignore
         images[i].src=base64;
       }catch(e){
         console.error(e);

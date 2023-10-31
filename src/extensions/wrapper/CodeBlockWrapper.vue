@@ -7,34 +7,42 @@
         <ElOption v-for="item in options()" :key="item" :label="item" :value="item"></ElOption>
       </ElSelect>
       <div>
+        <ElTooltip size="small " :content="t('code')" v-if="isMermaid()">
+          <ElButton size="small" @click="showCode=!showCode" tabindex="-1">
+              <Code></Code>
+          </ElButton>
+        </ElTooltip>
         <ElTooltip size="small " :content="t('copy')">
           <ElButton size="small" @click="handleClick" tabindex="-1">
               <Copy></Copy>
           </ElButton>
         </ElTooltip>
+        
       </div>
     </div>
-    <pre ref="contentRef" class="hljs">
+    <pre ref="contentRef" class="hljs" v-show="!isMermaid()||showCode">
       <NodeViewContent as="code"></NodeViewContent>
     </pre>
-    <div v-if="isMermaid()" class="mermaid-render" v-html="mermaidValue"></div>
+    <div v-if="isMermaid()" class="mermaid-render" v-html="mermaidValue" contenteditable="false" ></div>
   </NodeViewWrapper>
 </template>
 <script lang="ts" setup>
-import { ref,onMounted,watch,nextTick } from 'vue';
+import { ref,onMounted,watch,getCurrentInstance  } from 'vue';
 import {ElSelect,ElOption,ElButton,ElTooltip} from 'element-plus';
-import { Copy } from '@icon-park/vue-next';
+import { Copy,Code } from '@icon-park/vue-next';
 import { NodeViewContent, NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import {useI18n} from 'vue-i18n';
 import mermaid from 'mermaid';
 import { listen } from '@tauri-apps/api/event';
 
+const instance=getCurrentInstance();
 const {t}=useI18n();
 const props = defineProps(nodeViewProps);
 
 const isEditable = ref(props.editor.isEditable);
 const value = ref(props.node.attrs.language || '');
+const showCode=ref(false);
 
 const contentRef=ref<HTMLElement>();
 const wrapperRef=ref<HTMLElement>();
@@ -51,6 +59,8 @@ const options=()=>{
   return [...list,'mermaid'];
 }
 
+
+
 const handleClick=()=>{
   
   const text=(contentRef.value?.children[0] as HTMLElement).innerText;
@@ -60,8 +70,8 @@ const handleClick=()=>{
 }
 
 const renderMermaid=async ()=>{
-  if(props.node.attrs.language==='mermaid'){
-    const svg = await mermaid.render('dummy',props.node.textContent);
+  if(props.node.attrs.language==='mermaid'&&instance){
+    const svg = await mermaid.render('mermaid_'+instance.uid,props.node.textContent);
     mermaidValue.value=svg.svg;
   }
 }
@@ -74,7 +84,7 @@ onMounted(async ()=>{
   console.log(props.node.attrs.language);
   renderMermaid();
   listen('theme', (event) => {
-    const value=event.payload;
+    const value:any=event.payload;
     mermaid.initialize({
       theme: value.type==='light'?'default':'dark',
     });
@@ -139,6 +149,7 @@ onMounted(async ()=>{
   .mermaid-render{
     display:flex;
     justify-content: center;
+    padding-top: 2em;
   }
   
 }

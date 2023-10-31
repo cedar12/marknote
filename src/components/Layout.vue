@@ -41,6 +41,28 @@ const editor = useEditorStore();
 
 const menuItems = ref<ContextMenuItem[]>([
   {
+    label: 'Insert Paragraph Before',
+    onClick() {
+      const state=editor.editor?.state;
+      const {$from}=state.selection;
+      console.log('Insert Paragraph Before',$from);
+      editor.editor?.commands.insertContentAt($from.pos-1, '<p></p>', {
+        updateSelection: true,
+        parseOptions: {
+          preserveWhitespace: 'full',
+        }
+      })
+    }
+  },
+  {
+    label: 'Insert Paragraph After',
+    split: true,
+    onClick() {
+      console.log('createParagraphNear');
+      editor.editor?.commands.createParagraphNear();
+    }
+  },
+  {
     label: t('copy'),
     disabled() {
       const content = editor.editor?.state.selection.content();
@@ -82,6 +104,7 @@ const menuItems = ref<ContextMenuItem[]>([
       })
     }
   }
+  
 ]);
 
 
