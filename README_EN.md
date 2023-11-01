@@ -2,56 +2,45 @@
 
 ![](https://img.shields.io/github/stars/cedar12/marknote)![](https://img.shields.io/github/forks/cedar12/marknote)![](https://img.shields.io/github/downloads/cedar12/marknote/total)[![Release](https://github.com/cedar12/marknote/actions/workflows/release.yml/badge.svg)](https://github.com/cedar12/marknote/actions/workflows/release.yml)
 
-🎉一个简单的所见即所得的 Markdown 编辑器，适用于 Linux、macOS 和 Windows。
+🎉A simple `WYSIWYG` markdown editor, available for Linux, macOS and Windows.
 
 ---
 
-# 功能
+# Features
 
-- 比 electron系 体积更小、运行更快、更加安全
-- 多窗口
-- 多主题，支持自定义主题
-- 支持 CommonMark 规范、GitHub 风格的 Markdown 规范
-- 支持段落和内联样式快捷方式
-- 文档字符和单词统计
-- 支持从剪贴板粘贴图像和拖动外部图像进行插入
-- Markdown 扩展，如数学表达式（KaTeX）和Mermaid图表
-- 支持导出图像、HTML 和 PDF 文档
-- 支持图床[PicGO](https://molunerfinn.com/PicGo/)
+- Multiple Window
+- Multiple Themes, Support for custom themes
+- Support CommonMark Spec, GitHub Flavored Markdown Spec
+- Support paragraphs and inline style shortcuts
+- Document Character and Word Statistics
+- Supports pasting images from the clipboard and dragging external images for insertion
+- Markdown extensions such as math expressions (KaTeX) and Mermaid Chart
+- Support for exporting images, HTML, and PDF documents
+- [PicGO](https://molunerfinn.com/PicGo/)
 
-# 界面
+# Preview
 
 ![marknote-light.png](https://cdn.jsdelivr.net/gh/cedar12/picgo@main/images/202310122323992.png)
 
 ![](https://cdn.jsdelivr.net/gh/cedar12/picgo@main/images/202310122323635.png)
 
-# 下载
-
-> 国内github下载慢、以下下载使用了代理 `gh-proxy`
+# Download
 
 ### Windows
 
-[MarkNote_0.0.5_x64_en-US.msi](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.5/MarkNote_0.0.5_x64_en-US.msi)
+You can download the lastest `MarkNote_%version%_x64-setup.exe` or `MarkNote_%version%_x64-en-US.msi` from the [release page](https://github.com/cedar12/marknote/releases/latest)
 
 ### MacOS
 
-英特尔芯片
-
-[MarkNote_0.0.5_x64.dmg](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.5/MarkNote_0.0.5_x64.dmg)
-
-苹果M系芯片
-
-[MarkNote_0.0.5_aarch64.dmg](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.5/MarkNote_0.0.5_aarch64.dmg)
+You can download the lastest `MarkNote_%version%_x64.dmg` from the [release page](https://github.com/cedar12/marknote/releases/latest)
 
 ### Linux
 
-[mark-note_0.0.5_amd64.deb](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.5/mark-note_0.0.5_amd64.deb)
+You can download the lastest Mar`kNote_%version%_x64.AppImage` from the [release page](https://github.com/cedar12/marknote/releases/latest)
 
-[mark-note_0.0.5_amd64.AppImage](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.5/mark-note_0.0.5_amd64.AppImage)
+# Development
 
-# 开发
-
-## 环境要求
+## Environment
 
 1. `Node 18+`
 2. `Rust 1.7+`
@@ -66,9 +55,9 @@ yarn
 yarn tauri dev
 ```
 
-# 主题
+# Theme
 
-## 内置主题
+## Built-in Theme
 
 ### Light
 
@@ -78,11 +67,11 @@ yarn tauri dev
 
 ![image.png](README.md.assets/20231016105421.image.png)
 
-## 自定义主题
+## Custom Theme
 
-### 安装主题
+### Install Theme
 
-JSON主题文件需遵循Schema
+Theme JSON Schema
 
 ```json
 {
@@ -167,10 +156,8 @@ JSON主题文件需遵循Schema
 }
 ```
 
-### 卸载主题
-
-从themes目录中删除JSON主题文件
-
-# 许可
+### Uninstall Theme
+Remove the JSON theme file from the themes directory
+# License
 
 [MIT](https://github.com/cedar12/marknote/blob/main/LICENSE)
