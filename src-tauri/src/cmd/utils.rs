@@ -1,4 +1,4 @@
-use std::process::Command;
+use std::{process::Command, path::PathBuf};
 
 use tauri::{App, AppHandle, Manager, State};
 
@@ -31,13 +31,16 @@ pub fn log_debug(str: &str) {
 #[tauri::command]
 pub fn open_explorer(path: &str) {
     // Windows
-    if cfg!(windows) {
+    #[cfg(target_os = "windows")]
+    {
         Command::new("explorer")
             .args(["/select,", path])
             .spawn()
             .unwrap();
-    } else if cfg!(macos) {
-        Command::new("open").args(["-R", path]).spawn().unwrap();
+    }
+    #[cfg(target_os = "macos")]
+    {
+        Command::new("open").args(["-R",path]).spawn().unwrap();
     }
 }
 
