@@ -27,27 +27,27 @@
 
 # 下载
 
-> 国内github下载慢、以下下载使用了代理 `gh-proxy`
+> 国内github下载慢、以下下载链接使用了 `gh-proxy` 代理
 
 ### Windows
 
-[MarkNote_0.0.6_x64_en-US.msi](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.6/MarkNote_0.0.5_x64_en-US.msi)
+[MarkNote_0.0.6_x64_en-US.msi](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.6/MarkNote_0.0.6_x64_en-US.msi)
 
 ### MacOS
 
 英特尔芯片
 
-[MarkNote_0.0.6_x64.dmg](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.6/MarkNote_0.0.5_x64.dmg)
+[MarkNote_0.0.6_x64.dmg](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.6/MarkNote_0.0.6_x64.dmg)
 
 苹果M系芯片
 
-[MarkNote_0.0.6_aarch64.dmg](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.6/MarkNote_0.0.5_aarch64.dmg)
+[MarkNote_0.0.6_aarch64.dmg](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.6/MarkNote_0.0.6_aarch64.dmg)
 
 ### Linux
 
-[mark-note_0.0.6_amd64.deb](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.6/mark-note_0.0.5_amd64.deb)
+[mark-note_0.0.6_amd64.deb](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.6/mark-note_0.0.6_amd64.deb)
 
-[mark-note_0.0.6_amd64.AppImage](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.6/mark-note_0.0.5_amd64.AppImage)
+[mark-note_0.0.6_amd64.AppImage](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.6/mark-note_0.0.6_amd64.AppImage)
 
 # 开发
 
