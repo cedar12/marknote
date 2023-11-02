@@ -1,4 +1,4 @@
-use std::{process::Command, path::PathBuf};
+use std::{process::Command, path::PathBuf, collections::HashMap};
 
 use tauri::{App, AppHandle, Manager, State};
 
@@ -47,6 +47,11 @@ pub fn open_explorer(path: &str) {
 #[tauri::command]
 pub fn platform() -> &'static str {
     std::env::consts::OS
+}
+
+#[tauri::command]
+pub fn build_info() -> HashMap<String,String> {
+    crate::BUILD_MAP.clone()
 }
 
 #[tauri::command]

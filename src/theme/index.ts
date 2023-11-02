@@ -7,9 +7,23 @@ import mermaid from 'mermaid';
 const builtInThemes=[light,dark];
 const excludes=builtInThemes.map(t=>t.value);
 
-const themes=[...builtInThemes,...await getThemes()];
+const themes=[...builtInThemes,...localThemes()];
 
-async function getThemes(){
+
+function localThemes(){
+  try{
+    const t=window.localStorage.getItem('MarkNoteThemes');
+    if(t){
+      return JSON.parse(t);
+    }
+  }catch(e){
+    console.error(e);
+  }
+  return [];
+}
+
+
+export async function getThemes(){
   const themes:ThemeItem[]=[];
   const s=await findThemes();
   s.forEach(json=>{

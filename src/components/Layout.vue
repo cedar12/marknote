@@ -29,7 +29,7 @@ import { useEditorStore } from '../store/editor';
 // import Folder from './Folder.vue';
 import Sidebar from './sidebar/Sidebar.vue';
 import {useAppStore} from '../store/app';
-import {readText,writeText} from '@tauri-apps/plugin-clipboard-manager';
+import {readText} from '@tauri-apps/plugin-clipboard-manager';
 import {ElScrollbar} from 'element-plus';
 import Dialog from './dialog/index.vue';
 
@@ -40,28 +40,7 @@ const editor = useEditorStore();
 
 
 const menuItems = ref<ContextMenuItem[]>([
-  {
-    label: 'Insert Paragraph Before',
-    onClick() {
-      const state=editor.editor?.state;
-      const {$from}=state.selection;
-      console.log('Insert Paragraph Before',$from);
-      editor.editor?.commands.insertContentAt($from.pos-1, '<p></p>', {
-        updateSelection: true,
-        parseOptions: {
-          preserveWhitespace: 'full',
-        }
-      })
-    }
-  },
-  {
-    label: 'Insert Paragraph After',
-    split: true,
-    onClick() {
-      console.log('createParagraphNear');
-      editor.editor?.commands.createParagraphNear();
-    }
-  },
+  
   {
     label: t('copy'),
     disabled() {
@@ -70,6 +49,7 @@ const menuItems = ref<ContextMenuItem[]>([
     },
     split: true,
     onClick() {
+      /*
       if(!editor.editor){
         return;
       }
@@ -89,6 +69,8 @@ const menuItems = ref<ContextMenuItem[]>([
         writeText(text);
       }
       // state.text=null;
+      */
+     document.execCommand('copy');
     },
   },
   {
@@ -102,6 +84,16 @@ const menuItems = ref<ContextMenuItem[]>([
           
         }
       })
+    }
+  },
+  {
+    label: t('cut'),
+    disabled() {
+      const content = editor.editor?.state.selection.content();
+      return content?.size === 0;
+    },
+    onClick(){
+      document.execCommand('cut');
     }
   }
   

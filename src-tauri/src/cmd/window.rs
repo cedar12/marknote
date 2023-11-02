@@ -122,13 +122,12 @@ pub async fn open_about(handle: tauri::AppHandle) {
             )
             .decorations(IS_MACOS)
             // .min_inner_size(300f64, 200f64)
-            .inner_size(350f64,300f64)
+            .inner_size(420f64,300f64)
             .resizable(false)
             .visible(false)
             .center()
             .build()
             .unwrap();
-            set_shadow(win);
         }
     }
 }
@@ -147,7 +146,7 @@ pub async fn open_about(handle: tauri::AppHandle){
                 WindowUrl::App("index.html?about=open".into()),
             )
             .decorations(IS_MACOS)
-            .inner_size(350f64,300f64)
+            .inner_size(420f64,300f64)
             .resizable(false)
             .title_bar_style(tauri::TitleBarStyle::Overlay)
             .hidden_title(true)

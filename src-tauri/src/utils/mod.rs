@@ -279,13 +279,6 @@ fn test_mac_picgo(){
 }
 
 
-pub fn open_with(win:Window){
-  let args: Vec<String> = std::env::args().collect();
-  log::debug!("{:?}", args);
-  if args.len()>1{
-    win.emit("open", args[1].clone()).unwrap();
-  }
-}
 
 
 #[derive(Debug,Clone,serde::Serialize)]

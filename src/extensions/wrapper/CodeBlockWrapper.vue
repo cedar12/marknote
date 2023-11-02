@@ -81,7 +81,7 @@ watch(()=>props.node.textContent,async ()=>{
 });
 
 onMounted(async ()=>{
-  console.log(props.node.attrs.language);
+  // console.log(props.node.attrs.language);
   renderMermaid();
   listen('theme', (event) => {
     const value:any=event.payload;

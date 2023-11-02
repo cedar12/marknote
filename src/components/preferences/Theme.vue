@@ -1,8 +1,11 @@
 <template>
   <div class="preferences-theme">
     <div class="preferences-item">
-      <div class="header">
+    </div>
+    <div class="preferences-item">
+      <div class="header between" style="display:flex;justify-content: space-between;">
         <span>{{ t('theme') }}</span>
+        <el-button size="small" :icon="Refresh" @click="refeshThemes"></el-button>
       </div>
       <div class="content">
         <div class="theme-item" :class="appStore.theme?.value===theme.value?'active':''" v-for="theme in themes" @click="onChangeTheme(theme)">
@@ -32,17 +35,16 @@
   </div>
 </template>
 <script lang="ts" setup>
-// import { ref } from 'vue';
+import {ElButton} from 'element-plus';
 import {useAppStore} from '../../store/app';
 import { useI18n } from 'vue-i18n';
 import { ElSwitch } from 'element-plus';
-import themes, { ThemeItem, ThemeStyle } from '../../theme';
+import themes, { ThemeItem, ThemeStyle,getThemes } from '../../theme';
 import { emit } from '@tauri-apps/api/event';
-import {FullSelection} from '@icon-park/vue-next';
+import {FullSelection,Refresh} from '@icon-park/vue-next';
 
 const {t}=useI18n();
 const appStore=useAppStore();
-// const themeValue=ref<string>('light');
 
 const caseStyle=(styles:ThemeStyle):string=>{
   var newStyle:string='';
@@ -60,6 +62,12 @@ const onChangeTheme=(theme:ThemeItem)=>{
 
 const onChange=()=>{
   localStorage.setItem('autoTheme',''+appStore.autoTheme);
+}
+
+const refeshThemes=async ()=>{
+  const themes=await getThemes();
+
+  localStorage.setItem('MarkNoteThemes',JSON.stringify(themes));
 }
 
 </script>

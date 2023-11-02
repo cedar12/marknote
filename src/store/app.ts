@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-// import { platform } from '@tauri-apps/plugin-os';
 import { emit, listen,TauriEvent } from '@tauri-apps/api/event'
 import { getCurrent } from '@tauri-apps/api/window'
 import { useI18n } from "vue-i18n";
@@ -11,14 +10,14 @@ import { saveAs} from '../api/dialog';
 import { isPermissionGranted, requestPermission } from '@tauri-apps/plugin-notification';
 import { confirm } from '@tauri-apps/plugin-dialog';
 import i18n from '../i18n';
-// import { args } from '../api/utils';
 import { findThemeByType, setTheme, ThemeItem } from '../theme';
-import { args,platform } from '../api/utils';
+import { args, PlatformType } from '../api/utils';
 
 const appWindow=getCurrent();
 // @ts-ignore
 const { t } = i18n.global;
 
+const autoTheme=localStorage.getItem('autoTheme');
 
 function getTheme(){
   var theme=null;
@@ -45,7 +44,7 @@ export const useAppStore = defineStore('app', {
     filepath:string|null,
     isSave:boolean,
     recentFiles:string[],
-    platform:null|'linux'| 'macos'| 'ios'| 'freebsd'| 'dragonfly'| 'netbsd'| 'openbsd'| 'solaris'| 'android'| 'windows',
+    platform:PlatformType,
     visible:{
       outliner:boolean,
       folder:boolean,
@@ -67,7 +66,8 @@ export const useAppStore = defineStore('app', {
     title:null,
     filepath: null,
     isSave:false,
-    platform:null,
+    // @ts-ignore
+    platform:window.os,
     recentFiles:JSON.parse(localStorage.getItem('recent')||'[]'),
     visible:{
       outliner:false,
@@ -79,13 +79,13 @@ export const useAppStore = defineStore('app', {
       // @ts-ignore
       width: localStorage.getItem('sidebarWidth')?parseInt(localStorage.getItem('sidebarWidth')):220,
     },
-    keyBinding:null,
+    keyBinding:new KeyBindingBuilder(),
     menuKey:0,
     permissionGranted:false,
     theme:getTheme(),
     autoTheme:false,
     folder:null,
-    loading:true,
+    loading:false,
     exporting:false,
   }),
   actions:{
@@ -124,32 +124,41 @@ export const useAppStore = defineStore('app', {
 
     init(){
       document.documentElement.style.setProperty('--sidebarWidth', this.sidebar.width + 'px');
-      
+      this.menuKey=this.menuKey+1;
       this.isSave=true;
+      appWindow.show();
       
-      const autoTheme=localStorage.getItem('autoTheme');
       if(autoTheme=='true'){
         this.autoTheme=true;
         const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)");
         setTheme(findThemeByType(isDarkTheme.matches?'dark':'light') as any);
       }
 
-      const { locale } = useI18n();
-      platform().then(async (p:any)=>{
-        appWindow.show();
-        this.platform=p;
-        this.keyBinding=new KeyBindingBuilder();
-        this.menuKey=this.menuKey+1;
-
-        this.permissionGranted = await isPermissionGranted();
+      isPermissionGranted().then(async (permissionGranted)=>{
+        this.permissionGranted=permissionGranted;
         if (!this.permissionGranted) {
           const permission = await requestPermission();
           this.permissionGranted = permission === 'granted';
         }
-
-        this.loading=false;
-        
       });
+      
+      // this.loading=false;
+      const { locale } = useI18n();
+      // platform().then(async (p:any)=>{
+        
+      //   this.platform=p;
+      //   this.keyBinding=new KeyBindingBuilder();
+      //   this.menuKey=this.menuKey+1;
+
+      //   this.permissionGranted = await isPermissionGranted();
+      //   if (!this.permissionGranted) {
+      //     const permission = await requestPermission();
+      //     this.permissionGranted = permission === 'granted';
+      //   }
+        
+      //   this.loading=false;
+        
+      // });
 
       if(appWindow.label==='main'){
         const editorStore=useEditorStore();
@@ -157,6 +166,7 @@ export const useAppStore = defineStore('app', {
         // log.debug(window.filesOpen);
         
         args().then(async (payload:string[])=>{
+          
           if(payload.length===1){
             let path=payload[0];
             if(path.startsWith('file://')){
@@ -170,7 +180,6 @@ export const useAppStore = defineStore('app', {
               appStore.setFilepath(path);
               editorStore.setContent(resp.data);
             }
-            editorStore.loading=false;
           }else if(payload.length>1){
             let path=payload[1];
             if(path.startsWith('file://')){
@@ -183,8 +192,9 @@ export const useAppStore = defineStore('app', {
               appStore.setFilepath(path);
               editorStore.setContent(resp.data);
             }
-            editorStore.loading=false;
+            
           }
+          editorStore.loading=false;
         }).catch(()=>{
           editorStore.loading=false;
         });
@@ -255,6 +265,8 @@ export const useAppStore = defineStore('app', {
         });
       }
 
+      
+
       listen<string>('language', async (event) => {
         const value=event.payload;
         locale.value=value;
@@ -279,8 +291,7 @@ export const useAppStore = defineStore('app', {
         setTheme(value);
       });
 
-      listen(TauriEvent.WINDOW_THEME_CHANGED,(ev)=>{
-        console.log(this.autoTheme,ev);
+      appWindow.listen(TauriEvent.WINDOW_THEME_CHANGED,(ev)=>{
         if(this.autoTheme){
           const themeType:any=ev.payload;
           const theme=findThemeByType(themeType);
@@ -288,9 +299,10 @@ export const useAppStore = defineStore('app', {
             emit('theme',theme);
           }
         }
-      })
+      });
 
       emit('unsavedColor',localStorage.getItem('unsavedColor')||'rgb(66, 212, 21)');
+
     },
 
     save(){

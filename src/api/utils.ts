@@ -16,6 +16,11 @@ export function openExplorer(path:string){
 }
 
 
+export function buildInfo(){
+  return invoke('build_info');
+}
+
+
 export const log={
   info(str:string){
     return invoke('log_info',{str:str});

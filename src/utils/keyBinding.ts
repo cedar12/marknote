@@ -137,6 +137,8 @@ const defaultKeyBinding:KeyBinding[]=[
 
 type KeyBindingFn=(bind:KeyBinding,handler?: HotkeysEvent)=>boolean|void;
 
+const contrlScopes=['file','view'];
+
 export class KeyBindingBuilder{
   private binds:KeyBinding[];
   private fn:KeyBindingFn|null=null;
@@ -166,7 +168,7 @@ export class KeyBindingBuilder{
       const key = keys.join('+').toLocaleLowerCase();
       
       const bind=binds.find(b=>b.key.replace(/Mod/g,appStore.platform === 'macos' ? 'command' : 'ctrl').toLocaleLowerCase()==key);
-      if(((Date.now()-this.preTime>200&&key==this.preKey)||key!==this.preKey)&&bind){
+      if(((Date.now()-this.preTime>200&&key==this.preKey)||key!==this.preKey)&&bind&&contrlScopes.includes(bind.description[0])){
         console.log('handleKeyDown',event,key);
         this.preKey=key;
         this.preTime=Date.now();

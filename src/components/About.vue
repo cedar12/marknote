@@ -16,11 +16,13 @@
           <li class="main-info">{{name}} {{ version }}</li>
           
           <li style="margin-top: 10px;">Mode: {{env.MODE}}</li>
-          <li>Platform: {{appStore.platform}}</li>
-          <li>Arch: {{env.TAURI_ARCH}}</li>
-          <li>Platform {{ t('version') }}: {{env.TAURI_PLATFORM_VERSION}}</li>
-          <li>Tauri {{ t('version') }}: {{ tauriVersion }}</li>
-          <li style="margin-top:10px;">{{ t('author') }}: <a href="mailto:cedar12.zxd@qq.com">cedar12.zxd@qq.com</a></li>
+          <!-- <li>Platform: {{appStore.platform}}</li> -->
+          <li>Build OS: {{build.BUILD_OS}}</li>
+          <li>Build Time: {{build.BUILD_TIME}}</li>
+          <li>Rust Version: {{ build.RUST_VERSION }}</li>
+          <li>Tauri Version: {{ tauriVersion }}</li>
+          
+          <li style="margin-top:10px;">Author: <a href="https://github.com/cedar12" target="_blank">cedar12 (cedar12.zxd@qq.com)</a></li>
           <li>Source: <a href="https://github.com/cedar12/marknote" target="_blank">Github</a></li>
           <li>License: MIT</li>
         </ul>
@@ -33,9 +35,8 @@ import {ref,watch,onBeforeMount} from 'vue';
 import {useAppStore} from '../store/app';
 import { getCurrent } from '@tauri-apps/api/window';
 import { getName,getVersion,getTauriVersion } from '@tauri-apps/api/app';
-// import { getName,getVersion,getTauriVersion } from '@tauri-apps/plugin-app';
 import {Close} from '@icon-park/vue-next';
-
+import {buildInfo} from '../api/utils';
 const appWindow=getCurrent();
 
 const appStore=useAppStore();
@@ -57,9 +58,13 @@ const name=ref('MarkNote');
 const version=ref('');
 const tauriVersion=ref('');
 
-console.log(env.value);
+const build=ref();
+
+
 
 onBeforeMount(async ()=>{
+  build.value=await buildInfo();
+  console.log(env.value,build.value);
   name.value=await getName();
   version.value=await getVersion();
   tauriVersion.value=await getTauriVersion();

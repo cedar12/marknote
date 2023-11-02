@@ -440,7 +440,7 @@ function replaceShortcut(shortcut?:string){
   const mod=appStore.platform==='macos'?'Cmd':'Ctrl';
   const alt=appStore.platform==='macos'?'Option':'Alt';
   const key=shortcut.replace(/Mod/g,mod).replace(/Alt/g,alt);
-  console.log('key->',key);
+  // console.log('key->',key);
   return key;
 }
 

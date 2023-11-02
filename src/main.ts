@@ -35,7 +35,8 @@ if(import.meta.env.PROD){
       }
   }
 }
-
+//@ts-ignore
+console.log(window.os);
 //isPreferences?Preferences:App
 createApp(component(App,{Preferences,About})).directive('loading',ElLoadingDirective).use(i18n).use(createPinia()).mount("#app");
 

@@ -2,6 +2,8 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { terser } from "rollup-plugin-terser";
 import topLevelAwait from 'vite-plugin-top-level-await';
+//@ts-ignore
+import package from './package.json';
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
@@ -28,7 +30,31 @@ export default defineConfig(async () => ({
   // https://tauri.studio/v1/api/config#buildconfig.beforedevcommand
   envPrefix: ["VITE_", "TAURI_"],
   build:{
+    minify:true,
+    cssMinify:true,
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
     rollupOptions:{
+      treeshake:true,
+      output:{
+        manualChunks(id){
+          if(id.includes('node_modules')){
+            // @ts-ignore
+            const dependenciesKeys = Object.keys(package.dependencies);
+            const match = dependenciesKeys.find((item) => {
+                return id.includes(item);
+            });
+            const notSplit = ['vue'];
+            if (match && !notSplit.includes(match)) {
+                return match;
+            }
+          }
+        }
+      },
       plugins:[
         terser({
           format:{

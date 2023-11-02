@@ -25,6 +25,7 @@ export const useEditorStore = defineStore('editor', {
 
   getters:{
     editor():Editor{
+      //@ts-ignore
       return window.editor?.value;
     }
   },
