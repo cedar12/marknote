@@ -55,6 +55,23 @@ pub fn build_info() -> HashMap<String,String> {
 }
 
 #[tauri::command]
+pub fn trigger_paste() {
+    use enigo::{Enigo,Key,KeyboardControllable};
+    let mut enigo = Enigo::new();
+    if crate::utils::IS_MACOS{
+        enigo.key_down(Key::Meta);
+    }else{
+        enigo.key_down(Key::Control);
+    }
+    enigo.key_click(Key::Layout('v'));
+    if crate::utils::IS_MACOS{
+        enigo.key_up(Key::Meta);
+    }else{
+        enigo.key_up(Key::Control);
+    }
+}
+
+#[tauri::command]
 pub fn themes(app: AppHandle) -> Vec<String> {
     let result = app.path().resource_dir();
     match result {

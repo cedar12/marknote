@@ -16,7 +16,7 @@ import {
 } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { sendNotification } from '@tauri-apps/plugin-notification';
-import { PlatformType, openExplorer } from '../api/utils';
+import { PlatformType, openExplorer, triggerPaste } from '../api/utils';
 import {toImage,handleHtml} from '../utils';
 import { nextTick } from 'vue';
 import html2canvas from 'html2canvas';
@@ -238,13 +238,34 @@ const events = {
 
   undo(){
     const editorStore=useEditorStore();
+    editorStore.editor?.commands.focus();
     editorStore.editor?.commands.undo();
   },
   redo(){
     const editorStore=useEditorStore();
+    editorStore.editor?.commands.focus();
     editorStore.editor?.commands.redo();
   },
-
+  copy(){
+    const editorStore=useEditorStore();
+    editorStore.editor?.commands.focus();
+    document.execCommand('copy');
+  },
+  cut(){
+    const editorStore=useEditorStore();
+    editorStore.editor?.commands.focus();
+    document.execCommand('cut');
+  },
+  paste(){
+    const editorStore=useEditorStore();
+    editorStore.editor?.commands.focus();
+    triggerPaste();
+  },
+  selectAll(){
+    const editorStore=useEditorStore();
+    editorStore.editor?.commands.focus();
+    editorStore.editor?.commands.selectAll();
+  },
   
   sidebar(item:Menu){
     const appStore=useAppStore();
@@ -390,7 +411,7 @@ const events = {
       const appStroe=useAppStore();
       if(!appStroe.isSave){
         confirm(t('closeTip'), {title:t('closeTitleTip'),cancelLabel:t('save'),okLabel:t('giveUp')}).then(yes=>{
-          console.log('confirm',yes);
+          // console.log('confirm',yes);
           if(yes===false){
             appStroe.save();
           }else{

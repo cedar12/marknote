@@ -3,10 +3,26 @@
 use crate::{resp, utils};
 use std::fs;
 
-#[tauri::command]
+#[tauri::command(async)]
 pub async fn read_md(path: &str) -> Result<resp::Resp<String>, String> {
+    let start_time = std::time::Instant::now();
     match fs::read_to_string(path) {
-        Ok(data) => Ok(resp::data(Some(data))),
+        Ok(data) => {
+            log::info!("读取{}耗时：{}毫秒",path, start_time.elapsed().as_millis());
+            Ok(resp::data(Some(data)))
+        },
+        Err(e) => Ok(resp::err(e.to_string())),
+    }
+}
+#[tauri::command]
+pub async fn read_md_to_html(path: &str) -> Result<resp::Resp<String>, String> {
+    let start_time = std::time::Instant::now();
+    match fs::read_to_string(path) {
+        Ok(data) => {
+            let md=utils::md::md_to_html(data.as_str());
+            log::info!("读取{}耗时：{}毫秒",path, start_time.elapsed().as_millis());
+            Ok(resp::data(Some(md)))
+        },
         Err(e) => Ok(resp::err(e.to_string())),
     }
 }

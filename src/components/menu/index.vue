@@ -191,8 +191,18 @@ const loadMenuData=()=>{
       key: 'edit',
       children: [
         {
+          label: t('copy'),
+          key: 'copy',
+          shortcut:appStore.keyBinding?.getKey('edit.copy')?.key,
+        },{
+          label: t('paste'),
+          key: 'paste',
+          shortcut:appStore.keyBinding?.getKey('edit.paste')?.key,
+        },
+        {
           label: t('cut'),
           key: 'cut',
+          split:true,
           shortcut:appStore.keyBinding?.getKey('edit.cut')?.key,
         },
         {
@@ -204,6 +214,12 @@ const loadMenuData=()=>{
           label: t('redo'),
           key: 'redo',
           shortcut:appStore.keyBinding?.getKey('edit.redo')?.key,
+          split:true,
+        },
+        {
+          label: t('selectAll'),
+          key: 'selectAll',
+          shortcut:appStore.keyBinding?.getKey('edit.selectAll')?.key,
         }
       ]
     },

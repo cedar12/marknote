@@ -33,6 +33,10 @@ export default {
   selectAll:'全选',
   find:'查找',
   Replace:'替换',
+  copyPlainText:'复制纯文本',
+  pastePlainText:'粘贴纯文本',
+
+  newLine:'新行',
 
   format: '格式',
   bold: '加粗',

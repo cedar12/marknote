@@ -7,6 +7,9 @@ export function save(path:string,md:string){
 export function read(path:string){
   return invoke('read_md', { path: path});
 }
+export function readToHTML(path:string){
+  return invoke('read_md_to_html', { path: path});
+}
 
 
 export function saveImage(mdPath:string,filename:string,base64:string){

@@ -19,6 +19,7 @@ pub use constant::*;
 
 pub mod schema;
 pub mod pdf;
+pub mod md;
 
 pub fn set_shadow(_win: Window) {
   // if cfg!(windows) {
@@ -374,3 +375,11 @@ fn test_html2pdf()->anyhow::Result<()>{
   Ok(())
 }
 
+
+#[test]
+fn test_md2html()->anyhow::Result<()>{
+  let content=std::fs::read_to_string("D:\\marknote\\docs\\marknote.md")?;
+  let res=md::md_to_html(content.as_str());
+  println!("{}",res);
+  Ok(())
+}

@@ -85,7 +85,7 @@ export const useAppStore = defineStore('app', {
     theme:getTheme(),
     autoTheme:false,
     folder:null,
-    loading:false,
+    loading:true,
     exporting:false,
   }),
   actions:{
@@ -122,7 +122,7 @@ export const useAppStore = defineStore('app', {
       appWindow.emit(TauriEvent.WINDOW_CLOSE_REQUESTED);
     },
 
-    init(){
+    async init(){
       document.documentElement.style.setProperty('--sidebarWidth', this.sidebar.width + 'px');
       this.menuKey=this.menuKey+1;
       this.isSave=true;
@@ -133,6 +133,8 @@ export const useAppStore = defineStore('app', {
         const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)");
         setTheme(findThemeByType(isDarkTheme.matches?'dark':'light') as any);
       }
+
+      
 
       isPermissionGranted().then(async (permissionGranted)=>{
         this.permissionGranted=permissionGranted;

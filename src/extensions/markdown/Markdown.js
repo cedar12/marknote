@@ -23,11 +23,25 @@ export const Markdown = Extension.create({
         const commands = extensions.Commands.config.addCommands();
         return {
             setContent: (content, emitUpdate, parseOptions) => (props) => {
-                return commands.setContent(
-                    props.editor.storage.markdown.parser.parse(content),
-                    emitUpdate,
-                    parseOptions
-                )(props);
+                const html=props.editor.storage.markdown.parser.parse(content);
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, "text/html");
+                const items=doc.body.children;
+                for(let i=0;i<items.length;i+=30){
+                    if(i+30>=items.length){
+                        commands.insertContent(items.slice(i,items.length),emitUpdate,parseOptions);
+                    }else{
+                        commands.insertContent(items.slice(i,30),emitUpdate,parseOptions);
+                    }
+                    
+                }
+                // console.log(doc);
+                // return commands.setContent(
+                //     html,
+                //     emitUpdate,
+                //     parseOptions
+                // )(props);
+                return true;
             },
             insertContentAt: (range, content, options) => (props) => {
                 return commands.insertContentAt(

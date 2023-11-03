@@ -12,7 +12,10 @@ import "./scss/editor.scss";
 import './scss/codeTheme.scss';
 import { createPinia } from 'pinia'
 import {component} from "./utils/index";
-import {ElLoadingDirective} from 'element-plus';
+// import {ElLoadingDirective} from 'element-plus';
+import loading from './directives/loading/index';
+import './directives/loading/index.scss';
+
 
 if(import.meta.env.PROD){
   document.oncontextmenu = function (event: any) {
@@ -38,6 +41,6 @@ if(import.meta.env.PROD){
 //@ts-ignore
 console.log(window.os);
 //isPreferences?Preferences:App
-createApp(component(App,{Preferences,About})).directive('loading',ElLoadingDirective).use(i18n).use(createPinia()).mount("#app");
+createApp(component(App,{Preferences,About})).directive('loading',loading).use(i18n).use(createPinia()).mount("#app");
 
 

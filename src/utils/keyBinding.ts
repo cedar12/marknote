@@ -50,12 +50,24 @@ const defaultKeyBinding:KeyBinding[]=[
     key:'Mod+X',
   },
   {
+    description:['edit','copy'],
+    key:'Mod+C',
+  },
+  {
+    description:['edit','paste'],
+    key:'Mod+V',
+  },
+  {
     description:['edit','undo'],
     key:'Mod+Z',
   },
   {
     description:['edit','redo'],
     key:'Mod+Y',
+  },
+  {
+    description:['edit','selectAll'],
+    key:'Mod+A',
   },
   {
     description:['format','bold'],

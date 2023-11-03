@@ -30,7 +30,7 @@ export default defineConfig(async () => ({
   // https://tauri.studio/v1/api/config#buildconfig.beforedevcommand
   envPrefix: ["VITE_", "TAURI_"],
   build:{
-    minify:true,
+    minify:'terser',
     cssMinify:true,
     terserOptions: {
       compress: {

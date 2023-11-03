@@ -83,6 +83,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             cmd::file::save_md,
             cmd::file::read_md,
+            cmd::file::read_md_to_html,
             cmd::file::save_image,
             cmd::file::save_image_path,
             cmd::file::export_html,
@@ -105,6 +106,7 @@ fn main() {
             cmd::utils::platform,
             cmd::utils::themes,
             cmd::utils::build_info,
+            cmd::utils::trigger_paste,
         ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_window::init())

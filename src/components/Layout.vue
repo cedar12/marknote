@@ -7,7 +7,7 @@
       <Folder></Folder>
     </div> -->
     <Sidebar></Sidebar>
-    <div class="layout-content" :class="`code-theme-${editor.codeTheme} ${appStore.exporting?'exporting':''}`" v-loading="appStore.exporting">
+    <div class="layout-content" :class="`code-theme-${editor.codeTheme} ${appStore.exporting?'exporting':''}`" v-loading="appStore.exporting||editor.loading">
       <ContextMenu :menu="menuItems">
         <ElScrollbar class="layout-scrollbar" height="calc(100vh - var(--titleBarHeight))">
           <Editor></Editor>
@@ -29,9 +29,10 @@ import { useEditorStore } from '../store/editor';
 // import Folder from './Folder.vue';
 import Sidebar from './sidebar/Sidebar.vue';
 import {useAppStore} from '../store/app';
-import {readText} from '@tauri-apps/plugin-clipboard-manager';
+import {readText,writeText} from '@tauri-apps/plugin-clipboard-manager';
 import {ElScrollbar} from 'element-plus';
 import Dialog from './dialog/index.vue';
+import {triggerPaste} from '../api/utils';
 
 const { t } = useI18n();
 const appStore=useAppStore();
@@ -47,7 +48,6 @@ const menuItems = ref<ContextMenuItem[]>([
       const content = editor.editor?.state.selection.content();
       return content?.size === 0;
     },
-    split: true,
     onClick() {
       /*
       if(!editor.editor){
@@ -70,6 +70,7 @@ const menuItems = ref<ContextMenuItem[]>([
       }
       // state.text=null;
       */
+      editor.editor.commands.focus();
      document.execCommand('copy');
     },
   },
@@ -77,13 +78,15 @@ const menuItems = ref<ContextMenuItem[]>([
     label: t('paste'),
     disabled:false,
     onClick(){
-      readText().then((text)=>{
-        if(text&&editor.editor){
-          const {state,view}=editor.editor;
-          view.dispatch(state.tr.insertText(text))
+      // readText().then((text)=>{
+      //   if(text&&editor.editor){
+      //     // const {state,view}=editor.editor;
+      //     // view.dispatch(state.tr.insertText(text));
           
-        }
-      })
+      //   }
+      // })
+      editor.editor.commands.focus();
+      triggerPaste();
     }
   },
   {
@@ -93,7 +96,77 @@ const menuItems = ref<ContextMenuItem[]>([
       return content?.size === 0;
     },
     onClick(){
+      editor.editor.commands.focus();
       document.execCommand('cut');
+    },
+    split:true,
+  },
+  {
+    label: t('copyPlainText'),
+    disabled() {
+      const content = editor.editor?.state.selection.content();
+      return content?.size === 0;
+    },
+    onClick() {
+      
+      if(!editor.editor){
+        return;
+      }
+      editor.editor.commands.focus();
+      const {state}=editor.editor;
+      const {$from,$to} = state.selection;
+      const text=state.doc.textBetween($from.pos,$to.pos,'\n','\t');
+      if(text){
+        writeText(text);
+      }
+      
+    },
+  },
+  {
+    label: t('pastePlainText'),
+    disabled:false,
+    onClick(){
+      editor.editor.commands.focus();
+      readText().then((text)=>{
+        if(text&&editor.editor){
+          const {state,view}=editor.editor;
+          view.dispatch(state.tr.insertText(text));
+          
+        }
+      })
+      
+    },
+    split:true,
+  },
+  {
+    label: t('selectAll'),
+    disabled:false,
+    onClick(){
+      if(!editor.editor){
+        return;
+      }
+      editor.editor.commands.selectAll();
+      editor.editor.commands.focus();
+    },
+    split:true,
+  },
+  {
+    label: t('newLine'),
+    disabled:false,
+    onClick(){
+      if(!editor.editor){
+        return;
+      }
+      if(editor.editor.isActive('codeBlock')){
+        editor.editor.commands.exitCode();
+        // editor.editor.commands.keyboardShortcut('Mod-Enter');
+      }else{
+        editor.editor.commands.enter();
+      }
+      
+      
+      
+      editor.editor.commands.focus();
     }
   }
   

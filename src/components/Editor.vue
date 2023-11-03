@@ -1,7 +1,7 @@
 <template>
     <!-- <LinkMenu :editor="editor"></LinkMenu> -->
   <Menu></Menu>
-  <EditorContent :editor="editor" v-loading="editorStore.loading"></EditorContent>
+  <EditorContent :editor="editor" ></EditorContent>
 </template>
 <script lang="ts" setup> 
 import {onMounted,watch,nextTick} from 'vue';
@@ -61,7 +61,7 @@ onMounted(()=>{
   */
   nextTick(()=>{
     // editorStore.setContent(content);
-    // editor.value.commands.focus();
+    editor.value.commands.focus();
     editor.value.on('update', editorStore.updateHeadings);
     editorStore.updateHeadings();
   })

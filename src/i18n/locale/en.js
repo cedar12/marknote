@@ -35,7 +35,10 @@ export default {
   selectAll:'Select All',
   find:'Find',
   Replace:'Replace',
+  copyPlainText:'Copy As Plain Text',
+  pastePlainText:'Paste As Plain Text',
 
+  newLine:'New Line',
   
   format: 'Format',
   bold: 'Bold',
