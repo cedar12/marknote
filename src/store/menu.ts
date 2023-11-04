@@ -434,6 +434,7 @@ function readMarkdownFile(path:string){
   editorStore.loading=true;
   read(path).then((resp:any)=>{
     if (resp.code === 0) {
+      console.log(resp.data);
       const appStore = useAppStore();
       appStore.setFilepath(path);
       editorStore.setContent(resp.data);

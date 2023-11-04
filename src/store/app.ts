@@ -62,6 +62,7 @@ export const useAppStore = defineStore('app', {
     folder:string|null,
     loading:boolean,
     exporting:boolean,
+    autoSave:boolean,
   }=>({
     title:null,
     filepath: null,
@@ -87,6 +88,7 @@ export const useAppStore = defineStore('app', {
     folder:null,
     loading:true,
     exporting:false,
+    autoSave:false,
   }),
   actions:{
     setFilepath(filepath:string|null){
@@ -286,6 +288,12 @@ export const useAppStore = defineStore('app', {
         document.documentElement.style.setProperty('--notSavedColor',value);
         
       });
+      listen<boolean>('autoSave', async (event) => {
+        const value=event.payload;
+        localStorage.setItem("autoSave", value.toString());
+        this.autoSave=value;
+        
+      });
 
       
       listen<ThemeItem>('theme', async (event) => {
@@ -304,6 +312,7 @@ export const useAppStore = defineStore('app', {
       });
 
       emit('unsavedColor',localStorage.getItem('unsavedColor')||'rgb(66, 212, 21)');
+      emit('autoSave',localStorage.getItem('autoSave')==='true');
 
     },
 

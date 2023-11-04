@@ -25,7 +25,6 @@ import { Html } from '../extensions/html';
 import { TableOfContents } from '../extensions/tableOfContents';
 import CharacterCount from '@tiptap/extension-character-count'
 import { useAppStore } from '../store/app';
-import { convertFileSrc } from '@tauri-apps/api/primitives';
 
 
 const MarknoteTable = Table.extend({
@@ -156,6 +155,9 @@ function createEditor() {
       
       const appStore = useAppStore();
       appStore.isSave = false;
+      if(appStore.autoSave&&appStore.filepath){
+        appStore.save();
+      }
       // editorStore.tree = getTree();
     },
     onCreate: () => {

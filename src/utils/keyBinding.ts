@@ -158,12 +158,15 @@ export class KeyBindingBuilder{
   private preTime:number=0;
   constructor(binds=defaultKeyBinding){
     hotkeys.filter = (event)=>{
+      const appStore = useAppStore();
       var target = event.target || event.srcElement;
+      
+      
       // @ts-ignore
       var tagName = target.tagName;
       
       const keys = [];
-      const appStore = useAppStore();
+      
       if (event.metaKey) {
         keys.push(appStore.platform === 'macos' ? 'command' : 'win');
       } else if (event.ctrlKey) {
@@ -213,7 +216,8 @@ export class KeyBindingBuilder{
   }
 
   bind(){
-    const appStore=useAppStore();
+    //@ts-ignore
+    const platform=window.os;
     this.binds.forEach(bind=>{
       if(bind.system===true){
         const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,'CommandOrControl').toLocaleLowerCase();
@@ -228,7 +232,7 @@ export class KeyBindingBuilder{
           }
         });
       }else{
-        const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,appStore.platform==='macos'?'command':'ctrl').toLocaleLowerCase();
+        const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,platform==='macos'?'command':'ctrl').toLocaleLowerCase();
         // console.log(key,bind.description[0]);
         hotkeys(key, {
           scope:bind.description[0],

@@ -48,6 +48,16 @@
         </ElSelect>
       </div>
     </div>
+
+    <div class="preferences-item flat">
+      <div class="header">
+        <span>{{ t('autoSave') }}</span>
+      </div>
+      <div class="content">
+        <ElSwitch v-model="appStore.autoSave" @change="(value)=>onChange('autoSave',value)"></ElSwitch>
+      </div>
+
+    </div>
     
   </div>
 </template>
@@ -55,7 +65,7 @@
 import {ref,watch} from 'vue';
 import {useAppStore} from '../../store/app';
 import {useI18n} from 'vue-i18n';
-import {ElSelect,ElOption,ElColorPicker,ElTag,ElTooltip} from 'element-plus';
+import {ElSelect,ElOption,ElColorPicker,ElTag,ElTooltip,ElSwitch} from 'element-plus';
 import { requestPermission } from '@tauri-apps/plugin-notification';
 import {locales} from '../../i18n';
 // import { ftype } from '../../api/preferences';
