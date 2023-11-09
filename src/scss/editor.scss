@@ -89,6 +89,11 @@
     //     line-height: 1.1;
     // }
 
+    pre {
+        border:1px solid var(--contentBorderColor);
+        border-radius: 4px;
+    }
+
     code.inline {
         // background-color: rgba(#616161, 0.1);
         background-color:var(--editorHighlightBackgroundColor,#f1f3f5);
