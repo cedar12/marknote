@@ -184,6 +184,7 @@ export class KeyBindingBuilder{
       
       const bind=binds.find(b=>b.key.replace(/Mod/g,appStore.platform === 'macos' ? 'command' : 'ctrl').toLocaleLowerCase()==key);
       if(((Date.now()-this.preTime>200&&key==this.preKey)||key!==this.preKey)&&bind&&contrlScopes.includes(bind.description[0])){
+        // debugger;
         console.log('handleKeyDown',event,key);
         this.preKey=key;
         this.preTime=Date.now();

@@ -122,6 +122,7 @@ export const useAppStore = defineStore('app', {
 
     closeWindow(){
       appWindow.emit(TauriEvent.WINDOW_CLOSE_REQUESTED);
+      
     },
 
     async init(){
@@ -215,9 +216,12 @@ export const useAppStore = defineStore('app', {
         });
 
         
-        appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async (_ev)=>{
-          // console.log(ev);
+        appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async (ev)=>{
+          console.log(ev);
+          // debugger;
+          
           if(this.isSave){
+            
             await appWindow.close();
           }else{
             try{

@@ -1,7 +1,7 @@
 <template>
   <div class="preferences-markdown">
     <div class="preferences-item">
-      <div class="header">
+      <div class="header flex">
         <span>{{ t('codeTheme') }}</span>
       </div>
       <div class="content">

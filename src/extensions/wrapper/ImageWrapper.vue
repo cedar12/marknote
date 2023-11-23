@@ -1,6 +1,6 @@
 <template>
   <NodeViewWrapper class="marknote-image">
-    <ElPopover trigger="hover" placement="top" width="80%">
+    <ElPopover trigger="click" placement="top" width="80%">
       
       <template #reference>
         <el-image :src="imgSrc"  :alt="alt" :title="title" referrerpolicy="origin-when-cross-origin">
