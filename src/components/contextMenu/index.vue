@@ -97,7 +97,7 @@ function handleAfterEnter(e:Element) {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 9998;
+    z-index: 9999;
     .context-menu-mask{
         position: absolute;
         width: 100%;

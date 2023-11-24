@@ -12,13 +12,12 @@
     </div>
     <div class="preferences-item">
       <div class="header">
-        <span>代码缩进</span>
+        <span>{{t('tabSize')}}</span>
       </div>
       <div class="content">
-        <ElSelect @change="onChange">
-          <ElOption label="2字符" :value="'  '"></ElOption>
-          <ElOption label="4字符" :value="'    '"></ElOption>
-          <ElOption label="制表符" :value="'\t'"></ElOption>
+        <ElSelect v-model="preferencesStore.editor.tabSize" @change="onChangeTabSize">
+          <ElOption label="2" :value="2"></ElOption>
+          <ElOption label="4" :value="4"></ElOption>
         </ElSelect>
       </div>
     </div>
@@ -28,10 +27,12 @@
 <script lang="ts" setup>
 import {useAppStore} from '../../store/app';
 import {useEditorStore} from '../../store/editor';
+import {usePreferencesStore} from '../../store/preferences';
 import {useI18n} from 'vue-i18n';
 import {ElSelect,ElOption} from 'element-plus';
 
 const appStore=useAppStore();
+const preferencesStore=usePreferencesStore();
 
 const editorStore=useEditorStore();
 const {t} = useI18n();
@@ -45,6 +46,10 @@ const onChange=(value:any)=>{
   // console.log('change lang',value);
   localStorage.setItem('codeTheme',value);
   appStore.emit('codeTheme',value);
+}
+
+const onChangeTabSize=()=>{
+  appStore.emit('tabSize',preferencesStore.editor.tabSize);
 }
 </script>
 <style lang="scss">

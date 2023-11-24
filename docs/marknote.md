@@ -118,13 +118,13 @@ Images have a similar syntax to links but include a preceding exclamation point.
 ![MarkNote](https://cdn.jsdelivr.net/gh/cedar12/picgo@main/images/202310161119553.png)
 ```
 
-![](https://cdn.jsdelivr.net/gh/cedar12/picgo@main/images/202310161119553.png)
+![MarkNote](https://cdn.jsdelivr.net/gh/cedar12/picgo@main/images/202310161119553.png)
 
 ```markdown
 ![MarkNote](marknote.md.assets\20231016112227.128x128.png)
 ```
 
-![](marknote.md.assets\20231016112227.128x128.png)
+![MarkNote](marknote.md.assets\20231016112227.128x128.png)
 
 ## Blockquotes
 

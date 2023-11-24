@@ -1,13 +1,13 @@
 <template>
 <div class="auto-width-input">
-  <input :value="props.value" type="text" ref="inputRef" @input="onInput" @change="onChange" />
+  <input :value="props.value" type="text" ref="inputRef" @input="onInput" @change="onChange" @blur="emit('blur')" />
 </div>
 </template>
 <script lang="ts" setup>
 import { ref,onMounted,onUnmounted } from 'vue'
 
 const props=defineProps(['value']);
-const emit = defineEmits(['update:value','change']);
+const emit = defineEmits(['update:value','change','blur']);
 
 const inputRef = ref<HTMLInputElement>();
 

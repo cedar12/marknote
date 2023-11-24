@@ -16,7 +16,7 @@ import {
 } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { sendNotification } from '@tauri-apps/plugin-notification';
-import { PlatformType, openExplorer, triggerPaste } from '../api/utils';
+import { PlatformType, openExplorer } from '../api/utils';
 import {toImage,handleHtml} from '../utils';
 import { nextTick } from 'vue';
 import html2canvas from 'html2canvas';
@@ -259,7 +259,19 @@ const events = {
   paste(){
     const editorStore=useEditorStore();
     editorStore.editor?.commands.focus();
-    triggerPaste();
+    // triggerPaste();
+    window.navigator.clipboard.read().then(async c=>{
+      if(c.length==0)return;
+      const res=await c[0].getType('text/html');
+      // console.log(res);
+      return res.text();
+    }).then((res:any)=>{
+      // console.log(res);
+      if(res)
+      editor.editor.commands.insertContent(res);
+    }).catch(e=>{
+      console.error(e);
+    })
   },
   selectAll(){
     const editorStore=useEditorStore();

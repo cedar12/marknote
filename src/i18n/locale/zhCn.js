@@ -108,4 +108,6 @@ export default {
   closeTitleTip:'文件保存提示',
   closeTip:'文件未保存，是否放弃保存？',
   giveUp:'放弃',
+
+  tabSize: '制表符大小',
 }

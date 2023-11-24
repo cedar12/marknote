@@ -3,6 +3,7 @@ import { emit, listen,TauriEvent } from '@tauri-apps/api/event'
 import { getCurrent } from '@tauri-apps/api/window'
 import { useI18n } from "vue-i18n";
 import {useEditorStore} from './editor';
+import {usePreferencesStore} from './preferences';
 import { KeyBindingBuilder } from '../utils/keyBinding';
 import { isImage } from '../utils';
 import { read, save, saveImagePath } from '../api/file';
@@ -165,6 +166,8 @@ export const useAppStore = defineStore('app', {
         
       // });
 
+      const preferencesStore=usePreferencesStore();
+
       if(appWindow.label==='main'){
         const editorStore=useEditorStore();
         // this.args=window.filesOpen||[];
@@ -297,6 +300,13 @@ export const useAppStore = defineStore('app', {
         localStorage.setItem("autoSave", value.toString());
         this.autoSave=value;
         
+      });
+
+
+      listen<number>('tabSize', async (event) => {
+        const value=event.payload;
+        preferencesStore.editor.tabSize=value;
+        document.documentElement.style.setProperty('--tabSize',''+value);
       });
 
       

@@ -4,6 +4,9 @@
     <template #reference>
       <span :class="props.className">
         {{ `](${props.href})` }}
+        <!-- <span>](</span>
+        <AutoWidthInput v-model:value="value" @blur="updateLink"/>
+        <span>)</span> -->
       </span>
 
 
@@ -32,6 +35,7 @@ import { ref } from 'vue';
 import { getCurrent } from '@tauri-apps/api/window';
 import { useEditorStore } from '../../store/editor';
 import * as shell from '@tauri-apps/plugin-shell';
+// import AutoWidthInput from '../../components/input/AutoWidthInput.vue';
 
 const appWindow = getCurrent();
 
@@ -47,20 +51,24 @@ appWindow.listen<{href:string,from:number,to:number}>('dialog-link-value', (even
   const payload=event.payload;
   value.value = payload.href;
   if(props.start===payload.from&&props.end===payload.to){
-    const { state, view } = props.editor;
-    const from = props.start;
-    const to = props.end;
-    const text = state.doc.textBetween(from, to);
-    // console.log(from, to, text, value.value);
-    const schema = view.state.schema;
-    const node = schema.text(text, [schema.marks.link.create({ href: value.value })]);
-
-    view.dispatch(view.state.tr.deleteRange(from, to));
-    view.dispatch(view.state.tr.insert(from, node));
-    view.dispatch(view.state.tr.scrollIntoView());
+    updateLink();
   }
   
 })
+
+const updateLink=()=>{
+  const { state, view } = props.editor;
+  const from = props.start;
+  const to = props.end;
+  const text = state.doc.textBetween(from, to);
+  // console.log(from, to, text, value.value);
+  const schema = view.state.schema;
+  const node = schema.text(text, [schema.marks.link.create({ href: value.value })]);
+
+  view.dispatch(view.state.tr.deleteRange(from, to));
+  view.dispatch(view.state.tr.insert(from, node));
+  view.dispatch(view.state.tr.scrollIntoView());
+}
 
 const openDialog=()=>{
   appWindow.emit('dialog-link-visible', {href:props.href,from:props.start,to:props.end});

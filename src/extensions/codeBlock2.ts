@@ -189,7 +189,7 @@ export const CodeBlock = CodeBlockLowlight.extend<CodeBlockLowlightOptions>({
     return {
       'Tab': () => {
         if(this.editor.isActive('codeBlock')){
-          this.editor.view.dispatch(this.editor.state.tr.insertText('    '));
+          this.editor.view.dispatch(this.editor.state.tr.insertText('\t'));
           return true;
         }
         // return this.editor.commands.indent();

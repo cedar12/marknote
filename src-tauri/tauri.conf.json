@@ -17,7 +17,9 @@
     },
     "updater": {
       "endpoints": [
+        "https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/updater/update.json",
         "https://ghproxy.com/https://github.com/cedar12/marknote/releases/download/updater/update.json",
+        "https://ghproxy.net/https://github.com/cedar12/marknote/releases/download/updater/update.json",
         "https://github.com/cedar12/marknote/releases/download/updater/update.json"
       ],
       "windows": {

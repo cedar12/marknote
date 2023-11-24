@@ -1,6 +1,23 @@
 <template>
   <NodeViewWrapper class="marknote-image">
-    <ElPopover trigger="click" placement="top" width="80%">
+    <div class="image-wrapper" contenteditable="false" v-show="isFocus()">
+        <div v-if="isEditable">
+          <ElScrollbar>
+          <span>![</span><AutoWidthInput v-model:value="altValue" @change="setImageAlt"/><span>](</span><AutoWidthInput v-model:value="value" @blur="setImageSrc"/><span>)</span>
+          </ElScrollbar>
+        </div>
+        <div v-else>
+          <span>![</span>{{altValue}}<span>](</span>{{value}}<span>)</span>
+        </div>
+    </div>
+    <el-image :src="imgSrc"  :alt="alt" :title="title" referrerpolicy="origin-when-cross-origin">
+      <template #error>
+        <div class="image-slot">
+          <el-icon><ImageFiles fill="#dfdfdf"/></el-icon>
+        </div>
+      </template>
+    </el-image>
+    <!-- <ElPopover trigger="click" placement="top" width="80%">
       
       <template #reference>
         <el-image :src="imgSrc"  :alt="alt" :title="title" referrerpolicy="origin-when-cross-origin">
@@ -10,21 +27,25 @@
             </div>
           </template>
         </el-image>
-        <!-- <img :src="src" :alt="alt" :title="title" /> -->
       </template>
       <div class="image-wrapper" >
-        <ElInput v-model="value" :disabled="!isEditable" @blur="setImageSrc" ></ElInput>
+        <div>
+          <ElScrollbar>
+          <span>![</span><AutoWidthInput v-model:value="altValue" @change="setImageAlt"/><span>](</span><AutoWidthInput v-model:value="value" @blur="setImageSrc"/><span>)</span>
+          </ElScrollbar>
+        </div>
       </div>
-    </ElPopover>
+    </ElPopover> -->
   </NodeViewWrapper>
 </template>
 <script lang="ts" setup>
 import { ref,onMounted,watch } from 'vue';
 import {ImageFiles} from '@icon-park/vue-next';
-import {ElInput,ElPopover,ElImage,ElIcon} from 'element-plus';
+import {ElImage,ElIcon,ElScrollbar} from 'element-plus';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
 import { convertFileSrc } from '@tauri-apps/api/primitives';
 import {useAppStore} from '../../store/app';
+import AutoWidthInput from '../../components/input/AutoWidthInput.vue';
 const appStroe=useAppStore();
 const props = defineProps(nodeViewProps);
 // ![图片](./vite.svg)
@@ -33,6 +54,7 @@ const {  src, alt, title, width, height } = props.node.attrs;
 
 const isEditable = ref(props.editor.isEditable);
 const value = ref(src || '');
+const altValue=ref(alt||'');
 
 const imgSrc=ref('');
 watch(()=>value.value,()=>{
@@ -46,10 +68,25 @@ watch(()=>value.value,()=>{
   // srcList.value[0]=imgSrc.value;
 })
 
+const isFocus=()=>{
+  
+  const {anchor}=props.editor.state.selection;
+  const node=props.node;
+  const pos=props.getPos();
+  //console.log(anchor,pos,node.nodeSize,node);
+  const is=props.editor.isActive('image')&&anchor == pos &&anchor <= pos + node.nodeSize-1;
+  //&&(anchor == pos && anchor <= pos + node.nodeSize )
+  // console.log(node,pos,anchor);
+  return is;
+}
+
 //const srcList=ref([imgSrc.value]);
 
 const setImageSrc=()=>{
   props.updateAttributes({src:value.value});
+}
+const setImageAlt=()=>{
+  props.updateAttributes({alt:altValue.value});
 }
 
 const isAbsolute=(path:string)=>{
@@ -80,6 +117,8 @@ onMounted(()=>{
     console.log(dir+value.value,convertFileSrc);
     imgSrc.value=convertFileSrc(dir+value.value);
   }
+
+  console.log(alt,altValue.value);
   // srcList.value[0]=imgSrc.value;
 })
 </script>

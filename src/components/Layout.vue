@@ -32,7 +32,7 @@ import {useAppStore} from '../store/app';
 import {readText,writeText} from '@tauri-apps/plugin-clipboard-manager';
 import {ElScrollbar} from 'element-plus';
 import Dialog from './dialog/index.vue';
-import {triggerPaste} from '../api/utils';
+// import {triggerPaste} from '../api/utils';
 
 const { t } = useI18n();
 const appStore=useAppStore();
@@ -86,7 +86,19 @@ const menuItems = ref<ContextMenuItem[]>([
       //   }
       // })
       editor.editor.commands.focus();
-      triggerPaste();
+      // triggerPaste();
+      window.navigator.clipboard.read().then(async c=>{
+        if(c.length==0)return;
+        const res=await c[0].getType('text/html');
+        // console.log(res);
+        return res.text();
+      }).then((res:any)=>{
+        // console.log(res);
+        if(res)
+        editor.editor.commands.insertContent(res);
+      }).catch(e=>{
+        console.error(e);
+      })
     }
   },
   {

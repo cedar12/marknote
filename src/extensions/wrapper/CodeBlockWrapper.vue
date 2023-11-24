@@ -1,8 +1,8 @@
 <template>
   <NodeViewWrapper class="marknote-codeblock" :class="{'marknote-mermaid':isMermaid()}" ref="wrapperRef">
     <!-- <div class="codeblock-wrapper" contenteditable="false" v-if="props.editor.isActive('codeBlock')&&isFocus()"> -->
-    <div class="codeblock-wrapper" contenteditable="false" >
-      <ElSelect clearable filterable size="small" v-model="value" placeholder=" " :style="{width:value==''?'40px':'110px'}"
+    <div class="codeblock-wrapper" contenteditable="false" v-show="isFocus()">
+      <ElSelect clearable filterable size="small" v-model="value" placeholder="    " 
         :disabled="!isEditable" @change="props.updateAttributes({ language: value })">
         <ElOption v-for="item in options()" :key="item" :label="item" :value="item"></ElOption>
       </ElSelect>
@@ -35,6 +35,8 @@ import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import {useI18n} from 'vue-i18n';
 import mermaid from 'mermaid';
 import { listen } from '@tauri-apps/api/event';
+
+
 
 const instance=getCurrentInstance();
 const {t}=useI18n();
@@ -76,6 +78,18 @@ const renderMermaid=async ()=>{
   }
 }
 
+const isFocus=()=>{
+  
+  const {anchor}=props.editor.state.selection;
+  const node=props.node;
+  const pos=props.getPos();
+  //console.log(anchor,pos,node.nodeSize,node);
+  const is=props.editor.isActive('codeBlock')&&anchor >= pos &&anchor <= pos + node.nodeSize-1;
+  //&&(anchor == pos && anchor <= pos + node.nodeSize )
+  // console.log(node,pos,anchor);
+  return is;
+}
+
 watch(()=>props.node.textContent,async ()=>{
   renderMermaid();
 });
@@ -98,7 +112,9 @@ onMounted(async ()=>{
 <style lang="scss">
 .marknote-codeblock {
   position: relative;
-
+  pre{
+    tab-size: var(--tabSize,4);
+  }
   .codeblock-wrapper {
     display: flex;
     justify-content: space-between;
@@ -108,9 +124,13 @@ onMounted(async ()=>{
     position: absolute;
     top: 0;
     .el-select {
+      margin-top: -0.4em;
       width: 110px;
       --el-select-border-color-hover: #ffffff00;
       --el-select-input-focus-border-color: #ffffff00;
+      .el-select__caret.el-select__icon{
+        opacity:0;
+      }
     }
     .el-input__wrapper{
       background-color: transparent;
@@ -121,7 +141,7 @@ onMounted(async ()=>{
     }
   }
   pre{
-    padding: 2em 1em;
+    padding: 1.2em 1em;
     white-space-collapse: unset;
     code {
       // padding: 2em 1em;

@@ -127,7 +127,11 @@ export const Link = BuiltInLink.extend({
             // }
             return false;
           },
-          handleDoubleClick() {
+          handleDoubleClick(_v,_p,e) {
+            if(e.target&&(e.target as HTMLElement).nodeName==='INPUT'){
+              e?.stopImmediatePropagation();
+              return false;
+            }
             const marks=editor.state.selection.$head.marks();
             console.log(marks);
             marks.forEach(mark=>{
