@@ -29,7 +29,7 @@ jobs:
         with:
           toolchain: stable
           target: ${{ matrix.arch }}
-      - run: yarn install --frozen-lockfile
+      - run: yarn
  
       - name: Build Tauri
         uses: tauri-apps/tauri-action@v0.4.3
@@ -58,7 +58,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - run: yarn install --frozen-lockfile
+      - run: yarn
   
       - name: Build Tauri
         uses: tauri-apps/tauri-action@v0
@@ -90,7 +90,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y javascriptcoregtk-4.1 libgtk-3-dev webkit2gtk-4.1 libappindicator3-dev librsvg2-dev patchelf libxdo-dev
-      - run: yarn install --frozen-lockfile
+      - run: yarn
   
       - name: Build Tauri
         uses: tauri-apps/tauri-action@v0
@@ -116,7 +116,7 @@ jobs:
         with:
           node-version: 22
  
-      - run: yarn install --frozen-lockfile
+      - run: yarn
  
       - name: Create Update
         run: yarn update
