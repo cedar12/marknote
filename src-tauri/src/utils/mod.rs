@@ -364,7 +364,7 @@ fn test_all_path()->anyhow::Result<()>{
 
 #[test]
 fn test_json_schema()->anyhow::Result<()>{
-  let str=fs::read_to_string("themes\\light.json")?;
+  let str=fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/themes/light.json"))?;
   // println!("{:?}",str);
   schema::validate(str.as_str()).unwrap();
   Ok(())

@@ -35,7 +35,7 @@ watch(editor, instance => editorStore.setEditor(instance), {immediate:true, flus
 onBeforeUnmount(() => editorStore.setEditor(undefined));
 
 const changeSegment = async (index:number, focusPosition:'start'|'end') => {
-  editorStore.showSegment(index, focusPosition);
+  await editorStore.showSegment(index, focusPosition);
   await nextTick();
   const scrollContainer=editor.value?.view.dom.closest('.el-scrollbar__wrap');
   scrollContainer?.scrollTo({top:0});
@@ -81,8 +81,12 @@ onMounted(()=>{
   // console.log('mount editor',editor);
 
   */
-  nextTick(()=>{
-    editorStore.flushPendingContent();
+  nextTick(async ()=>{
+    try {
+      await editorStore.flushPendingContent();
+    } catch {
+      return;
+    }
     editor.value?.commands.focus();
     editor.value?.on('update', editorStore.updateHeadings);
     editorStore.updateHeadings();

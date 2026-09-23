@@ -74,10 +74,10 @@ const events = {
   },
   async newFile(){
     const appStore = useAppStore();
-    await appStore.runAfterUnsavedCheck(()=>{
+    await appStore.runAfterUnsavedCheck(async ()=>{
       appStore.setFilepath(null);
       const editorStore=useEditorStore();
-      editorStore.setContent('');
+      await editorStore.setContent('');
       editorStore.focus();
     });
   },
@@ -92,7 +92,7 @@ const events = {
       const resp:any=await openFile(t('openFile'));
       if (resp.code === 0) {
         appStore.setFilepath(resp.info);
-        editorStore.setContent(resp.data);
+        await editorStore.setContent(resp.data);
       }
     }catch(e){
       // Closing the native file picker is a normal cancellation path.
@@ -448,7 +448,7 @@ async function readMarkdownFile(path:string){
     if (resp.code === 0) {
       const appStore = useAppStore();
       appStore.setFilepath(path);
-      editorStore.setContent(resp.data);
+      await editorStore.setContent(resp.data);
     }else{
       appLog.error(resp.info);
     }

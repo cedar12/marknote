@@ -106,6 +106,7 @@ fn main() {
             cmd::utils::platform,
             cmd::utils::themes,
             cmd::utils::build_info,
+            cmd::utils::render_markdown,
         ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())

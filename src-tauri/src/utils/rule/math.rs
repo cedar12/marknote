@@ -4,6 +4,7 @@
 //!
 //! <https://spec.commonmark.org/0.30/#code-fence>
 use markdown_it::parser::block::{BlockRule, BlockState};
+use markdown_it::parser::inline::{InlineRule, InlineState};
 use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
 
 #[derive(Debug)]
@@ -12,12 +13,12 @@ pub struct Math {
 }
 
 impl NodeValue for Math {
-    fn render(&self, node: &Node, fmt: &mut dyn Renderer) {
+    fn render(&self, _node: &Node, fmt: &mut dyn Renderer) {
         
         // let mut attrs = node.attrs.clone();
 
         fmt.cr();
-        fmt.open("span", &[("class",".katex-display".into())]);
+        fmt.open("span", &[("class","katex-display".into())]);
         //katex parser
         fmt.open("annotation", &[("encoding","application/x-tex".into())]);
         fmt.text(&self.content);
@@ -31,6 +32,66 @@ impl NodeValue for Math {
 
 pub fn add(md: &mut MarkdownIt) {
     md.block.add_rule::<MathScanner>();
+    md.inline.add_rule::<InlineMathScanner>();
+}
+
+#[derive(Debug)]
+pub struct InlineMath {
+    pub content: String,
+}
+
+impl NodeValue for InlineMath {
+    fn render(&self, _: &Node, fmt: &mut dyn Renderer) {
+        fmt.open("span", &[("class", "katex".into())]);
+        fmt.open("annotation", &[("encoding", "application/x-tex".into())]);
+        fmt.text(&self.content);
+        fmt.close("annotation");
+        fmt.close("span");
+    }
+}
+
+pub struct InlineMathScanner;
+
+impl InlineRule for InlineMathScanner {
+    const MARKER: char = '$';
+
+    fn run(state: &mut InlineState) -> Option<(Node, usize)> {
+        let input = &state.src[state.pos..state.pos_max];
+        if !input.starts_with('$') {
+            return None;
+        }
+        let display = input.starts_with("$$");
+        let marker = if display { "$$" } else { "$" };
+        let rest = &input[marker.len()..];
+        if rest.starts_with(char::is_whitespace) {
+            return None;
+        }
+        let mut escaped = false;
+        for (offset, ch) in rest.char_indices() {
+            if ch == '\n' { break; }
+            if escaped {
+                escaped = false;
+                continue;
+            }
+            if ch == '\\' {
+                escaped = true;
+                continue;
+            }
+            if rest[offset..].starts_with(marker) {
+                let content = &rest[..offset];
+                if content.is_empty() || content.ends_with(char::is_whitespace) {
+                    return None;
+                }
+                let node = if display {
+                    Node::new(Math { content: content.to_string() })
+                } else {
+                    Node::new(InlineMath { content: content.to_string() })
+                };
+                return Some((node, offset + marker.len() * 2));
+            }
+        }
+        None
+    }
 }
 
 
@@ -47,7 +108,7 @@ impl BlockRule for MathScanner {
         let mut next_line = state.line;
 
         let line=state.get_line(next_line).trim();
-        if !line.starts_with(marker){
+        if line != marker {
             return None;
         }
 
@@ -103,10 +164,13 @@ impl BlockRule for MathScanner {
             }
         }
 
+        if !have_end_marker {
+            return None;
+        }
+
         // If a fence has heading spaces, they should be removed from its inner block
         let indent = state.line_offsets[state.line].indent_nonspace;
         let (content, _) = state.get_lines(state.line + 1, next_line, indent as usize, true);
-        println!("{}",content);
         let node = Node::new(Math {
             content,
         });

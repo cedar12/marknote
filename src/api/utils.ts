@@ -19,6 +19,9 @@ export function openExplorer(path:string){
 export function buildInfo(){
   return invoke('build_info');
 }
+export function renderMarkdown(markdown: string): Promise<string> {
+  return invoke('render_markdown', { markdown });
+}
 export function triggerPaste(){
   return invoke('trigger_paste');
 }

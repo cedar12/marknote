@@ -16,7 +16,6 @@ export class MarkdownSerializer {
     }
 
     serialize(content) {
-        console.log('serialize',this.nodes);
         const state = new MarkdownSerializerState(this.nodes, this.marks, {
             hardBreakNodeName: HardBreak.name,
         });
@@ -71,4 +70,3 @@ export class MarkdownSerializer {
             : null
     }
 }
-

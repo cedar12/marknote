@@ -251,7 +251,7 @@ export const useAppStore = defineStore('app', {
             if (resp.code === 0) {
               const appStore = useAppStore();
               appStore.setFilepath(path);
-              editorStore.setContent(resp.data);
+              await editorStore.setContent(resp.data);
             }
           }else if(payload.length>1){
             let path=payload[1];
@@ -264,7 +264,7 @@ export const useAppStore = defineStore('app', {
             if (resp.code === 0) {
               const appStore = useAppStore();
               appStore.setFilepath(path);
-              editorStore.setContent(resp.data);
+              await editorStore.setContent(resp.data);
             }
             
           }
