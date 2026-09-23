@@ -18,10 +18,10 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
  
       - name: Install Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Install Rust stable
@@ -29,7 +29,7 @@ jobs:
         with:
           toolchain: stable
           target: ${{ matrix.arch }}
-      - run: yarn
+      - run: yarn install--frozen-lockfile
  
       - name: Build Tauri
         uses: tauri-apps/tauri-action@v0.4.3
@@ -48,17 +48,17 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
   
       - name: Install Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Install Rust stable
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - run: yarn
+      - run: yarn install--frozen-lockfile
   
       - name: Build Tauri
         uses: tauri-apps/tauri-action@v0
@@ -76,10 +76,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
   
       - name: Install Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Install Rust stable
@@ -90,7 +90,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y javascriptcoregtk-4.1 libgtk-3-dev webkit2gtk-4.1 libappindicator3-dev librsvg2-dev patchelf libxdo-dev
-      - run: yarn
+      - run: yarn install--frozen-lockfile
   
       - name: Build Tauri
         uses: tauri-apps/tauri-action@v0
@@ -109,14 +109,14 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
  
       - name: Install Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: 22
  
-      - run: yarn
+      - run: yarn install--frozen-lockfile
  
       - name: Create Update
         run: yarn update
