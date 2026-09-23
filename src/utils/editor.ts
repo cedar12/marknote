@@ -167,8 +167,6 @@ function createEditor() {
     },
 
   });
-  //@ts-ignore
-  window.editor = editor;
   return editor;
 }
 

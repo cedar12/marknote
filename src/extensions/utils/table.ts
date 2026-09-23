@@ -3,7 +3,7 @@ import { findParentNode } from '@tiptap/core';
 import { Node, ResolvedPos } from 'prosemirror-model';
 import { Selection, Transaction } from 'prosemirror-state';
 import { CellSelection, TableMap } from 'prosemirror-tables';
-import { EditorView } from 'prosemirror-view';
+import { EditorView } from '@tiptap/pm/view';
 
 export const isRectSelected = (rect: any) => (selection: CellSelection) => {
   const map = TableMap.get(selection.$anchorCell.node(-1));

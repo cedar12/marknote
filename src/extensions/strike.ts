@@ -1,7 +1,7 @@
 import { markInputRule, markPasteRule } from '@tiptap/core';
 import { Strike as BaseStrike } from '@tiptap/extension-strike';
 import { Plugin, PluginKey } from 'prosemirror-state';
-import { Decoration, DecorationSet } from 'prosemirror-view';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { findMarkPosition } from './utils/mark';
 
 export const inputRegex = /(?:^|\s)((?:~~)((?:[^~]+))(?:~~))$/

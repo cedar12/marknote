@@ -1,6 +1,6 @@
 use std::{path::Path, fs, time::Duration};
 
-use headless_chrome::{types::{PrintToPdfOptions, TransferMode}, LaunchOptions, Browser};
+use headless_chrome::{types::PrintToPdfOptions, LaunchOptions, Browser};
 use anyhow::{Result,anyhow};
 use log::{debug, info};
 use std::fmt::Debug;
@@ -64,6 +64,8 @@ pub fn pdf_options()->PrintToPdfOptions{
     paper_width:None,
     paper_height:None,
     transfer_mode:None,
+    generate_document_outline:None,
+    generate_tagged_pdf:None,
   }
 }
 
@@ -71,6 +73,7 @@ pub fn launch_options()->LaunchOptions<'static>{
   LaunchOptions{
     headless: true,
     sandbox: true,
+    devtools: false,
     enable_gpu: true,
     enable_logging: false,
     window_size: Some((1920, 1080)),
@@ -81,6 +84,7 @@ pub fn launch_options()->LaunchOptions<'static>{
     extensions:vec![],
     args:vec![],
     disable_default_args:false,
+    ignore_default_args:vec![],
     idle_browser_timeout:Duration::from_secs(3000),
     process_envs:None,
     proxy_server:None,

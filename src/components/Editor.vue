@@ -16,22 +16,23 @@
   <EditorContent :editor="editor" ></EditorContent>
 </template>
 <script lang="ts" setup> 
-import {onMounted,watch,nextTick} from 'vue';
+import {onBeforeUnmount,onMounted,watch,nextTick} from 'vue';
 import {EditorContent} from '@tiptap/vue-3';
 import {useEditorStore} from '../store/editor';
 import {useAppStore} from '../store/app';
 import { storeToRefs } from 'pinia';
 import Menu from '../extensions/menu/index.vue';
 import { useI18n } from 'vue-i18n';
+import { createEditor } from '../utils/editor';
 
-// import {createEditor} from '../utils/editor';
 const appStore=useAppStore();
 const editorStore=useEditorStore();
 const {t}=useI18n();
 
-// const editor=createEditor();
-
-const {editor,segmented,segmentIndex,segmentCount} = storeToRefs(editorStore);
+const editor=createEditor();
+const {segmented,segmentIndex,segmentCount} = storeToRefs(editorStore);
+watch(editor, instance => editorStore.setEditor(instance), {immediate:true, flush:'sync'});
+onBeforeUnmount(() => editorStore.setEditor(undefined));
 
 const changeSegment = async (index:number, focusPosition:'start'|'end') => {
   editorStore.showSegment(index, focusPosition);
@@ -81,7 +82,7 @@ onMounted(()=>{
 
   */
   nextTick(()=>{
-    // editorStore.setContent(content);
+    editorStore.flushPendingContent();
     editor.value?.commands.focus();
     editor.value?.on('update', editorStore.updateHeadings);
     editorStore.updateHeadings();

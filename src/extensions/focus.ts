@@ -1,7 +1,7 @@
 import { Extension } from '@tiptap/core';
 
 import { Plugin, PluginKey } from 'prosemirror-state';
-import { Decoration, DecorationSet } from 'prosemirror-view';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
 
 export interface FocusOptions {
   className: string;

@@ -1,6 +1,9 @@
 import { Editor } from '@tiptap/vue-3';
 import { EditorState } from '@tiptap/pm/state';
+import { DOMParser as ProseMirrorDOMParser } from '@tiptap/pm/model';
 import { defineStore } from 'pinia';
+import { shallowRef, type Ref } from 'vue';
+import * as appLog from '@tauri-apps/plugin-log';
 import {
   LARGE_FILE_THRESHOLD,
   preserveBoundaryNewlines,
@@ -9,6 +12,8 @@ import {
 } from '../utils/largeFile';
 
 export { LARGE_FILE_THRESHOLD } from '../utils/largeFile';
+
+const editorRef = shallowRef<Editor>();
 
 export interface Heading {
   level: number,
@@ -28,6 +33,7 @@ export const useEditorStore = defineStore('editor', {
     segments: string[],
     segmentIndex: number,
     segmentDirty: boolean,
+    pendingContent: string | null,
   } {
     return {
       codeTheme: localStorage.getItem('codeTheme') || 'nnfx-light',
@@ -38,13 +44,13 @@ export const useEditorStore = defineStore('editor', {
       segments: [],
       segmentIndex: 0,
       segmentDirty: false,
+      pendingContent: null,
     }
   },
 
   getters: {
     editor(): Editor {
-      // @ts-ignore
-      return window.editor?.value;
+      return editorRef.value as Editor;
     },
     segmentCount(): number {
       return this.segmented ? this.segments.length : 1;
@@ -52,18 +58,38 @@ export const useEditorStore = defineStore('editor', {
   },
 
   actions: {
+    setEditor(editor: Editor | undefined) {
+      editorRef.value = editor;
+    },
     replaceEditorDocument(content: string) {
-      if (!this.editor) return;
-      this.editor.commands.setContent(content, false);
-
-      // Segment changes are document changes, not user edits. Recreate plugin
-      // state so Undo cannot pull content from a previously visible segment.
+      const editor = this.editor;
+      if (!editor) {
+        appLog.error(`editor unavailable while loading ${content.length} characters`);
+        return;
+      }
+      const html = editor.storage.markdown.parser.parse(content);
+      const body = new window.DOMParser().parseFromString(`<body>${html}</body>`, 'text/html').body;
+      const doc = ProseMirrorDOMParser.fromSchema(editor.schema).parse(body);
+      doc.check();
+      // A newly opened file or segment needs fresh plugin history.
+      const current = editor.view.state;
       const state = EditorState.create({
-        schema: this.editor.state.schema,
-        doc: this.editor.state.doc,
-        plugins: this.editor.state.plugins,
+        schema: current.schema,
+        doc,
+        plugins: current.plugins,
       });
-      this.editor.view.updateState(state);
+      // Tiptap's Vue editor reads from reactiveState in dispatchTransaction.
+      // Keep it in sync before node views can dispatch while updateState runs.
+      (editor as unknown as { reactiveState: Ref<EditorState> }).reactiveState.value = state;
+      editor.view.updateState(state);
+    },
+
+    flushPendingContent() {
+      if (this.pendingContent === null || !this.editor) return;
+      const content = this.pendingContent;
+      this.replaceEditorDocument(content);
+      this.pendingContent = null;
+      this.updateHeadings();
     },
 
     setContent(content: string) {
@@ -72,8 +98,8 @@ export const useEditorStore = defineStore('editor', {
       this.segmentIndex = 0;
       this.segmentDirty = false;
       this.findVisbile = false;
-      this.replaceEditorDocument(this.segmented ? this.segments[0] : content);
-      this.updateHeadings();
+      this.pendingContent = this.segmented ? this.segments[0] : content;
+      this.flushPendingContent();
     },
 
     markCurrentSegmentEdited() {

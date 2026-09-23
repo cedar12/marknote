@@ -1,7 +1,7 @@
 import { markInputRule } from '@tiptap/core';
 import { Link as BuiltInLink } from '@tiptap/extension-link';
 import { Plugin, PluginKey } from 'prosemirror-state';
-import { Decoration, DecorationSet } from 'prosemirror-view';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { findMarkPosition } from './utils/mark';
 import LinkPopover from './wrapper/LinkPopover.vue';
 import {render,h} from 'vue';

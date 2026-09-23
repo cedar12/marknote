@@ -3,7 +3,7 @@ import BuiltInTable from '@tiptap/extension-table';
 import { Node as ProseMirrorNode } from 'prosemirror-model';
 import { Plugin, PluginKey } from 'prosemirror-state';
 import { tableNodeTypes } from 'prosemirror-tables';
-import { NodeView } from 'prosemirror-view';
+import { NodeView } from '@tiptap/pm/view';
 
 import TableTooltip from './wrapper/TableTooltip.vue';
 import {render,h} from 'vue';
