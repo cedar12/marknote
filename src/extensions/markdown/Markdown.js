@@ -3,6 +3,7 @@ import { MarkdownTightLists } from "./extensions/tiptap/tight-lists";
 import { MarkdownSerializer } from "./serialize/MarkdownSerializer";
 import { MarkdownParser } from "./parse/MarkdownParser";
 import { MarkdownClipboard } from "./extensions/tiptap/clipboard";
+import {elementFromString} from './util/dom';
 
 
 function _runTask(task,callback){
@@ -12,7 +13,7 @@ function _runTask(task,callback){
             task();
             callback();
         }else{
-            _runTask();
+            _runTask(task,callback);
         }
     });
 }
@@ -43,28 +44,47 @@ export const Markdown = Extension.create({
         const commands = extensions.Commands.config.addCommands();
         return {
             setContent: (content, emitUpdate, parseOptions) => (props) => {
-                console.log(content);
-                // debugger;
+                let s=Date.now();
                 const html=props.editor.storage.markdown.parser.parse(content);
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, "text/html");
-                // const items=doc.body.children;
-                // debugger;
-                // items.forEach(async (item)=>{
-                //     await runTask(()=>{
-                //         console.log(Date.now());
-                //         commands.insertContent(item,emitUpdate,parseOptions);
-                //     });
-                // });
-                
-                
-                console.log(doc);
+                console.log('解析耗时',Date.now()-s);
                 return commands.setContent(
                     html,
                     emitUpdate,
                     parseOptions
                 )(props);
-                // return true;
+            },
+            insertContentLazy:(content, emitUpdate, parseOptions)=>(props) =>{
+                console.log(content);
+                commands.setContent(
+                        '',
+                        emitUpdate,
+                        parseOptions
+                )(props);
+                // debugger;
+                // const parser = new DOMParser();
+                // setTimeout(()=>{
+                const html=props.editor.storage.markdown.parser.parse(content);
+                const doc=elementFromString(html);
+                const items=doc.children;
+                async function add(items,props){
+                    for (let i = 0; i < items.length; i++) {
+                        const item = items[i];
+                        const html=item.outerHTML;
+                        await runTask(()=>{
+                            console.log(html);
+                            commands.insertContent(html)(props);
+                        });
+                    }
+                }
+                add(items,props);
+                    // console.log(doc,doc.children);
+                // },100);
+                
+                // return commands.setContent(
+                //     '',
+                //     emitUpdate,
+                //     parseOptions
+                // )(props);
             },
             insertContentAt: (range, content, options) => (props) => {
                 return commands.insertContentAt(

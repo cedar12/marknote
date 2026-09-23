@@ -1,5 +1,5 @@
 <template>
-  <div class="marknote-layout">
+  <div class="marknote-layout" v-loading="appStore.exporting||editor.loading">
     <!-- <div class="layout-outliner" v-if="appStore.visible.outliner">
       <Outliner></Outliner>
     </div>
@@ -7,13 +7,13 @@
       <Folder></Folder>
     </div> -->
     <Sidebar></Sidebar>
-    <div class="layout-content" :class="`code-theme-${editor.codeTheme} ${appStore.exporting?'exporting':''}`" v-loading="appStore.exporting||editor.loading">
+    <div class="layout-content" :class="`code-theme-${editor.codeTheme} ${appStore.exporting?'exporting':''}`" >
       <ContextMenu :menu="menuItems">
         <ElScrollbar class="layout-scrollbar" height="calc(100vh - var(--titleBarHeight))">
           <Editor></Editor>
         </ElScrollbar>
       </ContextMenu>
-
+      <SearchAndReplace></SearchAndReplace>
     </div>
     <Dialog></Dialog>
   </div>
@@ -32,6 +32,7 @@ import {useAppStore} from '../store/app';
 import {readText,writeText} from '@tauri-apps/plugin-clipboard-manager';
 import {ElScrollbar} from 'element-plus';
 import Dialog from './dialog/index.vue';
+import SearchAndReplace from './SearchAndReplace.vue';
 // import {triggerPaste} from '../api/utils';
 
 const { t } = useI18n();

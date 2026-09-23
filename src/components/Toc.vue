@@ -2,16 +2,27 @@
 <template>
    <div class="marknote-outliner" v-if="editor">
         <div class="outliner-tree">
+          <div class="outliner-search">
+          <el-input
+            v-model="search"
+            size="small"
+            placeholder="过滤"
+            :suffix-icon="Search"
+            clearable
+          />
+          </div>
             <ElScrollbar height="100%">
-                  <div class="outliner-item" v-show="heading.show" v-for="(heading, index) in headings" :key="index">
-                    <span class="outliner-icon" @click="onClickIcon(heading)" :style="{marginLeft: (heading.level*10)+'px'}">
-                      <span style="width: 1em;height:1em;" v-if="headings.length-1===index||(heading.level>=headings[index+1].level)"></span>
-                      <Plus v-else-if="heading.status==='close'"/>
-                      <Minus v-else-if="heading.status==='open'"/>
-                    </span>
-                    <a class="outliner-hash"  :class="`level-${heading.level}`"  :href="`#${heading.id}`">
-                      {{ heading.text }}
-                    </a>
+                  <div class="outliner-item-container" v-show="heading.show" v-for="(heading, index) in headings" :key="index">
+                    <div class="outliner-item" v-if="search===''||heading.text.indexOf(search)>-1">
+                      <span class="outliner-icon" @click="onClickIcon(heading)" :style="{marginLeft: (heading.level*10)+'px'}">
+                        <span style="width: 1em;height:1em;" v-if="headings.length-1===index||(heading.level>=headings[index+1].level)"></span>
+                        <Plus v-else-if="heading.status==='close'"/>
+                        <Minus v-else-if="heading.status==='open'"/>
+                      </span>
+                      <a class="outliner-hash"  :class="`level-${heading.level}`"  :href="`#${heading.id}`">
+                        {{ heading.text }}
+                      </a>
+                    </div>
                   </div>
             </ElScrollbar>
         </div>
@@ -20,17 +31,17 @@
 </template>
   
 <script lang="ts" setup>
-// import { onMounted,nextTick,watch } from 'vue';
+import { ref } from 'vue';
 import { useEditorStore,Heading } from '../store/editor';
 // import { useAppStore } from '../store/app';
 import { storeToRefs } from 'pinia';
-import {ElScrollbar} from 'element-plus';
-import {Plus,Minus} from '@icon-park/vue-next';
+import {ElScrollbar,ElInput} from 'element-plus';
+import {Plus,Minus,Search} from '@icon-park/vue-next';
 
 // const appStore=useAppStore();
 const editorStore = useEditorStore();
 const { editor,headings } = storeToRefs(editorStore);
-
+const search=ref('');
 // const headings = ref<Heading[]>([]);
 /*
 function handleUpdate() {
@@ -120,6 +131,17 @@ const showChild=(heading:Heading,show:boolean)=>{
     --el-fill-color-light: var(--primaryBackgroundColorHover);
     --el-fill-color-blank: var(--primaryBackgroundColor);
     --el-text-color-regular: var(--primaryTextColor);
+    .outliner-search{
+      padding-right: 8px;
+      .el-input__wrapper{
+        box-shadow:none;
+      }
+      .i-icon.i-icon-search{
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      }
+    }
     .outliner-tree{
         height: calc(100vh - var(--titleBarHeight));
         overflow: hidden;

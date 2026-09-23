@@ -7,7 +7,7 @@ shadow_rs::shadow!(build);
 
 use std::{sync::Mutex, collections::HashMap};
 
-use tauri::{Manager, Window};
+use tauri::Manager;
 use tauri_plugin_log::{TargetKind, Target};
 
 use crate::utils::{set_shadow, IS_MACOS};
@@ -69,12 +69,12 @@ fn main() {
                     app.state::<OpenedUrls>().0.lock().unwrap().replace(urls);
                 }
             }
-            let window = app.get_window("main").unwrap();
+            let window = app.get_webview_window("main").unwrap();
             
             window.set_decorations(IS_MACOS).unwrap();
             #[cfg(debug_assertions)]
             window.open_devtools();
-            set_shadow(app.get_window("main").unwrap());
+            set_shadow(app.get_webview_window("main").unwrap());
             Ok(())
         })
         .on_page_load(|window,_|{
@@ -106,16 +106,13 @@ fn main() {
             cmd::utils::platform,
             cmd::utils::themes,
             cmd::utils::build_info,
-            cmd::utils::trigger_paste,
         ])
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_window::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_app::init())
         .plugin(tauri_plugin_log::Builder::default().targets([
             Target::new(TargetKind::LogDir{file_name:Some("marknote".into())}),
             Target::new(TargetKind::Stdout),

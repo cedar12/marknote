@@ -1,14 +1,13 @@
 {
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "MarkNote",
+  "version": "../package.json",
+  "identifier": "com.github.marknote",
   "build": {
     "beforeBuildCommand": "yarn build",
     "beforeDevCommand": "yarn dev",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist",
-    "withGlobalTauri": false
-  },
-  "package": {
-    "productName": "MarkNote",
-    "version": "../package.json"
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
   },
   "plugins": {
     "shell": {
@@ -22,48 +21,14 @@
         "https://ghproxy.net/https://github.com/cedar12/marknote/releases/download/updater/update.json",
         "https://github.com/cedar12/marknote/releases/download/updater/update.json"
       ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM2MUE1NDQyQTJDNkFBREIKUldUYnFzYWlRbFFhTmtJU3NoL1o3UVp4ZERqbEV0SXNQaFVBUDZSUVR4Y1Y0ejJLRFdqMkZLQnUK",
       "windows": {
-        "installerArgs": []
+        "installMode": "passive"
       }
     }
   },
-  "tauri": {
-    "bundle": {
-      "active": true,
-      "fileAssociations": [{
-        "ext": ["md","markdown"],
-        "name": "Markdown document",
-        "role": "Editor"
-      }],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.github.marknote",
-      "targets": "all",
-      "updater": {
-        "active": true,
-        "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM2MUE1NDQyQTJDNkFBREIKUldUYnFzYWlRbFFhTmtJU3NoL1o3UVp4ZERqbEV0SXNQaFVBUDZSUVR4Y1Y0ejJLRFdqMkZLQnUK",
-        "windows": {
-          "installMode": "passive"
-        }
-      },
-      "windows": {
-        "nsis": {
-          "displayLanguageSelector": true,
-          "languages": [
-            "SimpChinese",
-            "English"
-          ]
-        }
-      },
-      "resources": [
-        "themes/*"
-      ]
-    },
+  "app": {
+    "withGlobalTauri": false,
     "security": {
       "assetProtocol": {
         "enable": true,
@@ -87,8 +52,37 @@
         "titleBarStyle": "Overlay",
         "visible": false,
         "width": 800,
-        "fileDropEnabled": true
+        "dragDropEnabled": true
       }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": "v1Compatible",
+    "fileAssociations": [{
+      "ext": ["md","markdown"],
+      "name": "Markdown document",
+      "role": "Editor"
+    }],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "targets": "all",
+    "windows": {
+      "nsis": {
+        "displayLanguageSelector": true,
+        "languages": [
+          "SimpChinese",
+          "English"
+        ]
+      }
+    },
+    "resources": [
+      "themes/*"
     ]
   }
 }

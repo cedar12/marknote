@@ -5,6 +5,9 @@ import { Plugin, PluginKey } from 'prosemirror-state';
 import { tableNodeTypes } from 'prosemirror-tables';
 import { NodeView } from 'prosemirror-view';
 
+import TableTooltip from './wrapper/TableTooltip.vue';
+import {render,h} from 'vue';
+
 function updateColumns(
   node: ProseMirrorNode,
   colgroup: Element,
@@ -78,7 +81,12 @@ class TableView implements NodeView {
     this.node = node;
     this.cellMinWidth = cellMinWidth;
     this.dom = document.createElement('div');
-    this.dom.className = 'tableWrapper';
+    this.dom.className = 'marknote-table tableWrapper';
+
+    const tooltip=document.createElement('div');
+    tooltip.className='marknote-table-tooltip';
+    render(h(TableTooltip),tooltip);
+    this.dom.appendChild(tooltip);
 
     this.scrollDom = document.createElement('div');
     this.scrollDom.className = 'scrollWrapper';

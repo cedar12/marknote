@@ -3,12 +3,12 @@ import { defineStore } from 'pinia'
 import { useEditorStore } from './editor';
 import { useAppStore } from './app';
 
-import { getCurrent } from '@tauri-apps/api/window'
-import { ask,confirm, open,save } from '@tauri-apps/plugin-dialog';
+import { getCurrentWindow } from '@tauri-apps/api/window'
+import { ask, open,save } from '@tauri-apps/plugin-dialog';
 import * as appLog from '@tauri-apps/plugin-log';
 import { exit } from '@tauri-apps/plugin-process';
-import {openFile,saveAs} from '../api/dialog';
-import {exportHTML, exportImage,exportPDF, read} from '../api/file';
+import {openFile} from '../api/dialog';
+import {exportHTML, exportImage,exportPDF, read,readToHTML} from '../api/file';
 import i18n from '../i18n';
 import { openAbout, openPreferences, openWindow } from '../api/window';
 import {
@@ -21,7 +21,7 @@ import {toImage,handleHtml} from '../utils';
 import { nextTick } from 'vue';
 import html2canvas from 'html2canvas';
 
-const appWindow=getCurrent();
+const appWindow=getCurrentWindow();
 // @ts-ignore
 const { t } = i18n.global;
 
@@ -72,29 +72,36 @@ const events = {
     const appStore = useAppStore();
     appStore.closeWindow();
   },
-  newFile(){
+  async newFile(){
     const appStore = useAppStore();
-    appStore.setFilepath(null);
-    const editorStore=useEditorStore();
-    editorStore.editor.commands.clearContent(false);
-    editorStore.editor.commands.focus();
+    await appStore.runAfterUnsavedCheck(()=>{
+      appStore.setFilepath(null);
+      const editorStore=useEditorStore();
+      editorStore.setContent('');
+      editorStore.focus();
+    });
   },
-  openFile() {
+  async openFile() {
+    const appStore=useAppStore();
+    if(!await appStore.guardUnsavedChanges()){
+      return;
+    }
     const editorStore=useEditorStore();
     editorStore.loading=true;
-    // @ts-ignore
-    const title=t('openFile');
-    openFile(title).then((resp:any)=>{
+    try{
+      const resp:any=await openFile(t('openFile'));
       if (resp.code === 0) {
-        const appStore = useAppStore();
         appStore.setFilepath(resp.info);
-        // editorStore.content = resp.data;
         editorStore.setContent(resp.data);
-        editorStore.loading=false;
-      } 
-   }).catch(()=>{
-    editorStore.loading=false;
-   });
+      }
+    }catch(e){
+      // Closing the native file picker is a normal cancellation path.
+      if(String(e||'').trim()){
+        appLog.error(`open file failed: ${String(e)}`);
+      }
+    }finally{
+      editorStore.loading=false;
+    }
   },
   openFolder(){
     async function dir() {
@@ -127,16 +134,9 @@ const events = {
     appStore.save();
 
   },
-  saveAs() {
-    const editorStore = useEditorStore();
+  async saveAs() {
     const appStore = useAppStore();
-    // @ts-ignore
-    saveAs( editorStore.editor?.storage.markdown.getMarkdown(),t('saveAs')).then((res:any) => { 
-      if(res.code===0){
-        appStore.setFilepath(res.info);
-      }
-    }).catch(e => console.error(e));
-
+    await appStore.save(true);
   },
   openExplorer(){
     const appStore = useAppStore();
@@ -268,7 +268,7 @@ const events = {
     }).then((res:any)=>{
       // console.log(res);
       if(res)
-      editor.editor.commands.insertContent(res);
+      editorStore.editor.commands.insertContent(res);
     }).catch(e=>{
       console.error(e);
     })
@@ -278,6 +278,12 @@ const events = {
     editorStore.editor?.commands.focus();
     editorStore.editor?.commands.selectAll();
   },
+
+  find(){
+    console.log('find...');
+    const editorStore=useEditorStore();
+    editorStore.findVisbile=true;
+  },
   
   sidebar(item:Menu){
     const appStore=useAppStore();
@@ -285,8 +291,11 @@ const events = {
     // appStore.visible.folder=item.checked||false;
   },
 
-  quit() {
-    exit();
+  async quit() {
+    const appStore=useAppStore();
+    if(await appStore.guardUnsavedChanges()){
+      await exit();
+    }
   },
 
   about(){
@@ -412,7 +421,7 @@ const events = {
     }
   },
 
-  '*':(item:Menu)=>{
+  '*':async (item:Menu)=>{
     if(/^heading([1-6])$/.test(item.key)){
       //@ts-ignore
       const level=/^heading([1-6])$/.exec(item.key)[1];
@@ -420,19 +429,9 @@ const events = {
       editorStore.editor.commands.toggleHeading({level:parseInt(level) as any});
     }else if(item.key.startsWith('recent_')){
       const key=item.key.substring(7);
-      const appStroe=useAppStore();
-      if(!appStroe.isSave){
-        confirm(t('closeTip'), {title:t('closeTitleTip'),cancelLabel:t('save'),okLabel:t('giveUp')}).then(yes=>{
-          // console.log('confirm',yes);
-          if(yes===false){
-            appStroe.save();
-          }else{
-            readMarkdownFile(key);
-          }
-        });
-        
-      }else{
-        readMarkdownFile(key);
+      const appStore=useAppStore();
+      if(await appStore.guardUnsavedChanges()){
+        await readMarkdownFile(key);
       }
       
     }
@@ -441,20 +440,23 @@ const events = {
 }
 
 
-function readMarkdownFile(path:string){
+async function readMarkdownFile(path:string){
   const editorStore=useEditorStore();
   editorStore.loading=true;
-  read(path).then((resp:any)=>{
+  try{
+    const resp:any=await read(path);
     if (resp.code === 0) {
-      console.log(resp.data);
       const appStore = useAppStore();
       appStore.setFilepath(path);
       editorStore.setContent(resp.data);
     }else{
       appLog.error(resp.info);
     }
+  }catch(e){
+    if(String(e||'').trim()){
+      appLog.error(`read file failed: ${String(e)}`);
+    }
+  }finally{
     editorStore.loading=false;
-  }).catch(()=>{
-    editorStore.loading=false;
-  });
+  }
 }

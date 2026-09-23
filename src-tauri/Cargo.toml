@@ -1,6 +1,6 @@
 [package]
 name = "marknote"
-version = "0.0.7"
+version = "0.0.8"
 description = "MarkNote"
 authors = ["cedar12.zxd@qq.com"]
 license = "MIT"
@@ -10,20 +10,18 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-alpha.10", features = [] }
+tauri-build = { version = "2", features = [] }
 shadow-rs = "0.24.1"
 
 [dependencies]
-tauri = { version = "2.0.0-alpha.16", features = ["protocol-asset"] }
-tauri-plugin-dialog = "2.0.0-alpha.2"
-tauri-plugin-window="2.0.0-alpha.2"
-tauri-plugin-notification = "2.0.0-alpha.4"
-tauri-plugin-updater = "2.0.0-alpha.2"
-tauri-plugin-process = "2.0.0-alpha.2"
-tauri-plugin-app = "2.0.0-alpha.2"
-tauri-plugin-clipboard-manager = "2.0.0-alpha.4"
-tauri-plugin-shell = "2.0.0-alpha.2"
-tauri-plugin-log = { version = "2.0.0-alpha.4" }
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-notification = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+tauri-plugin-clipboard-manager = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-log = "2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 base64 = "0.21.0"
@@ -44,12 +42,11 @@ jsonschema = "0.17.1"
 headless_chrome = "1.0"
 regex = "1.5.4"
 shadow-rs = "0.24.1"
-enigo = "0.1.3"
 markdown-it = "0.6.0"
 markdown-it-tasklist = "0.2.0"
 
 [target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
-tauri-plugin-global-shortcut = "2.0.0-alpha"
+tauri-plugin-global-shortcut = "2"
 
 #[target.'cfg(windows)'.dependencies]
 [features]

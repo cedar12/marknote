@@ -2,11 +2,11 @@
   <NodeViewWrapper class="marknote-codeblock" :class="{'marknote-mermaid':isMermaid()}" ref="wrapperRef">
     <!-- <div class="codeblock-wrapper" contenteditable="false" v-if="props.editor.isActive('codeBlock')&&isFocus()"> -->
     <div class="codeblock-wrapper" contenteditable="false" v-show="isFocus()">
-      <ElSelect clearable filterable size="small" v-model="value" placeholder="    " 
+      <ElSelect class="left-wrapper" clearable filterable size="small" v-model="value" placeholder="    " 
         :disabled="!isEditable" @change="props.updateAttributes({ language: value })">
         <ElOption v-for="item in options()" :key="item" :label="item" :value="item"></ElOption>
       </ElSelect>
-      <div>
+      <div class="right-wrapper">
         <ElTooltip size="small " :content="t('code')" v-if="isMermaid()">
           <ElButton size="small" @click="showCode=!showCode" tabindex="-1">
               <Code></Code>
@@ -123,6 +123,16 @@ onMounted(async ()=>{
     padding: 4px 4px 0 4px;
     position: absolute;
     top: 0;
+    height:0px;
+    .left-wrapper{
+      position:absolute;
+      
+      height: 20px !important;
+    }
+    .right-wrapper{
+      position:absolute;
+      right:4px;
+    }
     .el-select {
       margin-top: -0.4em;
       width: 110px;
@@ -141,7 +151,7 @@ onMounted(async ()=>{
     }
   }
   pre{
-    padding: 1.2em 1em;
+    padding: 14px 1em;
     white-space-collapse: unset;
     code {
       // padding: 2em 1em;

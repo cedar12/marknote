@@ -33,11 +33,11 @@
 <script lang=ts setup>
 import {ref,watch,onBeforeMount} from 'vue';
 import {useAppStore} from '../store/app';
-import { getCurrent } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { getName,getVersion,getTauriVersion } from '@tauri-apps/api/app';
 import {Close} from '@icon-park/vue-next';
 import {buildInfo} from '../api/utils';
-const appWindow=getCurrent();
+const appWindow=getCurrentWindow();
 
 const appStore=useAppStore();
 appStore.init();

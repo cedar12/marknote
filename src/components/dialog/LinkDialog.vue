@@ -7,9 +7,9 @@
 <script lang="ts" setup>
 import {ElDialog,ElInput} from 'element-plus';
 import {ref} from 'vue';
-import { getCurrent } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import {useI18n} from 'vue-i18n';
-const appWindow=getCurrent();
+const appWindow=getCurrentWindow();
 const {t}=useI18n();
 const visible=ref(false);
 const value=ref<string|null>(null);

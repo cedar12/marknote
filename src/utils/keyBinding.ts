@@ -1,13 +1,14 @@
 import hotkeys, { HotkeysEvent } from 'hotkeys-js';
 import {useAppStore} from '../store/app';
 import * as globalShortcut from '@tauri-apps/plugin-global-shortcut';
-import {getCurrent,Window} from '@tauri-apps/plugin-window';
+import {getCurrentWindow, Window} from '@tauri-apps/api/window';
 
 export interface KeyBinding{
   description:string[],
   key:string,
   replace?:string,
   system?:boolean,
+  prevent?:boolean,
 }
 
 const defaultKeyBinding:KeyBinding[]=[
@@ -68,6 +69,15 @@ const defaultKeyBinding:KeyBinding[]=[
   {
     description:['edit','selectAll'],
     key:'Mod+A',
+  },
+  {
+    description:['edit','find'],
+    key:'Mod+F',
+    prevent:true,
+  },
+  {
+    description:['edit','replace'],
+    key:'Mod+Shift+F',
   },
   {
     description:['format','bold'],
@@ -181,16 +191,16 @@ export class KeyBindingBuilder{
       
       keys.push(event.key);
       const key = keys.join('+').toLocaleLowerCase();
-      
+      // debugger;
       const bind=binds.find(b=>b.key.replace(/Mod/g,appStore.platform === 'macos' ? 'command' : 'ctrl').toLocaleLowerCase()==key);
-      if(((Date.now()-this.preTime>200&&key==this.preKey)||key!==this.preKey)&&bind&&contrlScopes.includes(bind.description[0])){
-        // debugger;
+      // if(bind?.prevent===true)
+      if(((Date.now()-this.preTime>200&&key==this.preKey)||key!==this.preKey)&&bind&&(bind.prevent===true||contrlScopes.includes(bind.description[0]))){
+        
         console.log('handleKeyDown',event,key);
         this.preKey=key;
         this.preTime=Date.now();
         event.preventDefault();
-        hotkeys.trigger(key, 'file');
-        hotkeys.trigger(key, 'view');
+        hotkeys.trigger(key, bind.description[0]);
       }
       
       return !(tagName == 'INPUT' || tagName == 'SELECT' || tagName == 'TEXTAREA');
@@ -226,7 +236,7 @@ export class KeyBindingBuilder{
         globalShortcut.register(key,async ()=>{
           if(this.fn){
             const focused=await Window.getFocusedWindow();
-            if(focused&&focused.label===getCurrent().label){
+            if(focused&&focused.label===getCurrentWindow().label){
               this.fn(bind);
             }
             

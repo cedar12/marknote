@@ -1259,19 +1259,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "enigo"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "802e4b2ae123615659085369b453cba87c5562e46ed8050a909fee18a9bc3157"
-dependencies = [
- "core-graphics 0.23.1",
- "libc",
- "objc",
- "pkg-config",
- "windows 0.51.1",
-]
-
-[[package]]
 name = "entities"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2861,14 +2848,13 @@ dependencies = [
 
 [[package]]
 name = "marknote"
-version = "0.0.7"
+version = "0.0.8"
 dependencies = [
  "anyhow",
  "base64",
  "chrono",
  "cron",
  "dirs-next",
- "enigo",
  "headless_chrome",
  "image",
  "jsonschema",
