@@ -89,6 +89,7 @@ fn main() {
             cmd::file::export_html,
             cmd::file::export_image,
             cmd::file::export_pdf,
+            cmd::file::export_word,
             cmd::file::ls_md,
             cmd::dialog::save_as_md,
             cmd::dialog::open_file,

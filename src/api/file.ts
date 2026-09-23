@@ -29,6 +29,9 @@ export function exportImage(path:string,base64:string){
 export function exportPDF(path:string,html:string){
   return invoke('export_pdf', { path,html});
 }
+export function exportWord(path:string,markdown:string,sourcePath:string|null){
+  return invoke('export_word', { path,markdown,sourcePath });
+}
 
 
 export function ls(path:string){

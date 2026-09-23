@@ -42,7 +42,7 @@ No separate PRD, ADR, permission policy, retention policy, billing flow, or lega
 | New document | File menu | unsaved guard | blank editor | title resets | current document remains | editor | `src/store/menu.ts` |
 | Open document | picker, recent item, folder item | unsaved guard + loading | selected document | title/path update | current document remains | editor | menu/folder stores |
 | Save | menu, shortcut, auto-save | one serialized save | current editor | saved state | document remains dirty; error dialog | editor | `src/store/app.ts` |
-| Navigate large file | segment bar | commit current segment, reset segment history | adjacent WYSIWYG segment | segment position updates | current segment remains visible | editor | `src/store/editor.ts` |
+| Navigate large file | segment bar buttons or user scrolling at an edge, according to preference | commit current segment, reset segment history | adjacent WYSIWYG segment | segment position updates | current segment remains visible | editor | `src/store/editor.ts` |
 | Close/quit | window or menu | unsaved guard | application/window closes | platform close | cancellation keeps window open | editor | `src/store/app.ts` |
 
 ## Navigation and responsive behavior
@@ -62,6 +62,7 @@ No separate PRD, ADR, permission policy, retention policy, billing flow, or lega
 - File saves are pessimistic and serialized; only the revision actually written may become saved.
 - Files at or above 512 KiB are split at safe Markdown block boundaries. Only the current segment enters the WYSIWYG document; untouched segments retain their original Markdown and are joined during save.
 - Segment navigation commits an edited segment before loading the next one and resets editor plugin history so Undo cannot cross document segments.
+- Segment navigation defaults to Previous/Next buttons. The alternate setting switches on a downward scroll at the bottom or an upward scroll at the top. It responds to wheel, touch, Page Up/Down, and scrollbar input, not programmatic editor scrolling; it is saved across windows. The next segment opens at its top, and the previous segment opens at its bottom.
 - Auto-save waits 600ms after the latest edit and shares the manual-save queue.
 - Duplicate saves wait for the active save instead of racing it.
 - Failed and cancelled saves never permit a guarded document transition.

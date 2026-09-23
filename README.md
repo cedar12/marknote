@@ -16,7 +16,7 @@
 - 文档字符和单词统计
 - 支持从剪贴板粘贴图像和拖动外部图像进行插入
 - Markdown 扩展，如数学表达式（KaTeX）和Mermaid图表
-- 支持导出图像、HTML 和 PDF 文档
+- 支持导出图像、HTML、PDF 和 Word（.docx）文档
 - 支持图床[PicGO](https://molunerfinn.com/PicGo/)
 
 # 界面

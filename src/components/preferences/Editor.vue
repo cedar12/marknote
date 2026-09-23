@@ -21,13 +21,25 @@
         </ElSelect>
       </div>
     </div>
+    <div class="preferences-item">
+      <div class="header">
+        <span>{{ t('segmentNavigationMode') }}</span>
+      </div>
+      <div class="content">
+        <ElSelect v-model="preferencesStore.editor.segmentNavigationMode" :aria-label="t('segmentNavigationMode')" @change="onChangeSegmentNavigationMode">
+          <ElOption :label="t('segmentNavigationButtons')" value="buttons"></ElOption>
+          <ElOption :label="t('segmentNavigationScroll')" value="scroll"></ElOption>
+        </ElSelect>
+        <div class="segment-navigation-tip">{{ t('segmentNavigationHint') }}</div>
+      </div>
+    </div>
     
   </div>
 </template>
 <script lang="ts" setup>
 import {useAppStore} from '../../store/app';
 import {useEditorStore} from '../../store/editor';
-import {usePreferencesStore} from '../../store/preferences';
+import {usePreferencesStore, type SegmentNavigationMode} from '../../store/preferences';
 import {useI18n} from 'vue-i18n';
 import {ElSelect,ElOption} from 'element-plus';
 
@@ -51,8 +63,19 @@ const onChange=(value:any)=>{
 const onChangeTabSize=()=>{
   appStore.emit('tabSize',preferencesStore.editor.tabSize);
 }
+
+const onChangeSegmentNavigationMode=(mode:SegmentNavigationMode)=>{
+  preferencesStore.setSegmentNavigationMode(mode);
+  appStore.emit('segmentNavigationMode',mode);
+}
 </script>
 <style lang="scss">
 .preferences-markdown{
+  .segment-navigation-tip{
+    padding-top: 8px;
+    color: var(--contentTextColor);
+    font-size: 12px;
+    line-height: 1.5;
+  }
 }
 </style>

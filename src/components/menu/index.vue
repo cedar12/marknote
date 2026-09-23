@@ -154,6 +154,10 @@ const loadMenuData=()=>{
             {
               label: 'PDF',
               key: 'exportPdf',
+            },
+            {
+              label: t('word'),
+              key: 'exportWord',
             }
           ]
         },

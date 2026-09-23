@@ -4,11 +4,11 @@ import { useEditorStore } from './editor';
 import { useAppStore } from './app';
 
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { ask, open,save } from '@tauri-apps/plugin-dialog';
+import { ask, message, open,save } from '@tauri-apps/plugin-dialog';
 import * as appLog from '@tauri-apps/plugin-log';
 import { exit } from '@tauri-apps/plugin-process';
 import {openFile} from '../api/dialog';
-import {exportHTML, exportImage,exportPDF, read,readToHTML} from '../api/file';
+import {exportHTML, exportImage,exportPDF, exportWord, read,readToHTML} from '../api/file';
 import i18n from '../i18n';
 import { openAbout, openPreferences, openWindow } from '../api/window';
 import {
@@ -193,6 +193,36 @@ const events = {
         }
       }
     });
+  },
+  async exportWord(){
+    const title=`${t('export')} ${t('word')}`;
+    try{
+      const path=await save({
+        title,
+        filters:[{name:t('word'),extensions:['docx']}]
+      });
+      if(!path)return;
+
+      const editorStore=useEditorStore();
+      const markdown=editorStore.getMarkdown();
+      if(typeof markdown!=='string'){
+        throw new Error(t('documentNotReady'));
+      }
+      const appStore=useAppStore();
+      const response:any=await exportWord(path,markdown,appStore.filepath);
+      if(!response || response.code!==0){
+        throw new Error(response?.info || t('exportFailed'));
+      }
+      sendNotification(title,path);
+    }catch(error){
+      const details=String(error||t('exportFailed'));
+      appLog.error(`Word export failed: ${details}`);
+      try{
+        await message(details,t('exportFailed'));
+      }catch(dialogError){
+        appLog.error(`Word export error dialog failed: ${String(dialogError)}`);
+      }
+    }
   },
   image(){
     save({

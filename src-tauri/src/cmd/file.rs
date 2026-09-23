@@ -212,3 +212,19 @@ pub async fn export_pdf(
         }
     }
 }
+
+#[tauri::command]
+pub async fn export_word(
+    path: String,
+    markdown: String,
+    source_path: Option<String>,
+) -> Result<resp::Resp<String>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let bytes = utils::docx::markdown_to_docx(&markdown, source_path.as_deref())
+            .map_err(|error| error.to_string())?;
+        write_file_safely(&path, &bytes).map_err(|error| error.to_string())?;
+        Ok(resp::ok(path, None))
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}

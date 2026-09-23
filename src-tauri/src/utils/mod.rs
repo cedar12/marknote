@@ -20,6 +20,7 @@ pub use constant::*;
 pub mod schema;
 pub mod pdf;
 pub mod md;
+pub mod docx;
 
 pub mod rule;
 

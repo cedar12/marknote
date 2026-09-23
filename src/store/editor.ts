@@ -148,8 +148,8 @@ export const useEditorStore = defineStore('editor', {
       this.segmentDirty = false;
     },
 
-    async showSegment(index: number, focusPosition: 'start' | 'end' = 'start') {
-      if (!this.segmented || index < 0 || index >= this.segments.length || index === this.segmentIndex) return;
+    async showSegment(index: number, focusPosition: 'start' | 'end' = 'start'): Promise<boolean> {
+      if (!this.segmented || index < 0 || index >= this.segments.length || index === this.segmentIndex) return false;
       const version = ++this.renderVersion;
       let body: HTMLElement;
       try {
@@ -158,15 +158,16 @@ export const useEditorStore = defineStore('editor', {
         if (version === this.renderVersion) {
           appLog.error(`segment rendering failed: ${String(error)}`);
         }
-        return;
+        return false;
       }
-      if (version !== this.renderVersion || !this.editor || !this.segmented) return;
+      if (version !== this.renderVersion || !this.editor || !this.segmented) return false;
       this.commitCurrentSegment();
       this.segmentIndex = index;
       this.segmentDirty = false;
       this.replaceEditorDocument(body);
       this.updateHeadings();
       this.editor?.commands.focus(focusPosition);
+      return true;
     },
 
     getMarkdown(): string | undefined {
