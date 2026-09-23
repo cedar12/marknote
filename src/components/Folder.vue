@@ -1,7 +1,16 @@
 <template>
 <div class="folder-container">
-  <ElScrollbar style="height:100%;">
-    <el-tree :key="appStore.folder||undefined" ref="tree" :load="loadNode" lazy :data="treeData" node-key="path" :props="props" empty-text="" @node-click="nodeClick" v-loading="loading">
+  <div class="folder-search">
+    <el-input
+      v-model="filterText"
+      size="small"
+      placeholder="过滤"
+      :suffix-icon="Search"
+      clearable
+    />
+  </div>
+  <ElScrollbar style="height:calc(100% - 30px);">
+    <el-tree  :key="appStore.folder||undefined" ref="treeRef" :load="loadNode" lazy :data="treeData" node-key="path" :props="props" empty-text="" @node-click="nodeClick" v-loading="loading" :filter-node-method="filterNode">
       <template #empty>
         <!-- <ElButton size="">打开文件夹</ElButton> -->
       </template>
@@ -20,10 +29,11 @@
 </div>
 </template>
 <script lang="ts" setup>
-import {onMounted,ref} from 'vue';
+// @ts-nocheck
+import {onMounted,ref,watch} from 'vue';
 import { ls, read } from '../api/file';
-import {ElTree,ElScrollbar} from 'element-plus';
-import {FolderClose,FolderOpen} from '@icon-park/vue-next';
+import {ElTree,ElScrollbar,ElInput} from 'element-plus';
+import {FolderClose,FolderOpen,Search} from '@icon-park/vue-next';
 import type Node from 'element-plus/es/components/tree/src/model/node';
 import {useEditorStore} from '../store/editor';
 import {useAppStore} from '../store/app';
@@ -47,6 +57,21 @@ const props = {
 
 const treeData=ref<Tree[]>([]);
 const loading=ref(false);
+const treeRef=ref();
+
+const filterText = ref('');
+
+watch(()=>filterText.value, (val) => {
+  // console.log(treeRef);
+  treeRef.value!.filter(val)
+})
+
+
+const filterNode = (value: string, data: Tree,_child: Node) => {
+  if (!value) return true
+  // console.log(data);
+  return data.name.includes(value)
+}
 
 
 async function loadDirData(root:string):Promise<Tree[]>{
@@ -87,13 +112,19 @@ onMounted(async ()=>{
 
 async function nodeClick(data:Tree){
   if(data.dir)return;
+  if(!await appStore.guardUnsavedChanges())return;
   editorStore.loading=true;
-  const resp:any=await read(data.path);
-  if (resp.code === 0) {
-    appStore.setFilepath(data.path);
-    editorStore.setContent(resp.data);
+  try{
+    const resp:any=await read(data.path);
+    if (resp.code === 0) {
+      appStore.setFilepath(data.path);
+      editorStore.setContent(resp.data);
+    }
+  }catch(e){
+    console.error(e);
+  }finally{
+    editorStore.loading=false;
   }
-  editorStore.loading=false;
 }
 </script>
 <style lang="scss">
@@ -106,6 +137,20 @@ async function nodeClick(data:Tree){
 .folder-container{
   width: 100%;
   height: calc(100vh - var(--titleBarHeight));
+  .folder-search{
+    --el-fill-color-light: var(--primaryBackgroundColorHover);
+    --el-fill-color-blank: var(--primaryBackgroundColor);
+    --el-text-color-regular: var(--primaryTextColor);
+      padding-right: 8px;
+      .el-input__wrapper{
+        box-shadow:none;
+      }
+      .i-icon.i-icon-search{
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      }
+  }
   .el-tree{
     --el-fill-color-light:var(--primaryBackgroundColor);
     --el-fill-color-blank:var(--primaryBackgroundColor);

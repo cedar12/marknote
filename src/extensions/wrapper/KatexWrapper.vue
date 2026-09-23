@@ -23,10 +23,10 @@ import { ref,onMounted,watch } from 'vue';
 import {ElInput} from 'element-plus';
 import katex from 'katex';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
-import { getCurrent } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 // import {useI18n} from 'vue-i18n';
 
-const appWindow=getCurrent();
+const appWindow=getCurrentWindow();
 
 const props = defineProps(nodeViewProps);
 const {  text } = props.node.attrs;

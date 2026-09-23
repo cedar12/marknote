@@ -24,7 +24,7 @@
                   <Right v-if="item2.children && item2.children.length > 0"></Right>
                 </i>
               </div>
-              <div class="menus  menus-level-3  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" v-if="key2 === item2.key">
+              <div class="menus  menus-level-3  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" v-if="key2 === item2.key&&item2.children&&item2.children.length>0">
                 
                 <div class="menu-item" :class="{ split: item3.split }" v-for="item3 in item2.children" :key="item3.key" >
                   <div class="menu-content" @click="onClick($event, item3, 3)" :title="item3.label"  v-if="item3.platform==undefined||item3.platform.includes(appStore.platform  as any)">
@@ -220,7 +220,18 @@ const loadMenuData=()=>{
           label: t('selectAll'),
           key: 'selectAll',
           shortcut:appStore.keyBinding?.getKey('edit.selectAll')?.key,
-        }
+          split:true,
+        },
+        {
+          label: t('find'),
+          key: 'find',
+          shortcut:appStore.keyBinding?.getKey('edit.find')?.key,
+        },
+        // {
+        //   label: t('replace'),
+        //   key: 'replace',
+        //   shortcut:appStore.keyBinding?.getKey('edit.replace')?.key,
+        // }
       ]
     },
     {
@@ -380,10 +391,10 @@ const loadMenuData=()=>{
           label: t('checkUpdate'),
           key: 'checkUpdate',
         },
-        {
-          label: t('quickStart'),
-          key: 'quickStart',
-        }
+        // {
+        //   label: t('quickStart'),
+        //   key: 'quickStart',
+        // }
       ]
     }
 

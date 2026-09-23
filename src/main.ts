@@ -15,6 +15,7 @@ import {component} from "./utils/index";
 // import {ElLoadingDirective} from 'element-plus';
 import loading from './directives/loading/index';
 import './directives/loading/index.scss';
+import * as appLog from '@tauri-apps/plugin-log';
 
 
 if(import.meta.env.PROD){
@@ -41,6 +42,10 @@ if(import.meta.env.PROD){
 //@ts-ignore
 console.log(window.os);
 //isPreferences?Preferences:App
-createApp(component(App,{Preferences,About})).directive('loading',loading).use(i18n).use(createPinia()).mount("#app");
-
+const app = createApp(component(App,{Preferences,About}));
+app.config.errorHandler = (error, _instance, info) => {
+  appLog.error(`Vue ${info}: ${String(error)}`);
+  console.error(error);
+};
+app.directive('loading',loading).use(i18n).use(createPinia()).mount("#app");
 

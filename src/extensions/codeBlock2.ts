@@ -4,7 +4,7 @@ import {CodeBlockLowlight,CodeBlockLowlightOptions as BaseCodeBlockLowlightOptio
 import { lowlight } from 'lowlight/lib/all';
 import { Node as ProsemirrorNode } from 'prosemirror-model';
 import { Plugin, PluginKey } from 'prosemirror-state';
-import { Decoration, DecorationSet } from 'prosemirror-view';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import CodeBlockWrapper from './wrapper/CodeBlockWrapper.vue';
 
 

@@ -1,6 +1,6 @@
 import { Italic as BuiltInItalic } from '@tiptap/extension-italic';
 import { Plugin, PluginKey } from 'prosemirror-state';
-import { Decoration, DecorationSet } from 'prosemirror-view';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { findMarkPosition } from './utils/mark';
 
 export const Italic=BuiltInItalic.extend({

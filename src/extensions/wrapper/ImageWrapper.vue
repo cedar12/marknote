@@ -1,9 +1,9 @@
 <template>
   <NodeViewWrapper class="marknote-image">
-    <div class="image-wrapper" contenteditable="false" v-show="isFocus()">
+    <div class="image-wrapper" contenteditable="false" v-show="isFocus">
         <div v-if="isEditable">
           <ElScrollbar>
-          <span>![</span><AutoWidthInput v-model:value="altValue" @change="setImageAlt"/><span>](</span><AutoWidthInput v-model:value="value" @blur="setImageSrc"/><span>)</span>
+          <span>![</span><AutoWidthInput ref="altRef" v-model:value="altValue" @change="setImageAlt"/><span>](</span><AutoWidthInput v-model:value="value" @blur="setImageSrc"/><span>)</span>
           </ElScrollbar>
         </div>
         <div v-else>
@@ -39,11 +39,11 @@
   </NodeViewWrapper>
 </template>
 <script lang="ts" setup>
-import { ref,onMounted,watch } from 'vue';
+import { ref,onMounted,watch,nextTick,computed } from 'vue';
 import {ImageFiles} from '@icon-park/vue-next';
 import {ElImage,ElIcon,ElScrollbar} from 'element-plus';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
-import { convertFileSrc } from '@tauri-apps/api/primitives';
+import { convertFileSrc } from '@tauri-apps/api/core';
 import {useAppStore} from '../../store/app';
 import AutoWidthInput from '../../components/input/AutoWidthInput.vue';
 const appStroe=useAppStore();
@@ -55,6 +55,8 @@ const {  src, alt, title, width, height } = props.node.attrs;
 const isEditable = ref(props.editor.isEditable);
 const value = ref(src || '');
 const altValue=ref(alt||'');
+
+const altRef=ref();
 
 const imgSrc=ref('');
 watch(()=>value.value,()=>{
@@ -68,6 +70,26 @@ watch(()=>value.value,()=>{
   // srcList.value[0]=imgSrc.value;
 })
 
+const isFocus=computed(()=>{
+  const {anchor}=props.editor.state.selection;
+  const node=props.node;
+  const pos=props.getPos();
+  //console.log(anchor,pos,node.nodeSize,node);
+  const is=props.editor.isActive('image')&&anchor == pos &&anchor <= pos + node.nodeSize-1;
+  //&&(anchor == pos && anchor <= pos + node.nodeSize )
+  // console.log(node,pos,anchor);
+  
+  
+  return is;
+})
+
+watch(()=>isFocus.value,()=>{
+  nextTick(()=>{
+    console.log(altRef.value);
+    altRef.value.focus();
+  })
+})
+/*
 const isFocus=()=>{
   
   const {anchor}=props.editor.state.selection;
@@ -77,8 +99,13 @@ const isFocus=()=>{
   const is=props.editor.isActive('image')&&anchor == pos &&anchor <= pos + node.nodeSize-1;
   //&&(anchor == pos && anchor <= pos + node.nodeSize )
   // console.log(node,pos,anchor);
+  nextTick(()=>{
+    console.log(altRef.value);
+    altRef.value.focus();
+  })
+  
   return is;
-}
+}*/
 
 //const srcList=ref([imgSrc.value]);
 

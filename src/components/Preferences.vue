@@ -40,7 +40,7 @@
 import {ref,watch} from 'vue';
 import {Close} from '@icon-park/vue-next';
 import {useAppStore} from '../store/app';
-import { getCurrent } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import General from './preferences/General.vue';
 import Editor from './preferences/Editor.vue';
 import Image from './preferences/Image.vue';
@@ -48,7 +48,7 @@ import Theme from './preferences/Theme.vue';
 import { ElConfigProvider,ElScrollbar } from 'element-plus';
 import * as elementPlusLocales from 'element-plus/es/locale/index';
 
-const appWindow=getCurrent();
+const appWindow=getCurrentWindow();
 
 const appStore=useAppStore();
 appStore.init();

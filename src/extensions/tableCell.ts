@@ -3,7 +3,7 @@ import { mergeAttributes, Node } from '@tiptap/core';
 import { getCellsInColumn, isRowSelected, isTableSelected, selectTable } from './utils/table';
 
 import { Plugin, PluginKey } from 'prosemirror-state';
-import { Decoration, DecorationSet } from 'prosemirror-view';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import TableCellPopover from './wrapper/TableCellPopover.vue';
 import {render,h} from 'vue';
 

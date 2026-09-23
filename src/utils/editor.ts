@@ -23,8 +23,10 @@ import { Katex } from '../extensions/katex';
 import { InlineKatex } from '../extensions/inlineKatex';
 import { Html } from '../extensions/html';
 import { TableOfContents } from '../extensions/tableOfContents';
-import CharacterCount from '@tiptap/extension-character-count'
+import CharacterCount from '@tiptap/extension-character-count';
+import {SearchAndReplace} from "../extensions/searchAndReplace";
 import { useAppStore } from '../store/app';
+import { useEditorStore } from '../store/editor';
 
 
 const MarknoteTable = Table.extend({
@@ -97,6 +99,7 @@ function createEditor() {
     },
     extensions: [
       StarterKit,
+      SearchAndReplace.configure(),
       Link.configure({
         openOnClick: false
       }),
@@ -152,12 +155,10 @@ function createEditor() {
 
     },
     onUpdate: () => {
-      
+      const editorStore = useEditorStore();
       const appStore = useAppStore();
-      appStore.isSave = false;
-      if(appStore.autoSave&&appStore.filepath){
-        appStore.save();
-      }
+      editorStore.markCurrentSegmentEdited();
+      appStore.markEdited();
       // editorStore.tree = getTree();
     },
     onCreate: () => {
@@ -166,8 +167,6 @@ function createEditor() {
     },
 
   });
-  //@ts-ignore
-  window.editor = editor;
   return editor;
 }
 

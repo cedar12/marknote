@@ -1,7 +1,41 @@
 
 
 use crate::{resp, utils};
-use std::fs;
+use std::{fs, io::Write, path::Path, time::{SystemTime, UNIX_EPOCH}};
+
+fn write_file_safely(path:&str,content:&[u8])->std::io::Result<()> {
+    let target=Path::new(path);
+    let parent=target.parent().unwrap_or_else(||Path::new("."));
+    let filename=target.file_name().and_then(|name|name.to_str()).unwrap_or("marknote");
+    let nonce=SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_nanos();
+    let temp=parent.join(format!(".{filename}.{nonce}.tmp"));
+    let backup=parent.join(format!(".{filename}.{nonce}.bak"));
+
+    let result=(||{
+        let mut file=fs::OpenOptions::new().write(true).create_new(true).open(&temp)?;
+        file.write_all(content)?;
+        file.sync_all()?;
+
+        if target.exists(){
+            fs::rename(target,&backup)?;
+            if let Err(error)=fs::rename(&temp,target){
+                let _=fs::rename(&backup,target);
+                return Err(error);
+            }
+            if let Err(error)=fs::remove_file(&backup){
+                log::warn!("failed to remove save backup: {error}");
+            }
+        }else{
+            fs::rename(&temp,target)?;
+        }
+        Ok(())
+    })();
+
+    if result.is_err(){
+        let _=fs::remove_file(&temp);
+    }
+    result
+}
 
 #[tauri::command(async)]
 pub async fn read_md(path: &str) -> Result<resp::Resp<String>, String> {
@@ -14,6 +48,8 @@ pub async fn read_md(path: &str) -> Result<resp::Resp<String>, String> {
         Err(e) => Ok(resp::err(e.to_string())),
     }
 }
+
+
 #[tauri::command]
 pub async fn read_md_to_html(path: &str) -> Result<resp::Resp<String>, String> {
     let start_time = std::time::Instant::now();
@@ -29,7 +65,7 @@ pub async fn read_md_to_html(path: &str) -> Result<resp::Resp<String>, String> {
 
 #[tauri::command]
 pub async fn save_md(path: &str, md: &str) -> Result<resp::Resp<String>, String> {
-    match fs::write(path, md) {
+    match write_file_safely(path,md.as_bytes()) {
         Ok(_) => Ok(resp::data(None)),
         Err(e) => Ok(resp::err(e.to_string())),
     }
@@ -46,7 +82,9 @@ pub async fn save_image(
             match utils::save_image(md_path.into(), path.to_string_lossy().to_string()).await {
                 Ok(save_path) => {
                     // 删除临时图片
-                    fs::remove_file(path).unwrap();
+                    if let Err(error)=fs::remove_file(path){
+                        log::warn!("failed to remove cached image: {error}");
+                    }
                     Ok(resp::ok(save_path, None))
                 }
                 Err(e) => {
@@ -68,7 +106,7 @@ pub async fn save_image_path(md_path: &str, img_path: &str) -> Result<resp::Resp
         Ok(save_path) => Ok(resp::ok(save_path, None)),
         Err(e) => {
             println!("{:?}", e);
-            Err("".into())
+            Err(e.to_string())
         }
     }
 }
@@ -151,8 +189,9 @@ pub async fn export_pdf(
     html: &str,
 ) -> Result<resp::Resp<String>, String> {
     let mut cache=utils::get_cache_dir();
-    cache.push("pdf.html");
-    let cache_str=cache.to_str().unwrap();
+    let nonce=SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_nanos();
+    cache.push(format!("pdf-{nonce}.html"));
+    let cache_str=cache.to_str().ok_or_else(||"PDF cache path is not valid UTF-8".to_string())?;
     match export_html(cache_str, html.into()).await {
         Ok(resp) => {
             if resp.code==0{
@@ -160,7 +199,9 @@ pub async fn export_pdf(
                     Ok(_) => Ok(resp::ok(path.into(), None)),
                     Err(e) => Err(e.to_string())
                 };
-                fs::remove_file(cache);
+                if let Err(error)=fs::remove_file(cache){
+                    log::warn!("failed to remove PDF cache file: {error}");
+                }
                 return result;
             }
             Ok(resp)

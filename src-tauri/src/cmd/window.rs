@@ -1,5 +1,5 @@
 use std::sync::atomic::{AtomicUsize,Ordering};
-use tauri::WindowUrl;
+use tauri::WebviewUrl;
 use tauri::Manager;
 
 use crate::utils::*;
@@ -12,10 +12,10 @@ pub static WINDOW_ID: AtomicUsize = AtomicUsize::new(1);
 pub async fn open_window(handle: tauri::AppHandle) {
     let window_id = WINDOW_ID.fetch_add(1, Ordering::SeqCst);
 
-    let win = tauri::WindowBuilder::new(
+    let win = tauri::WebviewWindowBuilder::new(
         &handle,
         format!("window_{}", window_id), /* the unique window label */
-        WindowUrl::App("index.html".into()),
+        WebviewUrl::App("index.html".into()),
     )
     .decorations(IS_MACOS)
     .title("marknote")
@@ -32,10 +32,10 @@ pub async fn open_window(handle: tauri::AppHandle) {
 pub async fn open_window(handle: tauri::AppHandle) {
     let window_id = WINDOW_ID.fetch_add(1, Ordering::SeqCst);
 
-    let win = tauri::WindowBuilder::new(
+    let win = tauri::WebviewWindowBuilder::new(
         &handle,
         format!("window_{}", window_id), /* the unique window label */
-        WindowUrl::App("index.html".into()),
+        WebviewUrl::App("index.html".into()),
     )
     .decorations(IS_MACOS)
     .title("marknote")
@@ -56,14 +56,14 @@ pub async fn open_window(handle: tauri::AppHandle) {
 #[cfg(not(target_os = "macos"))]
 #[tauri::command]
 pub async fn open_preferences(handle: tauri::AppHandle) {
-    match handle.get_window("preferences") {
+    match handle.get_webview_window("preferences") {
         Some(window) => {
             window.set_focus().unwrap();
         }
         None => {
-            let win_url=WindowUrl::App("index.html?preferences=open".into());
+            let win_url=WebviewUrl::App("index.html?preferences=open".into());
             println!("{:?}",win_url.to_string());
-            let win = tauri::WindowBuilder::new(
+            let win = tauri::WebviewWindowBuilder::new(
                 &handle,
                 "preferences", /* the unique window label */
                 win_url,
@@ -82,15 +82,15 @@ pub async fn open_preferences(handle: tauri::AppHandle) {
 #[cfg(target_os = "macos")]
 #[tauri::command]
 pub async fn open_preferences(handle: tauri::AppHandle){
-    match handle.get_window("preferences") {
+    match handle.get_webview_window("preferences") {
         Some(window) => {
             window.set_focus().unwrap();
         }
         None => {
-            let win = tauri::WindowBuilder::new(
+            let win = tauri::WebviewWindowBuilder::new(
                 &handle,
                 "preferences", /* the unique window label */
-                WindowUrl::App("index.html?preferences=open".into()),
+                WebviewUrl::App("index.html?preferences=open".into()),
             )
             .decorations(IS_MACOS)
             .min_inner_size(600f64, 400f64)
@@ -110,15 +110,15 @@ pub async fn open_preferences(handle: tauri::AppHandle){
 #[cfg(not(target_os = "macos"))]
 #[tauri::command]
 pub async fn open_about(handle: tauri::AppHandle) {
-    match handle.get_window("about") {
+    match handle.get_webview_window("about") {
         Some(window) => {
             window.set_focus().unwrap();
         }
         None => {
-            let win = tauri::WindowBuilder::new(
+            let win = tauri::WebviewWindowBuilder::new(
                 &handle,
                 "about", /* the unique window label */
-                WindowUrl::App("index.html?about=open".into()),
+                WebviewUrl::App("index.html?about=open".into()),
             )
             .decorations(IS_MACOS)
             // .min_inner_size(300f64, 200f64)
@@ -135,15 +135,15 @@ pub async fn open_about(handle: tauri::AppHandle) {
 #[cfg(target_os = "macos")]
 #[tauri::command]
 pub async fn open_about(handle: tauri::AppHandle){
-    match handle.get_window("about") {
+    match handle.get_webview_window("about") {
         Some(window) => {
             window.set_focus().unwrap();
         }
         None => {
-            let win = tauri::WindowBuilder::new(
+            let win = tauri::WebviewWindowBuilder::new(
                 &handle,
                 "about", /* the unique window label */
-                WindowUrl::App("index.html?about=open".into()),
+                WebviewUrl::App("index.html?about=open".into()),
             )
             .decorations(IS_MACOS)
             .inner_size(420f64,300f64)

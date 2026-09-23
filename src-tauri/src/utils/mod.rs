@@ -6,7 +6,7 @@ use std::{path::PathBuf, fs};
 
 use anyhow::anyhow;
 use reqwest::Client;
-use tauri::Window;
+use tauri::WebviewWindow;
 
 use std::fs::File;
 use std::io::Write;
@@ -21,7 +21,9 @@ pub mod schema;
 pub mod pdf;
 pub mod md;
 
-pub fn set_shadow(_win: Window) {
+pub mod rule;
+
+pub fn set_shadow(_win: WebviewWindow) {
   // if cfg!(windows) {
   //     window_shadows::set_shadow(&win, true).expect("Unsupported platform!");
   // }
@@ -88,10 +90,14 @@ pub fn get_extension_from_filename(path: String) -> anyhow::Result<String> {
 }
 
 pub fn write_image(path:String,base64:String)->anyhow::Result<PathBuf>{
-  let split_str: Vec<&str> = base64.split(",").collect();
-
+  let (_,encoded)=base64
+    .split_once(',')
+    .ok_or_else(||anyhow!("invalid image data URL"))?;
+  if encoded.is_empty(){
+    return Err(anyhow!("image data is empty"));
+  }
   let img_data = general_purpose::STANDARD
-  .decode(split_str[1])?;
+  .decode(encoded)?;
   
   println!("{:?}", path);
   let mut img_file = File::create(path.clone())?;
@@ -101,7 +107,7 @@ pub fn write_image(path:String,base64:String)->anyhow::Result<PathBuf>{
 
 pub fn write_cache_image(filename:String,base64:String)->anyhow::Result<PathBuf>{
   let path=get_cache_dir().join(filename);
-  let path_str=path.to_str().unwrap();
+  let path_str=path.to_str().ok_or_else(||anyhow!("cache path is not valid UTF-8"))?;
   write_image(path_str.to_string(),base64)
 }
 
@@ -123,21 +129,16 @@ impl FromStr for ImageSaveType {
   type Err = String;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    let ss=s.split(",").collect::<Vec<&str>>();
-    match ss[0].into() {
-      "default"=>{
-        if ss.len()>1{
-          return Ok(ImageSaveType::Default(Some(String::from(ss[1]))));
-        }
-        Ok(ImageSaveType::Default(None))
-      }
-      "sepc"=>{
-        Ok(ImageSaveType::Sepc(ss[1].to_string()))
-      }
-      "picgo"=>{
-        Ok(ImageSaveType::PicGo(ss[1].to_string()))
-      }
-      _=>Err(s.to_string())
+    let (kind,value)=s.split_once(',').map_or((s,None),|(kind,value)|(kind,Some(value)));
+    match kind {
+      "default"=>Ok(ImageSaveType::Default(value.filter(|v|!v.is_empty()).map(String::from))),
+      "sepc"=>value.filter(|v|!v.is_empty())
+        .map(|v|ImageSaveType::Sepc(v.to_string()))
+        .ok_or_else(||"missing image save path".to_string()),
+      "picgo"=>value.filter(|v|!v.is_empty())
+        .map(|v|ImageSaveType::PicGo(v.to_string()))
+        .ok_or_else(||"missing PicGo endpoint or executable".to_string()),
+      _=>Err(format!("unknown image save type: {kind}"))
     }
   }
 }
@@ -147,12 +148,12 @@ impl ToString for ImageSaveType {
       match self {
           ImageSaveType::Default(path) => {
             if let Some(path)=path{
-              return format!("default,{:?}",path)
+              return format!("default,{}",path)
             }
             "default".into()
           },
-          ImageSaveType::Sepc(path) => format!("sepc,{:?}",path),
-          ImageSaveType::PicGo(path)=> format!("picgo,{:?}",path)
+          ImageSaveType::Sepc(path) => format!("sepc,{}",path),
+          ImageSaveType::PicGo(path)=> format!("picgo,{}",path)
       }
   }
 }
@@ -210,7 +211,7 @@ pub async fn save_image(md_path:String,image_path:String)->anyhow::Result<String
       let filename=get_extension_from_filename(image_path.clone())?;
       let mut pb=PathBuf::from(path);
       now.push_str(&filename);
-      pb.push(filename);
+      pb.push(now);
       fs::copy(image_path.clone(),pb.clone())?;
       match pb.to_str() {
           Some(p) => p.into(),
@@ -224,7 +225,7 @@ pub async fn save_image(md_path:String,image_path:String)->anyhow::Result<String
         if !res.success{
           return Err(anyhow!("Image upload failed"));
         }
-        res.result[0].clone()
+        res.result.first().cloned().ok_or_else(||anyhow!("PicGo returned no image URL"))?
       }else{
         let program_path=match constant::IS_MACOS{
           true=>"/Applications/PicGo.app/Contents/MacOS/PicGo",
@@ -270,6 +271,7 @@ pub struct PicGoResp{
 }
 
 #[test]
+#[ignore = "requires a local PicGo installation"]
 fn test_mac_picgo(){
   let image_path="/Users/cengxiangdong/Documents/test.png";
   let output = Command::new("/Applications/PicGo.app/Contents/MacOS/PicGo").arg(image_path).output().unwrap();
@@ -350,6 +352,7 @@ pub fn ls_path(path_info: &mut PathInfo) -> anyhow::Result<()> {
 
 
 #[test]
+#[ignore = "developer-machine filesystem smoke test"]
 fn test_all_path()->anyhow::Result<()>{
   let path="D:\\";
   let mut path_info=PathInfo::new(path)?;
@@ -368,6 +371,7 @@ fn test_json_schema()->anyhow::Result<()>{
 }
 
 #[test]
+#[ignore = "requires a local Chromium/PDF environment"]
 fn test_html2pdf()->anyhow::Result<()>{
   let input=PathBuf::from("D:\\marknote\\docs\\test.html");
   let output=PathBuf::from("D:\\marknote\\docs\\test.pdf");
@@ -377,9 +381,25 @@ fn test_html2pdf()->anyhow::Result<()>{
 
 
 #[test]
+#[ignore = "developer-machine fixture path"]
 fn test_md2html()->anyhow::Result<()>{
   let content=std::fs::read_to_string("D:\\marknote\\docs\\marknote.md")?;
   let res=md::md_to_html(content.as_str());
   println!("{}",res);
   Ok(())
+}
+
+#[test]
+fn image_save_type_rejects_missing_values(){
+  assert!(ImageSaveType::from_str("sepc").is_err());
+  assert!(ImageSaveType::from_str("picgo,").is_err());
+  assert!(ImageSaveType::from_str("unknown,value").is_err());
+}
+
+#[test]
+fn image_save_type_preserves_commas_in_value(){
+  match ImageSaveType::from_str("sepc,C:\\images,archive").unwrap(){
+    ImageSaveType::Sepc(path)=>assert_eq!(path,"C:\\images,archive"),
+    _=>panic!("expected specified image path"),
+  }
 }

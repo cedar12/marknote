@@ -11,6 +11,7 @@ export default {
   clearRecent: 'Clear Recently Used',
   save:'Save',
   saveAs:'Save As',
+  saveFailed:'Save failed',
   autoSave:'Auto Save',
   rename:'Rename',
   openExplorerWindows:'Reveal in File Explorer',
@@ -109,4 +110,17 @@ export default {
   closeTitleTip:'File Save Tip',
   closeTip:'The file is not saved, whether to give up saving?',
   giveUp:'Give UP',
+
+  tabSize: 'Tab Size',
+
+  find: 'Find',
+  replace: 'Replace',
+  replaceAll: 'Replace All',
+  noResult: 'No Results',
+  largeFileMode: 'Large file segments',
+  largeFileNavigation: 'Large file segment navigation',
+  segmentPosition: 'Segment {current} of {total}',
+  previousSegment: 'Previous',
+  nextSegment: 'Next',
+  currentSegmentOnly: 'Current segment only',
 }

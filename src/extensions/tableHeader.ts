@@ -6,7 +6,7 @@ import { getCellsInRow, isColumnSelected } from './utils/table';
 // import { Tooltip } from 'components/tooltip';
 import { Plugin, PluginKey } from 'prosemirror-state';
 // import { addColumnAfter } from 'prosemirror-tables';
-import { Decoration, DecorationSet } from 'prosemirror-view';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
 // import tippy from 'tippy.js';
 import TableRowPopover from './wrapper/TableRowPopover.vue';
 import {render,h} from 'vue';

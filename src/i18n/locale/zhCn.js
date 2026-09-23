@@ -11,6 +11,7 @@ export default {
   clearRecent: '清除最近使用的',
   save:'保存',
   saveAs:'另存为',
+  saveFailed:'保存失败',
   autoSave:'自动保存',
   rename:'重命名',
   openExplorerWindows:'在资源管理器中显示',
@@ -110,4 +111,18 @@ export default {
   giveUp:'放弃',
 
   tabSize: '制表符大小',
+  code: '代码',
+
+  find: '查找',
+  replace: '替换',
+  replaceAll: '替换全部',
+
+  noResult: '无结果',
+  largeFileMode: '大文件分段模式',
+  largeFileNavigation: '大文件分段导航',
+  segmentPosition: '第 {current} / {total} 段',
+  previousSegment: '上一段',
+  nextSegment: '下一段',
+  currentSegmentOnly: '仅当前段',
+
 }

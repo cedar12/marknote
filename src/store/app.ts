@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { emit, listen,TauriEvent } from '@tauri-apps/api/event'
-import { getCurrent } from '@tauri-apps/api/window'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useI18n } from "vue-i18n";
 import {useEditorStore} from './editor';
 import {usePreferencesStore} from './preferences';
@@ -9,16 +9,21 @@ import { isImage } from '../utils';
 import { read, save, saveImagePath } from '../api/file';
 import { saveAs} from '../api/dialog';
 import { isPermissionGranted, requestPermission } from '@tauri-apps/plugin-notification';
-import { confirm } from '@tauri-apps/plugin-dialog';
+import { confirm, message } from '@tauri-apps/plugin-dialog';
 import i18n from '../i18n';
 import { findThemeByType, setTheme, ThemeItem } from '../theme';
 import { args, PlatformType } from '../api/utils';
+import * as appLog from '@tauri-apps/plugin-log';
 
-const appWindow=getCurrent();
+const appWindow=getCurrentWindow();
 // @ts-ignore
 const { t } = i18n.global;
 
 const autoTheme=localStorage.getItem('autoTheme');
+const AUTO_SAVE_DELAY_MS=600;
+let autoSaveTimer:ReturnType<typeof setTimeout>|null=null;
+let activeSave:Promise<boolean>|null=null;
+let allowWindowClose=false;
 
 function getTheme(){
   var theme=null;
@@ -64,6 +69,9 @@ export const useAppStore = defineStore('app', {
     loading:boolean,
     exporting:boolean,
     autoSave:boolean,
+    saving:boolean,
+    saveError:string|null,
+    editRevision:number,
   }=>({
     title:null,
     filepath: null,
@@ -90,6 +98,9 @@ export const useAppStore = defineStore('app', {
     loading:true,
     exporting:false,
     autoSave:false,
+    saving:false,
+    saveError:null,
+    editRevision:0,
   }),
   actions:{
     setFilepath(filepath:string|null){
@@ -101,7 +112,7 @@ export const useAppStore = defineStore('app', {
         }
         this.recentFiles.splice(0,0, filepath);
         if(this.recentFiles.length>10){
-          this.recentFiles=this.recentFiles.splice(10,this.recentFiles.length-10);
+          this.recentFiles=this.recentFiles.slice(0,10);
         }
         localStorage.setItem('recent',JSON.stringify(this.recentFiles));
         const sep=this.platform==='windows'?'\\':'/';
@@ -110,11 +121,64 @@ export const useAppStore = defineStore('app', {
         
         this.title=paths[paths.length-1];
         this.isSave=true;
+        this.saveError=null;
         appWindow.setTitle(filepath);
       }else{
         this.title=null;
         this.isSave=true;
+        this.saveError=null;
       }
+    },
+
+    markEdited(){
+      this.editRevision+=1;
+      this.isSave=false;
+      if(this.autoSave&&this.filepath){
+        this.scheduleAutoSave();
+      }
+    },
+
+    cancelScheduledAutoSave(){
+      if(autoSaveTimer){
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer=null;
+      }
+    },
+
+    scheduleAutoSave(){
+      this.cancelScheduledAutoSave();
+      autoSaveTimer=setTimeout(()=>{
+        autoSaveTimer=null;
+        void this.save();
+      },AUTO_SAVE_DELAY_MS);
+    },
+
+    async guardUnsavedChanges():Promise<boolean>{
+      if(this.isSave){
+        return true;
+      }
+      try{
+        // The existing two-action dialog uses "Save" as the safe path and
+        // "Discard" as the explicit destructive path. Cancelling Save As
+        // also cancels the pending navigation.
+        const discard=await confirm(t('closeTip'), {
+          title:t('closeTitleTip'),
+          okLabel:t('giveUp'),
+          cancelLabel:t('save'),
+        });
+        return discard ? true : await this.save();
+      }catch(e){
+        appLog.error(`unsaved-change guard failed: ${String(e)}`);
+        return false;
+      }
+    },
+
+    async runAfterUnsavedCheck(action:()=>void|Promise<void>):Promise<boolean>{
+      if(!await this.guardUnsavedChanges()){
+        return false;
+      }
+      await action();
+      return true;
     },
 
     emit(event:string,payload:any){
@@ -174,13 +238,14 @@ export const useAppStore = defineStore('app', {
         // log.debug(window.filesOpen);
         
         args().then(async (payload:string[])=>{
+          appLog.info('open with urls: '+decodeURI(payload.join(',')));
           
           if(payload.length===1){
             let path=payload[0];
             if(path.startsWith('file://')){
               path=payload[0].substring(7);
             }
-            
+            path=decodeURI(path);
             editorStore.loading=true;
             const resp:any=await read(path);
             if (resp.code === 0) {
@@ -193,6 +258,7 @@ export const useAppStore = defineStore('app', {
             if(path.startsWith('file://')){
               path=payload[1].substring(7);
             }
+            path=decodeURI(path);
             editorStore.loading=true;
             const resp:any=await read(path);
             if (resp.code === 0) {
@@ -215,42 +281,33 @@ export const useAppStore = defineStore('app', {
 
         appWindow.listen(TauriEvent.WINDOW_FOCUS,()=>{
           const editorStore=useEditorStore();
-          editorStore.editor.commands.focus();
+          editorStore.focus();
         });
 
         
-        appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async (ev)=>{
-          console.log(ev);
-          // debugger;
-          
-          if(this.isSave){
-            
+        appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async ()=>{
+          if(allowWindowClose){
+            allowWindowClose=false;
             await appWindow.close();
-          }else{
-            try{
-              // @ts-ignore
-              const yes=await confirm(t('closeTip'), {title:t('closeTitleTip'),okLabel:t('giveUp'),cancelLabel:t('save')});
-              if(yes===false){
-                this.save();
-              }else{
-                await appWindow.close();
-              }
-            }catch(e){
-              console.log(e);
-            }
-            
+            return;
+          }
+          if(await this.guardUnsavedChanges()){
+            allowWindowClose=true;
+            await appWindow.close();
           }
         });
         
-        appWindow.listen(TauriEvent.WINDOW_FILE_DROP,async (ev)=>{
+        appWindow.onDragDropEvent(async (ev)=>{
           console.log('ev',ev);
+          if(ev.payload.type!=='drop')return;
           if(!this.filepath)return;
           const editorStore=useEditorStore();
+          if(editorStore.segmented)return;
           // @ts-ignore
           const {state,view}=editorStore.editor;
           const { schema } = state;
 
-          const payload=ev.payload as any;
+          const payload=ev.payload;
           for (let i = 0; i < payload.paths.length; i++) {
             const src = payload.paths[i];
             if(isImage(src)){
@@ -299,6 +356,11 @@ export const useAppStore = defineStore('app', {
         const value=event.payload;
         localStorage.setItem("autoSave", value.toString());
         this.autoSave=value;
+        if(!value){
+          this.cancelScheduledAutoSave();
+        }else if(!this.isSave&&this.filepath){
+          this.scheduleAutoSave();
+        }
         
       });
 
@@ -330,24 +392,64 @@ export const useAppStore = defineStore('app', {
 
     },
 
-    save(){
+    async save(forceSaveAs=false):Promise<boolean>{
+      this.cancelScheduledAutoSave();
+
+      while(activeSave){
+        await activeSave;
+        if(this.isSave){
+          return true;
+        }
+      }
+
       const editorStore = useEditorStore();
-      const md=editorStore.editor?.storage.markdown.getMarkdown();
-      if (this.filepath) {
-        save(this.filepath, md).then((res:any) => { 
-          console.log('save',res);
-          if(res.code===0){
-            this.isSave=true;
+      const md=editorStore.getMarkdown();
+      if(typeof md!=='string'){
+        return false;
+      }
+
+      const revision=this.editRevision;
+      const filepath=forceSaveAs?null:this.filepath;
+      this.saving=true;
+      this.saveError=null;
+
+      activeSave=(async ()=>{
+        try{
+          const res:any=filepath
+            ? await save(filepath,md)
+            : await saveAs(md,t(forceSaveAs?'saveAs':'save'));
+          if(res.code!==0){
+            throw new Error(res.info||t('saveFailed'));
           }
-        }).catch(e => console.error(e));
-      }else{
-        //@ts-ignore
-        saveAs(md ,t('save')).then((res:any) => { 
-          console.log('save',res);
-          if(res.code===0){
+
+          if(!filepath){
             this.setFilepath(res.info);
           }
-        }).catch(e => console.error(e));
+
+          this.isSave=revision===this.editRevision;
+          return true;
+        }catch(e){
+          const error=String(e||'').trim();
+          // An empty error is how the current Save As command reports a
+          // cancelled native file picker; cancellation is not a failure.
+          if(error&&error!=='Error'){
+            this.saveError=error;
+            appLog.error(`save failed: ${error}`);
+            try{
+              await message(error,t('saveFailed'));
+            }catch(dialogError){
+              appLog.error(`save error dialog failed: ${String(dialogError)}`);
+            }
+          }
+          return false;
+        }
+      })();
+
+      try{
+        return await activeSave;
+      }finally{
+        activeSave=null;
+        this.saving=false;
       }
     }
   }

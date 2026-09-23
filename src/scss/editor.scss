@@ -90,7 +90,8 @@
     // }
 
     pre {
-        border:1px solid var(--contentBorderColor);
+        // border:1px solid var(--contentBorderColor);
+        box-shadow: 0 0 2px var(--contentBorderColor);
         border-radius: 4px;
     }
 

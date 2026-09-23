@@ -1,6 +1,6 @@
 import { Bold as BuiltInBold } from '@tiptap/extension-bold';
 import { Plugin, PluginKey } from 'prosemirror-state';
-import { Decoration, DecorationSet } from 'prosemirror-view';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { findMarkPosition } from './utils/mark';
 
 export const Bold=BuiltInBold.extend({

@@ -1,5 +1,5 @@
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { EditorView } from "@tiptap/pm/view";
+import { EditorView } from 'prosemirror-view';
 import { Plugin, PluginKey } from 'prosemirror-state';
 import { Decoration, DecorationSet } from 'prosemirror-view';
 import { getNodeAtPos, isInCodeBlock } from "./utils/node";

@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/primitives";
+import { invoke } from "@tauri-apps/api/core";
 
 export function save(path:string,md:string){
   return invoke('save_md', { path: path, md: md });
