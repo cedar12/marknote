@@ -15,7 +15,7 @@
 - Document Character and Word Statistics
 - Supports pasting images from the clipboard and dragging external images for insertion
 - Markdown extensions such as math expressions (KaTeX) and Mermaid Chart
-- Support for exporting images, HTML, and PDF documents
+- Support for exporting images, HTML, PDF, and Word (.docx) documents
 - [PicGO](https://molunerfinn.com/PicGo/)
 
 # Preview

@@ -1,7 +1,7 @@
 use markdown_it::MarkdownIt;
 use markdown_it::plugins::cmark::inline;
 use markdown_it::plugins::cmark::block;
-use markdown_it::plugins::extra;
+use markdown_it::plugins::{extra, html};
 
 pub mod fence;
 pub mod math;
@@ -32,7 +32,10 @@ pub fn add(md: &mut MarkdownIt) {
   block::lheading::add(md);
   block::paragraph::add(md);
 
-  
-  extra::add(md);
+  // Match the editor's markdown-it options: raw HTML, GFM tables and strike,
+  // without linkify, typographer or smart quotes.
+  html::add(md);
+  extra::strikethrough::add(md);
+  extra::tables::add(md);
   markdown_it_tasklist::add(md);
 }

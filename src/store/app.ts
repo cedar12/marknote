@@ -23,7 +23,7 @@ const autoTheme=localStorage.getItem('autoTheme');
 const AUTO_SAVE_DELAY_MS=600;
 let autoSaveTimer:ReturnType<typeof setTimeout>|null=null;
 let activeSave:Promise<boolean>|null=null;
-let allowWindowClose=false;
+let closeGuardInProgress=false;
 
 function getTheme(){
   var theme=null;
@@ -186,8 +186,7 @@ export const useAppStore = defineStore('app', {
     },
 
     closeWindow(){
-      appWindow.emit(TauriEvent.WINDOW_CLOSE_REQUESTED);
-      
+      return appWindow.close();
     },
 
     async init(){
@@ -251,7 +250,7 @@ export const useAppStore = defineStore('app', {
             if (resp.code === 0) {
               const appStore = useAppStore();
               appStore.setFilepath(path);
-              editorStore.setContent(resp.data);
+              await editorStore.setContent(resp.data);
             }
           }else if(payload.length>1){
             let path=payload[1];
@@ -264,7 +263,7 @@ export const useAppStore = defineStore('app', {
             if (resp.code === 0) {
               const appStore = useAppStore();
               appStore.setFilepath(path);
-              editorStore.setContent(resp.data);
+              await editorStore.setContent(resp.data);
             }
             
           }
@@ -285,15 +284,33 @@ export const useAppStore = defineStore('app', {
         });
 
         
-        appWindow.listen(TauriEvent.WINDOW_CLOSE_REQUESTED,async ()=>{
-          if(allowWindowClose){
-            allowWindowClose=false;
-            await appWindow.close();
+        appWindow.onCloseRequested(async (event)=>{
+          if(closeGuardInProgress){
+            event.preventDefault();
             return;
           }
-          if(await this.guardUnsavedChanges()){
-            allowWindowClose=true;
-            await appWindow.close();
+          closeGuardInProgress=true;
+          let resumeAutoSave=false;
+          try{
+            if(activeSave){
+              await activeSave;
+            }
+            resumeAutoSave=autoSaveTimer!==null;
+            this.cancelScheduledAutoSave();
+            if(!await this.guardUnsavedChanges()){
+              event.preventDefault();
+              if(resumeAutoSave&&this.autoSave&&this.filepath&&!this.isSave){
+                this.scheduleAutoSave();
+              }
+            }
+          }catch(e){
+            event.preventDefault();
+            appLog.error(`window close failed: ${String(e)}`);
+            if(resumeAutoSave&&this.autoSave&&this.filepath&&!this.isSave){
+              this.scheduleAutoSave();
+            }
+          }finally{
+            closeGuardInProgress=false;
           }
         });
         
@@ -369,6 +386,10 @@ export const useAppStore = defineStore('app', {
         const value=event.payload;
         preferencesStore.editor.tabSize=value;
         document.documentElement.style.setProperty('--tabSize',''+value);
+      });
+
+      listen<'buttons'|'scroll'>('segmentNavigationMode', (event) => {
+        preferencesStore.setSegmentNavigationMode(event.payload);
       });
 
       

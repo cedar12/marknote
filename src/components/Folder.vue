@@ -118,7 +118,7 @@ async function nodeClick(data:Tree){
     const resp:any=await read(data.path);
     if (resp.code === 0) {
       appStore.setFilepath(data.path);
-      editorStore.setContent(resp.data);
+      await editorStore.setContent(resp.data);
     }
   }catch(e){
     console.error(e);

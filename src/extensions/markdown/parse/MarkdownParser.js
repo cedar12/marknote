@@ -32,18 +32,25 @@ export class MarkdownParser {
             );
 
             const renderedHTML = renderer.render(content);
-            const element = elementFromString(renderedHTML);
-
-            this.editor.extensionManager.extensions.forEach(extension =>
-                getMarkdownSpec(extension)?.parse?.updateDOM?.call({ editor:this.editor, options:extension.options }, element)
-            );
-
-            this.normalizeDOM(element, { inline, content });
-
-            return element.innerHTML;
+            return this.parseRenderedHtml(renderedHTML, { inline, content });
         }
 
         return content;
+    }
+
+    parseRenderedHtml(renderedHTML, { inline = false, content = '' } = {}) {
+        return this.parseRenderedDom(renderedHTML, { inline, content }).innerHTML;
+    }
+
+    // Rust produces HTML for file loading. Keep the editor-specific DOM
+    // adjustments shared with the synchronous clipboard/command parser.
+    parseRenderedDom(renderedHTML, { inline = false, content = '' } = {}) {
+        const element = elementFromString(renderedHTML);
+        this.editor.extensionManager.extensions.forEach(extension =>
+            getMarkdownSpec(extension)?.parse?.updateDOM?.call({ editor:this.editor, options:extension.options }, element)
+        );
+        this.normalizeDOM(element, { inline, content });
+        return element;
     }
 
     normalizeDOM(node, { inline, content } = {}) {
@@ -101,4 +108,3 @@ export class MarkdownParser {
         }
     }
 }
-

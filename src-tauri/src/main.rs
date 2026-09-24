@@ -89,6 +89,7 @@ fn main() {
             cmd::file::export_html,
             cmd::file::export_image,
             cmd::file::export_pdf,
+            cmd::file::export_word,
             cmd::file::ls_md,
             cmd::dialog::save_as_md,
             cmd::dialog::open_file,
@@ -106,6 +107,7 @@ fn main() {
             cmd::utils::platform,
             cmd::utils::themes,
             cmd::utils::build_info,
+            cmd::utils::render_markdown,
         ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())

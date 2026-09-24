@@ -32,15 +32,15 @@
         <span :class="{'not-save':appStore.isSave!==true}"></span>
       </div>
       <div class="titlebar-buttons">
-        <div class="titlebar-button" @click="appWindow.minimize()">
+        <button type="button" class="titlebar-button" :title="t('minimizeWindow')" :aria-label="t('minimizeWindow')" @click="appWindow.minimize()">
           <Minus></Minus>
-        </div>
-        <div class="titlebar-button" @click="appWindow.toggleMaximize()">
+        </button>
+        <button type="button" class="titlebar-button" :title="t('toggleMaximizeWindow')" :aria-label="t('toggleMaximizeWindow')" @click="appWindow.toggleMaximize()">
           <Square theme="outline"/>
-        </div>
-        <div class="titlebar-button" @click="appStore.closeWindow()">
+        </button>
+        <button type="button" class="titlebar-button" :title="t('closeWindow')" :aria-label="t('closeWindow')" @click="appStore.closeWindow()">
           <Close></Close>
-        </div>
+        </button>
       </div>
     </div>
   </div >
@@ -188,8 +188,16 @@ const mode=ref('words');
         height: var(--titleBarHeight);
         cursor: pointer;
         color: var(--contentTextColor);
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
         &:hover {
           background: var(--contentTextColorHover,#dfdfdf);
+        }
+        &:focus-visible {
+          outline: 2px solid var(--primaryBorderColor);
+          outline-offset: -2px;
         }
       }
     }

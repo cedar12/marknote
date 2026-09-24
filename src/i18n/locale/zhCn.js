@@ -18,10 +18,14 @@ export default {
   openExplorerMacos:'在访达中显示',
   import: '导入',
   export:'导出',
+  exportFailed:'导出失败',
+  documentNotReady:'文档仍在加载中',
   preferences:'首选项',
   alwaysOnTop:'置顶窗口',
   closeTab:'关闭标签页',
   closeWindow:'关闭窗口',
+  minimizeWindow:'最小化窗口',
+  toggleMaximizeWindow:'最大化或还原窗口',
   closeFolder:'关闭文件夹',
   quit:'退出',
 
@@ -92,6 +96,7 @@ export default {
   autoTheme:'主题跟随系统设置',
 
   image: '图片',
+  word: 'Word 文档（.docx）',
 
   saveImageType: '保存插入图片',
   saveImagePath:'保存图片的路径',
@@ -124,5 +129,10 @@ export default {
   previousSegment: '上一段',
   nextSegment: '下一段',
   currentSegmentOnly: '仅当前段',
+  segmentNavigationMode: '分段切换方式',
+  segmentNavigationButtons: '按钮切换上一段 / 下一段',
+  segmentNavigationScroll: '滚动到边界自动切换',
+  segmentNavigationHint: '仅大文件分段渲染时生效。滚动模式下，到底部进入下一段，到顶部返回上一段。',
+  segmentScrollHint: '滚动至底部或顶部切换段落',
 
 }

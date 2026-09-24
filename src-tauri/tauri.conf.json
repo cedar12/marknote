@@ -72,6 +72,9 @@
     ],
     "targets": "all",
     "windows": {
+      "wix": {
+        "version": "0.0.8.1"
+      },
       "nsis": {
         "displayLanguageSelector": true,
         "languages": [

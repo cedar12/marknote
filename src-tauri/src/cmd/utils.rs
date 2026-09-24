@@ -55,6 +55,13 @@ pub fn build_info() -> HashMap<String,String> {
 }
 
 #[tauri::command]
+pub async fn render_markdown(markdown: String) -> Result<String, String> {
+    tauri::async_runtime::spawn_blocking(move || crate::utils::md::md_to_html(&markdown))
+        .await
+        .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
 pub fn themes(app: AppHandle) -> Vec<String> {
     let result = app.path().resource_dir();
     match result {

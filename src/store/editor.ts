@@ -4,6 +4,8 @@ import { DOMParser as ProseMirrorDOMParser } from '@tiptap/pm/model';
 import { defineStore } from 'pinia';
 import { shallowRef, type Ref } from 'vue';
 import * as appLog from '@tauri-apps/plugin-log';
+import { isTauri } from '@tauri-apps/api/core';
+import { renderMarkdown } from '../api/utils';
 import {
   LARGE_FILE_THRESHOLD,
   preserveBoundaryNewlines,
@@ -34,6 +36,8 @@ export const useEditorStore = defineStore('editor', {
     segmentIndex: number,
     segmentDirty: boolean,
     pendingContent: string | null,
+    renderVersion: number,
+    renderingDocument: boolean,
   } {
     return {
       codeTheme: localStorage.getItem('codeTheme') || 'nnfx-light',
@@ -45,6 +49,8 @@ export const useEditorStore = defineStore('editor', {
       segmentIndex: 0,
       segmentDirty: false,
       pendingContent: null,
+      renderVersion: 0,
+      renderingDocument: false,
     }
   },
 
@@ -61,14 +67,12 @@ export const useEditorStore = defineStore('editor', {
     setEditor(editor: Editor | undefined) {
       editorRef.value = editor;
     },
-    replaceEditorDocument(content: string) {
+    replaceEditorDocument(body: HTMLElement) {
       const editor = this.editor;
       if (!editor) {
-        appLog.error(`editor unavailable while loading ${content.length} characters`);
+        appLog.error(`editor unavailable while loading ${body.textContent?.length || 0} characters`);
         return;
       }
-      const html = editor.storage.markdown.parser.parse(content);
-      const body = new window.DOMParser().parseFromString(`<body>${html}</body>`, 'text/html').body;
       const doc = ProseMirrorDOMParser.fromSchema(editor.schema).parse(body);
       doc.check();
       // A newly opened file or segment needs fresh plugin history.
@@ -84,22 +88,50 @@ export const useEditorStore = defineStore('editor', {
       editor.view.updateState(state);
     },
 
-    flushPendingContent() {
-      if (this.pendingContent === null || !this.editor) return;
-      const content = this.pendingContent;
-      this.replaceEditorDocument(content);
-      this.pendingContent = null;
-      this.updateHeadings();
+    async renderEditorBody(content: string): Promise<HTMLElement> {
+      const parser = this.editor.storage.markdown.parser;
+      if (!content) return new window.DOMParser().parseFromString('<body></body>', 'text/html').body;
+      if (isTauri()) {
+        try {
+          const html = await renderMarkdown(content);
+          return parser.parseRenderedDom(html, { content });
+        } catch (error) {
+          appLog.error(`Rust Markdown rendering failed: ${String(error)}`);
+        }
+      }
+      const html = parser.parse(content);
+      return new window.DOMParser().parseFromString(`<body>${html}</body>`, 'text/html').body;
     },
 
-    setContent(content: string) {
+    async flushPendingContent() {
+      if (this.pendingContent === null || !this.editor) return;
+      const content = this.pendingContent;
+      const version = ++this.renderVersion;
+      try {
+        const body = await this.renderEditorBody(content);
+        if (version !== this.renderVersion || !this.editor) return;
+        this.replaceEditorDocument(body);
+        this.pendingContent = null;
+        this.renderingDocument = false;
+        this.updateHeadings();
+      } catch (error) {
+        if (version === this.renderVersion) {
+          appLog.error(`editor document rendering failed: ${String(error)}`);
+        }
+        throw error;
+      }
+    },
+
+    async setContent(content: string) {
+      ++this.renderVersion;
+      this.renderingDocument = true;
       this.segmented = utf8ByteLength(content) >= LARGE_FILE_THRESHOLD;
       this.segments = this.segmented ? splitMarkdownIntoSegments(content) : [];
       this.segmentIndex = 0;
       this.segmentDirty = false;
       this.findVisbile = false;
       this.pendingContent = this.segmented ? this.segments[0] : content;
-      this.flushPendingContent();
+      await this.flushPendingContent();
     },
 
     markCurrentSegmentEdited() {
@@ -116,18 +148,30 @@ export const useEditorStore = defineStore('editor', {
       this.segmentDirty = false;
     },
 
-    showSegment(index: number, focusPosition: 'start' | 'end' = 'start') {
-      if (!this.segmented || index < 0 || index >= this.segments.length || index === this.segmentIndex) return;
+    async showSegment(index: number, focusPosition: 'start' | 'end' = 'start'): Promise<boolean> {
+      if (!this.segmented || index < 0 || index >= this.segments.length || index === this.segmentIndex) return false;
+      const version = ++this.renderVersion;
+      let body: HTMLElement;
+      try {
+        body = await this.renderEditorBody(this.segments[index]);
+      } catch (error) {
+        if (version === this.renderVersion) {
+          appLog.error(`segment rendering failed: ${String(error)}`);
+        }
+        return false;
+      }
+      if (version !== this.renderVersion || !this.editor || !this.segmented) return false;
       this.commitCurrentSegment();
       this.segmentIndex = index;
       this.segmentDirty = false;
-      this.replaceEditorDocument(this.segments[index]);
+      this.replaceEditorDocument(body);
       this.updateHeadings();
       this.editor?.commands.focus(focusPosition);
+      return true;
     },
 
     getMarkdown(): string | undefined {
-      if (!this.editor) return undefined;
+      if (!this.editor || this.renderingDocument) return undefined;
       if (!this.segmented) return this.editor.storage.markdown.getMarkdown();
       this.commitCurrentSegment();
       return this.segments.join('');
