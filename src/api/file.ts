@@ -29,8 +29,11 @@ export function exportImage(path:string,base64:string){
 export function exportPDF(path:string,html:string){
   return invoke('export_pdf', { path,html});
 }
-export function exportWord(path:string,markdown:string,sourcePath:string|null){
-  return invoke('export_word', { path,markdown,sourcePath });
+export function collectWordEquations(markdown:string):Promise<string[]>{
+  return invoke('collect_word_equations', { markdown });
+}
+export function exportWord(path:string,markdown:string,sourcePath:string|null,diagramImages:Record<string,string>,equations:Record<string,string>){
+  return invoke('export_word', { path,markdown,sourcePath,diagramImages,equations });
 }
 
 

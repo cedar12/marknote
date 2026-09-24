@@ -214,13 +214,22 @@ pub async fn export_pdf(
 }
 
 #[tauri::command]
+pub async fn collect_word_equations(markdown: String) -> Result<Vec<String>, String> {
+    tauri::async_runtime::spawn_blocking(move || utils::docx::collect_equations(&markdown))
+        .await
+        .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
 pub async fn export_word(
     path: String,
     markdown: String,
     source_path: Option<String>,
+    diagram_images: std::collections::HashMap<String, String>,
+    equations: std::collections::HashMap<String, String>,
 ) -> Result<resp::Resp<String>, String> {
     tauri::async_runtime::spawn_blocking(move || {
-        let bytes = utils::docx::markdown_to_docx(&markdown, source_path.as_deref())
+        let bytes = utils::docx::markdown_to_docx_with_assets(&markdown, source_path.as_deref(), diagram_images, equations)
             .map_err(|error| error.to_string())?;
         write_file_safely(&path, &bytes).map_err(|error| error.to_string())?;
         Ok(resp::ok(path, None))

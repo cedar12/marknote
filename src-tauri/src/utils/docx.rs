@@ -1,6 +1,7 @@
 //! Convert the editor's Markdown AST to an editable WordprocessingML package.
 //! The package is assembled locally, so exporting never requires Word or a web service.
 
+use std::collections::{HashMap, HashSet};
 use std::io::{Cursor, Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
@@ -82,10 +83,12 @@ struct WordDocument {
     next_relationship_id: u32,
     next_number_id: u32,
     source_dir: Option<PathBuf>,
+    diagram_images: HashMap<String, String>,
+    equations: HashMap<String, String>,
 }
 
 impl WordDocument {
-    fn new(source_path: Option<&str>) -> Self {
+    fn new(source_path: Option<&str>, diagram_images: HashMap<String, String>, equations: HashMap<String, String>) -> Self {
         let source_dir = source_path
             .filter(|path| !path.is_empty())
             .and_then(|path| Path::new(path).parent().map(Path::to_path_buf));
@@ -97,6 +100,8 @@ impl WordDocument {
             next_relationship_id: 3,
             next_number_id: 2,
             source_dir,
+            diagram_images,
+            equations,
         }
     }
 
@@ -147,11 +152,20 @@ impl WordDocument {
             } else if node.is::<Table>() {
                 self.render_table(node);
             } else if let Some(code) = node.cast::<CodeFence>() {
-                self.code_paragraph(&code.content, quote_depth);
+                if code.info.split_whitespace().next() == Some("mermaid") {
+                    let content = code.content.trim_end_matches('\n');
+                    if let Some(source) = self.diagram_images.get(content).cloned() {
+                        self.image_paragraph(&source, "Mermaid diagram", quote_depth);
+                    } else {
+                        self.code_paragraph(&code.content, quote_depth);
+                    }
+                } else {
+                    self.code_paragraph(&code.content, quote_depth);
+                }
             } else if let Some(code) = node.cast::<CodeBlock>() {
                 self.code_paragraph(&code.content, quote_depth);
             } else if let Some(math) = node.cast::<Math>() {
-                self.code_paragraph(&format!("$${}$$", math.content.trim_end()), quote_depth);
+                self.equation_paragraph(math.content.trim_end(), quote_depth);
             } else if let Some(html) = node.cast::<HtmlBlock>() {
                 // Raw HTML is source content in MarkNote. Keep it editable and visible.
                 self.code_paragraph(&html.content, quote_depth);
@@ -419,21 +433,13 @@ impl WordDocument {
         } else if let Some(checkbox) = node.cast::<TodoCheckbox>() {
             out.push_str(&text_run(if checkbox.checked { "☑ " } else { "☐ " }, style));
         } else if let Some(math) = node.cast::<InlineMath>() {
-            out.push_str(&text_run(
-                &format!("${}$", math.content),
-                RunStyle {
-                    code: true,
-                    ..style
-                },
-            ));
+            if let Some(equation) = self.equations.get(&math.content) {
+                out.push_str(equation);
+            }
         } else if let Some(math) = node.cast::<Math>() {
-            out.push_str(&text_run(
-                &format!("$${}$$", math.content),
-                RunStyle {
-                    code: true,
-                    ..style
-                },
-            ));
+            if let Some(equation) = self.equations.get(math.content.trim_end()) {
+                out.push_str(equation);
+            }
         } else if let Some(html) = node.cast::<HtmlInline>() {
             // MarkNote accepts raw HTML; keep source tags visible rather than dropping them.
             out.push_str(&text_run(
@@ -455,7 +461,32 @@ impl WordDocument {
     }
 
     fn render_image(&mut self, image: &Image, alt: &str, out: &mut String) {
-        match self.read_image(&image.url) {
+        self.render_image_source(&image.url, alt, out);
+    }
+
+    fn image_paragraph(&mut self, source: &str, alt: &str, quote_depth: u8) {
+        let mut xml = String::from("<w:p>");
+        xml.push_str(&paragraph_properties(ParagraphStyle {
+            quote_depth,
+            ..Default::default()
+        }));
+        self.render_image_source(source, alt, &mut xml);
+        xml.push_str("</w:p>");
+        self.body.push_str(&xml);
+    }
+
+    fn equation_paragraph(&mut self, content: &str, quote_depth: u8) {
+        if let Some(equation) = self.equations.get(content) {
+            let properties = paragraph_properties(ParagraphStyle {
+                quote_depth,
+                ..Default::default()
+            });
+            self.body.push_str(&format!("<w:p>{properties}<m:oMathPara>{equation}</m:oMathPara></w:p>"));
+        }
+    }
+
+    fn render_image_source(&mut self, source: &str, alt: &str, out: &mut String) {
+        match self.read_image(source) {
             Ok((data, width, height)) => {
                 let image_id = self.images.len() + 1;
                 let name = format!("image{image_id}.png");
@@ -472,9 +503,14 @@ impl WordDocument {
                 out.push_str(&format!("<w:r><w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\"><wp:extent cx=\"{cx}\" cy=\"{cy}\"/><wp:docPr id=\"{image_id}\" name=\"Image {image_id}\" descr=\"{alt}\"/><a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic><pic:nvPicPr><pic:cNvPr id=\"0\" name=\"{name}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"rId{rel_id}\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"{cx}\" cy=\"{cy}\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>"));
             }
             Err(error) => {
-                log::warn!("Word export could not embed image {}: {error}", image.url);
+                log::warn!("Word export could not embed image: {error}");
+                let fallback = if source.starts_with("data:") {
+                    format!("[{alt}]")
+                } else {
+                    format!("![{alt}]({source})")
+                };
                 out.push_str(&text_run(
-                    &format!("![{alt}]({})", image.url),
+                    &fallback,
                     RunStyle::default(),
                 ));
             }
@@ -570,7 +606,7 @@ impl WordDocument {
         } else {
             &self.body
         };
-        format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><w:document xmlns:w=\"{W_NS}\" xmlns:r=\"{REL_NS}\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><w:body>{content}<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"708\" w:footer=\"708\" w:gutter=\"0\"/></w:sectPr></w:body></w:document>")
+        format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><w:document xmlns:w=\"{W_NS}\" xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\" xmlns:r=\"{REL_NS}\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><w:body>{content}<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"708\" w:footer=\"708\" w:gutter=\"0\"/></w:sectPr></w:body></w:document>")
     }
 
     fn relationships_xml(&self) -> String {
@@ -675,10 +711,71 @@ const STYLES_XML: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes
 </w:styles>"#;
 
 pub fn markdown_to_docx(markdown: &str, source_path: Option<&str>) -> Result<Vec<u8>> {
+    markdown_to_docx_with_diagrams(markdown, source_path, HashMap::new())
+}
+
+pub fn collect_equations(markdown: &str) -> Vec<String> {
     let parser = &mut markdown_it::MarkdownIt::new();
     rule::add(parser);
     let ast = parser.parse(markdown);
-    let mut document = WordDocument::new(source_path);
+    let mut equations = Vec::new();
+    let mut seen = HashSet::new();
+    fn visit(nodes: &[Node], equations: &mut Vec<String>, seen: &mut HashSet<String>) {
+        for node in nodes {
+            let content = if let Some(math) = node.cast::<InlineMath>() {
+                Some(math.content.as_str())
+            } else {
+                node.cast::<Math>().map(|math| math.content.trim_end())
+            };
+            if let Some(content) = content {
+                if seen.insert(content.to_owned()) {
+                    equations.push(content.to_owned());
+                }
+            }
+            visit(&node.children, equations, seen);
+        }
+    }
+    visit(&ast.children, &mut equations, &mut seen);
+    equations
+}
+
+pub fn markdown_to_docx_with_diagrams(
+    markdown: &str,
+    source_path: Option<&str>,
+    diagram_images: HashMap<String, String>,
+) -> Result<Vec<u8>> {
+    markdown_to_docx_with_assets(markdown, source_path, diagram_images, HashMap::new())
+}
+
+pub fn markdown_to_docx_with_assets(
+    markdown: &str,
+    source_path: Option<&str>,
+    diagram_images: HashMap<String, String>,
+    equations: HashMap<String, String>,
+) -> Result<Vec<u8>> {
+    let parser = &mut markdown_it::MarkdownIt::new();
+    rule::add(parser);
+    let ast = parser.parse(markdown);
+    fn check_diagrams(nodes: &[Node], images: &HashMap<String, String>) -> Result<()> {
+        for node in nodes {
+            if let Some(code) = node.cast::<CodeFence>() {
+                if code.info.split_whitespace().next() == Some("mermaid")
+                    && !images.contains_key(code.content.trim_end_matches('\n'))
+                {
+                    return Err(anyhow!("Mermaid diagram could not be rendered for Word export"));
+                }
+            }
+            check_diagrams(&node.children, images)?;
+        }
+        Ok(())
+    }
+    check_diagrams(&ast.children, &diagram_images)?;
+    for content in collect_equations(markdown) {
+        if !equations.contains_key(&content) {
+            return Err(anyhow!("Formula could not be converted for Word export"));
+        }
+    }
+    let mut document = WordDocument::new(source_path, diagram_images, equations);
     document.render_blocks(&ast.children, 0);
 
     let cursor = Cursor::new(Vec::new());
@@ -707,7 +804,9 @@ pub fn markdown_to_docx(markdown: &str, source_path: Option<&str>) -> Result<Vec
 
 #[cfg(test)]
 mod tests {
-    use super::markdown_to_docx;
+    use super::{collect_equations, markdown_to_docx, markdown_to_docx_with_assets, markdown_to_docx_with_diagrams};
+    use base64::{engine::general_purpose, Engine as _};
+    use std::collections::HashMap;
     use std::io::{Cursor, Read};
     use zip::ZipArchive;
 
@@ -820,5 +919,71 @@ mod tests {
             .read_to_string(&mut numbering)
             .unwrap();
         assert!(numbering.contains("<w:lvlOverride w:ilvl=\"1\"><w:startOverride w:val=\"3\"/>"), "{numbering}");
+    }
+
+    #[test]
+    fn embeds_rendered_mermaid_and_keeps_other_code() {
+        let mut png = Cursor::new(Vec::new());
+        image::DynamicImage::ImageRgb8(image::RgbImage::from_pixel(
+            32,
+            16,
+            image::Rgb([255, 255, 255]),
+        ))
+            .write_to(&mut png, image::ImageOutputFormat::Png)
+            .unwrap();
+        let diagram = "flowchart TD\nA --> B";
+        let data_url = format!(
+            "data:image/png;base64,{}",
+            general_purpose::STANDARD.encode(png.into_inner())
+        );
+        let markdown = format!("```mermaid\n{diagram}\n```\n\n```rust\nlet x = 1;\n```");
+        let bytes = markdown_to_docx_with_diagrams(
+            &markdown,
+            None,
+            HashMap::from([(diagram.to_owned(), data_url)]),
+        )
+        .unwrap();
+        let mut zip = ZipArchive::new(Cursor::new(bytes)).unwrap();
+        let mut document = String::new();
+        zip.by_name("word/document.xml")
+            .unwrap()
+            .read_to_string(&mut document)
+            .unwrap();
+        assert!(document.contains("<w:drawing>"));
+        assert!(!document.contains("flowchart TD"));
+        assert!(document.contains("let x = 1;"));
+        let mut image = Vec::new();
+        zip.by_name("word/media/image1.png")
+            .unwrap()
+            .read_to_end(&mut image)
+            .unwrap();
+        assert!(image.starts_with(b"\x89PNG"));
+    }
+
+    #[test]
+    fn rejects_mermaid_without_a_rendered_image() {
+        let result = markdown_to_docx("```mermaid\nflowchart TD\nA --> B\n```", None);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn exports_native_inline_and_display_equations() {
+        let markdown = "Inline $x^2$ and $\\frac{a}{b}$.\n\n$$\n\\sqrt{x}\n$$\n\n```text\n$not_math$\n```";
+        let formulas = collect_equations(markdown);
+        assert_eq!(formulas, vec![String::from("x^2"), String::from("\\frac{a}{b}"), String::from("\\sqrt{x}")]);
+        let equations = HashMap::from([
+            ("x^2".into(), "<m:oMath><m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup></m:oMath>".into()),
+            ("\\frac{a}{b}".into(), "<m:oMath><m:f/></m:oMath>".into()),
+            ("\\sqrt{x}".into(), "<m:oMath><m:rad/></m:oMath>".into()),
+        ]);
+        let bytes = markdown_to_docx_with_assets(markdown, None, HashMap::new(), equations).unwrap();
+        let mut zip = ZipArchive::new(Cursor::new(bytes)).unwrap();
+        let mut document = String::new();
+        zip.by_name("word/document.xml").unwrap().read_to_string(&mut document).unwrap();
+        assert!(document.contains("xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\""));
+        assert!(document.contains("<m:sSup>"));
+        assert!(document.contains("<m:oMathPara><m:oMath><m:rad/>"));
+        assert!(document.contains("$not_math$"));
+        assert!(!document.contains("$x^2$"));
     }
 }

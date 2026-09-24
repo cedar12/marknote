@@ -8,7 +8,7 @@ import { ask, message, open,save } from '@tauri-apps/plugin-dialog';
 import * as appLog from '@tauri-apps/plugin-log';
 import { exit } from '@tauri-apps/plugin-process';
 import {openFile} from '../api/dialog';
-import {exportHTML, exportImage,exportPDF, exportWord, read,readToHTML} from '../api/file';
+import {collectWordEquations, exportHTML, exportImage,exportPDF, exportWord, read,readToHTML} from '../api/file';
 import i18n from '../i18n';
 import { openAbout, openPreferences, openWindow } from '../api/window';
 import {
@@ -20,6 +20,8 @@ import { PlatformType, openExplorer } from '../api/utils';
 import {toImage,handleHtml} from '../utils';
 import { nextTick } from 'vue';
 import html2canvas from 'html2canvas';
+import { renderWordDiagrams } from '../utils/wordDiagrams';
+import { renderWordEquations } from '../utils/wordEquations';
 
 const appWindow=getCurrentWindow();
 // @ts-ignore
@@ -209,7 +211,9 @@ const events = {
         throw new Error(t('documentNotReady'));
       }
       const appStore=useAppStore();
-      const response:any=await exportWord(path,markdown,appStore.filepath);
+      const diagramImages=await renderWordDiagrams(markdown);
+      const equations=renderWordEquations(await collectWordEquations(markdown));
+      const response:any=await exportWord(path,markdown,appStore.filepath,diagramImages,equations);
       if(!response || response.code!==0){
         throw new Error(response?.info || t('exportFailed'));
       }
