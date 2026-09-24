@@ -14,7 +14,7 @@
     "core:window:allow-set-resizable",
     "core:window:allow-set-title",
     "core:window:allow-show",
-    "clipboard-manager:default",
+    "clipboard-manager:allow-write-text",
     "dialog:default",
     "global-shortcut:allow-is-registered",
     "global-shortcut:allow-register",
