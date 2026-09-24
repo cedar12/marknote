@@ -1,6 +1,5 @@
 <template>
   <NodeViewWrapper class="marknote-codeblock" :class="{'marknote-mermaid':isMermaid()}" ref="wrapperRef">
-    <!-- <div class="codeblock-wrapper" contenteditable="false" v-if="props.editor.isActive('codeBlock')&&isFocus()"> -->
     <div class="codeblock-wrapper" contenteditable="false" v-show="isFocus()">
       <ElSelect class="left-wrapper" clearable filterable size="small" v-model="value" placeholder="    " 
         :disabled="!isEditable" @change="props.updateAttributes({ language: value })">
@@ -13,14 +12,14 @@
           </ElButton>
         </ElTooltip>
         <ElTooltip size="small " :content="t('copy')">
-          <ElButton size="small" @click="handleClick" tabindex="-1">
+          <ElButton size="small" :aria-label="t('copy')" @pointerdown.stop.prevent="handleCopy" @click.stop="handleCopyClick">
               <Copy></Copy>
           </ElButton>
         </ElTooltip>
         
       </div>
     </div>
-    <pre ref="contentRef" class="hljs" v-show="!isMermaid()||showCode">
+    <pre class="hljs" v-show="!isMermaid()||showCode">
       <NodeViewContent as="code"></NodeViewContent>
     </pre>
     <div v-if="isMermaid()" class="mermaid-render" v-html="mermaidValue" contenteditable="false" ></div>
@@ -46,7 +45,6 @@ const isEditable = ref(props.editor.isEditable);
 const value = ref(props.node.attrs.language || '');
 const showCode=ref(false);
 
-const contentRef=ref<HTMLElement>();
 const wrapperRef=ref<HTMLElement>();
 
 const mermaidValue=ref<string>();
@@ -63,12 +61,17 @@ const options=()=>{
 
 
 
-const handleClick=()=>{
-  
-  const text=(contentRef.value?.children[0] as HTMLElement).innerText;
-  console.log('copy',text);
-  if(text)
-  writeText(text);
+const handleCopy=async ()=>{
+  try {
+    await writeText(props.node.textContent);
+  } catch (error) {
+    console.error('Code block copy failed:', error);
+  }
+}
+
+const handleCopyClick=(event: MouseEvent)=>{
+  // Keyboard activation has no pointerdown event.
+  if (event.detail === 0) void handleCopy();
 }
 
 const renderMermaid=async ()=>{

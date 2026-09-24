@@ -85,6 +85,7 @@ struct WordDocument {
     source_dir: Option<PathBuf>,
     diagram_images: HashMap<String, String>,
     equations: HashMap<String, String>,
+    image_error: Option<anyhow::Error>,
 }
 
 impl WordDocument {
@@ -102,6 +103,7 @@ impl WordDocument {
             source_dir,
             diagram_images,
             equations,
+            image_error: None,
         }
     }
 
@@ -156,8 +158,6 @@ impl WordDocument {
                     let content = code.content.trim_end_matches('\n');
                     if let Some(source) = self.diagram_images.get(content).cloned() {
                         self.image_paragraph(&source, "Mermaid diagram", quote_depth);
-                    } else {
-                        self.code_paragraph(&code.content, quote_depth);
                     }
                 } else {
                     self.code_paragraph(&code.content, quote_depth);
@@ -503,16 +503,10 @@ impl WordDocument {
                 out.push_str(&format!("<w:r><w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\"><wp:extent cx=\"{cx}\" cy=\"{cy}\"/><wp:docPr id=\"{image_id}\" name=\"Image {image_id}\" descr=\"{alt}\"/><a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic><pic:nvPicPr><pic:cNvPr id=\"0\" name=\"{name}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"rId{rel_id}\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"{cx}\" cy=\"{cy}\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>"));
             }
             Err(error) => {
-                log::warn!("Word export could not embed image: {error}");
-                let fallback = if source.starts_with("data:") {
-                    format!("[{alt}]")
-                } else {
-                    format!("![{alt}]({source})")
-                };
-                out.push_str(&text_run(
-                    &fallback,
-                    RunStyle::default(),
-                ));
+                if self.image_error.is_none() {
+                    let image_name = if source.starts_with("data:") { alt } else { source };
+                    self.image_error = Some(error.context(format!("Word export could not embed image: {image_name}")));
+                }
             }
         }
     }
@@ -777,6 +771,9 @@ pub fn markdown_to_docx_with_assets(
     }
     let mut document = WordDocument::new(source_path, diagram_images, equations);
     document.render_blocks(&ast.children, 0);
+    if let Some(error) = document.image_error.take() {
+        return Err(error);
+    }
 
     let cursor = Cursor::new(Vec::new());
     let mut zip = ZipWriter::new(cursor);
@@ -833,12 +830,14 @@ mod tests {
         assert!(document.contains("<w:i/>"));
         assert!(document.contains("<w:strike/>"));
         assert!(document.contains("<w:hyperlink r:id="));
+        assert!(!document.contains("[link]("));
         assert!(document.contains("☑ "));
         assert!(document.contains("☐ "));
         assert!(document.contains("<w:numPr>"));
         assert!(document.contains("<w:tbl>"));
         assert!(document.contains("fn main() {}"));
         assert!(document.contains("<w:drawing>"));
+        assert!(!document.contains("![sample]("));
         let mut image = Vec::new();
         zip.by_name("word/media/image1.png")
             .unwrap()
@@ -883,15 +882,10 @@ mod tests {
     }
 
     #[test]
-    fn retains_unavailable_image_reference() {
-        let bytes = markdown_to_docx("![diagram](missing-image.png)", None).unwrap();
-        let mut zip = ZipArchive::new(Cursor::new(bytes)).unwrap();
-        let mut document = String::new();
-        zip.by_name("word/document.xml")
-            .unwrap()
-            .read_to_string(&mut document)
-            .unwrap();
-        assert!(document.contains("![diagram](missing-image.png)"));
+    fn rejects_unavailable_image_instead_of_exporting_markdown_source() {
+        let result = markdown_to_docx("![diagram](missing-image.png)", None);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("missing-image.png"));
     }
 
     #[test]
@@ -951,6 +945,7 @@ mod tests {
             .unwrap();
         assert!(document.contains("<w:drawing>"));
         assert!(!document.contains("flowchart TD"));
+        assert!(!document.contains("```mermaid"));
         assert!(document.contains("let x = 1;"));
         let mut image = Vec::new();
         zip.by_name("word/media/image1.png")

@@ -64,6 +64,7 @@ export default {
   codeFences:'Code Fences',
   quoteBlock:'Quote Block',
   mathBlock:'Math Block',
+  emptyFormula:'Enter a formula',
 
   orderedList:'Ordered List',
   bulletList:'Bullet List',

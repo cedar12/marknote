@@ -1,5 +1,5 @@
 
-import { mergeAttributes, Node, nodeInputRule,nodePasteRule } from '@tiptap/core';
+import { mergeAttributes, Node, textblockTypeInputRule } from '@tiptap/core';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
 import KatexWrapper from './wrapper/KatexWrapper.vue';
 import { Plugin, PluginKey } from '@tiptap/pm/state'
@@ -25,27 +25,21 @@ export const Katex = Node.create<IKatexOptions>({
   name: 'katex',
   group: 'block',
   selectable: true,
-  atom: true,
+  content: 'text*',
+  marks: '',
+  code: true,
   draggable: true,
 
   addOptions() {
     return {
       HTMLAttributes: {
-        class: 'katex',
+        class: 'katex-display',
       },
     };
   },
 
   addAttributes() {
     return {
-      text: {
-        default: '',
-        parseHTML: (el)=>{
-          const tex=el.querySelector('annotation[encoding="application/x-tex"]') as HTMLElement;
-          // console.log(el,tex,tex.textContent);
-          return tex.textContent;
-        },
-      },
       defaultShowPicker: {
         default: false,
       },
@@ -56,11 +50,14 @@ export const Katex = Node.create<IKatexOptions>({
   },
 
   parseHTML() {
-    return [{ tag: 'span.katex-display' }];
+    return [{
+      tag: 'span.katex-display',
+      contentElement: (element) => (element as HTMLElement).querySelector<HTMLElement>('annotation[encoding="application/x-tex"]') || element as HTMLElement,
+    }];
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['span', mergeAttributes((this.options && this.options.HTMLAttributes) || {}, HTMLAttributes)];
+    return ['span', mergeAttributes((this.options && this.options.HTMLAttributes) || {}, HTMLAttributes), 0];
   },
 
   addCommands() {
@@ -70,7 +67,7 @@ export const Katex = Node.create<IKatexOptions>({
         ({ commands }) => {
           return commands.insertContent({
             type: this.name,
-            attrs: options,
+            content: options?.text ? [{ type: 'text', text: options.text }] : [],
           });
       },
       // toggleKatex: (attributes) => ({ commands }) => {
@@ -81,55 +78,44 @@ export const Katex = Node.create<IKatexOptions>({
 
   addInputRules() {
     return [
-      nodeInputRule({
-        find: /^\${2}\s*?/,
+      textblockTypeInputRule({
+        find: /^\${2}\s*$/,
         type: this.type,
-        getAttributes: (match) => {
-          console.log('input katex',match);
-          return { defaultShowPicker: true };
-        },
       }),
     ];
-  },
-
-  addPasteRules() {
-    return [
-      nodePasteRule({
-        find: /\${2}(.+)\${2}/g,
-        type: this.type,
-        getAttributes: (_match, _pasteEvent) => {
-          // const html = pasteEvent?.clipboardData?.getData('text/html')
-          // const hrefRegex = /$$\s*\n(.*)"/
-
-          // const existingLink = html?.match(hrefRegex)
-
-          // if (existingLink) {
-          //   return {
-          //     text: existingLink[1],
-          //   }
-          // }
-          // console.log('katex',match,pasteEvent);
-          return {
-            text: ''//match.data?.text,
-          }
-        },
-      }),
-    ]
   },
 
   addNodeView() {
     return VueNodeViewRenderer(KatexWrapper);
   },
 
-  // @ts-ignore
-  addKeyboardShortcuts(){
-    
+  addKeyboardShortcuts() {
     return {
-      'Mod-Alt-M': () => {
-        console.log('toggle katex');
-        // return this.editor.commands.toggleKatex()
+      Tab: () => {
+        const { selection } = this.editor.state;
+        if (selection.$from.parent.type !== this.type) return false;
+        this.editor.view.dispatch(this.editor.state.tr.insertText('\t'));
+        return true;
       },
-    }  
+      Backspace: () => {
+        const { selection } = this.editor.state;
+        if (!selection.empty || selection.$from.parent.type !== this.type) return false;
+        if (selection.$from.parentOffset === 0 && !selection.$from.parent.textContent) {
+          return this.editor.commands.clearNodes();
+        }
+        return false;
+      },
+      Enter: () => {
+        const { selection } = this.editor.state;
+        const { $from, empty } = selection;
+        if (!empty || $from.parent.type !== this.type) return false;
+        if ($from.parentOffset !== $from.parent.content.size || !$from.parent.textContent.endsWith('\n\n')) return false;
+        return this.editor.chain().command(({ tr }) => {
+          tr.delete($from.pos - 2, $from.pos);
+          return true;
+        }).exitCode().run();
+      },
+    };
   },
   // @ts-ignore
   addProseMirrorPlugins() {
@@ -164,9 +150,7 @@ export const Katex = Node.create<IKatexOptions>({
             }
             // create an empty
             // const ntr=tr.replaceSelectionWith(this.type.create({ text:matches[1] }))
-            const node = schema.nodes.katex.create({
-              text: matches[1],
-            });
+            const node = schema.nodes.katex.create(null, schema.text(matches[1]));
             const transaction = tr.replaceSelectionWith(node);
             transaction.setMeta('paste', true)
             view.dispatch(transaction)

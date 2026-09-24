@@ -61,6 +61,7 @@ export default {
   codeFences:'代码块',
   quoteBlock:'引用块',
   mathBlock:'数学块',
+  emptyFormula:'未输入公式',
 
   bulletList:'无序列表',
   orderedList:'有序列表',

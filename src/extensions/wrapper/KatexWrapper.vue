@@ -1,129 +1,60 @@
 <template>
-  <NodeViewWrapper class="marknote-katex" >
-    <div class="katex-wrapper" contenteditable="false" v-if="isFocus()">
-    <!-- <div class="hljs katex-wrapper" contenteditable="true"  @input="onChangeText">
-      <code >{{ value }}</code>
-    </div> -->
-      <ElInput v-model="value" autosize ref="inputRef"
-    type="textarea"  @change="onChangeText" @keydown="onkeyDown"></ElInput>
-      
-      <!-- <ElTooltip size="small " :content="t('edit')">
-          <ElButton size="small" :icon="Edit" @click="onEdit"></ElButton>
-      </ElTooltip> -->
-    </div>
-    <div className="katex-content" v-if="value&&value.trim()!=''" v-html="formatText()"></div>
-    <div className="katex-content" v-else>
-      <span class="katex-empty">未输入公式</span>
-    </div>
+  <NodeViewWrapper class="marknote-katex">
+    <pre v-show="isSelected()" class="katex-source"><NodeViewContent as="code" /></pre>
+    <div v-if="source.trim()" class="katex-content" contenteditable="false" v-html="preview"></div>
+    <div v-else class="katex-content katex-empty" contenteditable="false">{{ t('emptyFormula') }}</div>
   </NodeViewWrapper>
 </template>
-<script lang="ts" setup>
-// import {Edit} from '@icon-park/vue-next';
-import { ref,onMounted,watch } from 'vue';
-import {ElInput} from 'element-plus';
-import katex from 'katex';
-import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
-import { getCurrentWindow } from '@tauri-apps/api/window';
-// import {useI18n} from 'vue-i18n';
 
-const appWindow=getCurrentWindow();
+<script lang="ts" setup>
+import { computed } from 'vue';
+import katex from 'katex';
+import { NodeViewContent, NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps(nodeViewProps);
-const {  text } = props.node.attrs;
-
-// const {t}=useI18n();
-
-const value=ref(text);
-const inputRef=ref();
-
-watch(()=>text.value,()=>{
-  console.log('text watch',text);
-  value.value=text.value;
-});
-
-onMounted(()=>{
-  console.log('katex',text);
-
-})
-
-const isFocus=()=>{
-  
-  const {anchor}=props.editor.state.selection;
-  const node=props.node;
-  const pos=props.getPos();
-  //console.log(anchor,pos,node.nodeSize,node);
-  const is=props.editor.isActive('katex')&&(anchor == pos && anchor <= pos + node.nodeSize - 1);
-  /*
-  if(is&&inputRef.value){
-    nextTick(()=>{
-      inputRef.value.focus();
-    });
-    
-  }*/
-  return is;
-}
-const onChangeText=()=>{
-  // const rr=katex.renderToString(`${value.value}`);
-  // console.log('katex change text',value.value,rr);
-  
-  props.updateAttributes({ text: value.value });
-}
-
-const onkeyDown=(e:KeyboardEvent|Event)=>{
-  // console.log(e);
-  if(e instanceof KeyboardEvent&&e.key==='Backspace'&&value.value===''){
-    props.editor.commands.deleteSelection();
-  }
-}
-
-appWindow.listen<string>('dialog-katex-text',(event)=>{
-  value.value=event.payload;
-  onChangeText();
-})
-
-// const onEdit=()=>{
-//   appWindow.emit('dialog-katex-visible',value.value);
-// }
-const formatText = ():string => {
-  return katex.renderToString(`${value.value}`,{throwOnError:false,displayMode:true});
-    // try {
-    //   return katex.renderToString(`${value.value}`,{throwOnError:false,displayMode:true});
-    //   // error.value=null;
-    //   // return result;
-    // } catch (e) {
-    //   // error.value=e;
-    //   return `<span class="katex-error">${e}</span>`;
-    // }
+const { t } = useI18n();
+const source = computed(() => props.node.textContent);
+const isSelected = () => {
+  const pos = props.getPos();
+  const anchor = props.editor.state.selection.anchor;
+  return props.selected || (props.editor.isActive('katex') && anchor >= pos && anchor < pos + props.node.nodeSize);
 };
-
+const preview = computed(() => katex.renderToString(source.value, {
+  throwOnError: false,
+  displayMode: true,
+}));
 </script>
 
 <style lang="scss">
 .marknote-katex {
-  position: relative;
-  
-  .katex-wrapper{
-    //display: flex;
-    //justify-content: end;
-    //display: none;
-    outline: none;
-    background-color: var(--contentBackgroundColorActive);
-    color: var(--contentColorActive);
-    padding: .4em;
-    
-    .el-textarea__inner{
-      --el-input-bg-color:var(--contentBackgroundColorActive);
-      --el-input-text-color:var(--contentColorActive);
-      outline:none;
-      border:none;
-      resize:none;
-      &:focus{
-        box-shadow: none;
-      }
+  .katex-source {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 1em;
+    border: 1px solid var(--contentBorderColor);
+    border-radius: 4px;
+    background: var(--editorHighlightBackgroundColor);
+    color: var(--editorHighlightTextColor);
+    font-family: JetBrainsMono, ui-monospace, monospace;
+    white-space: pre-wrap;
+    tab-size: var(--tabSize, 4);
+
+    code {
+      display: block;
+      min-height: 1.2em;
+      outline: none;
+      font: inherit;
+      white-space: inherit;
     }
   }
-  .katex-html{
-      display: none;
+
+  .katex-content {
+    padding: .4em;
+  }
+
+  .katex-empty {
+    color: var(--editorEchoTextColor);
   }
 }
 </style>

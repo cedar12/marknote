@@ -12,7 +12,7 @@ export default Katex.extend({
                 serialize(state: MarkdownSerializerState, node: ProseMirrorNode) {
                     state.write("$$");
                     state.ensureNewLine();
-                    state.text(node.attrs.text, false);
+                    state.text(node.textContent, false);
                     state.ensureNewLine();
                     state.write("$$");
                     state.closeBlock(node);
