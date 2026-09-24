@@ -23,8 +23,8 @@ function mermaidBlocks(markdown: string): string[] {
 
 function svgToPng(svg: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const document = new DOMParser().parseFromString(svg, 'image/svg+xml');
-    const root = document.documentElement;
+    const svgDocument = new DOMParser().parseFromString(svg, 'image/svg+xml');
+    const root = svgDocument.documentElement;
     const viewBox = root.getAttribute('viewBox')?.split(/[ ,]+/).map(Number);
     if (!viewBox || viewBox.length !== 4 || !viewBox[2] || !viewBox[3]) {
       reject(new Error('Mermaid diagram has no valid dimensions'));
@@ -42,7 +42,7 @@ function svgToPng(svg: string): Promise<string> {
         const width = Math.max(1, image.naturalWidth);
         const height = Math.max(1, image.naturalHeight);
         const scale = Math.min(2, 4000 / Math.max(width, height));
-        const canvas = document.createElement('canvas');
+        const canvas = window.document.createElement('canvas');
         canvas.width = Math.max(1, Math.round(width * scale));
         canvas.height = Math.max(1, Math.round(height * scale));
         const context = canvas.getContext('2d');
