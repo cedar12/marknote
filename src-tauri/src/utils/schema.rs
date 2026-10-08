@@ -6,13 +6,20 @@ fn get_schema() -> Value {
     json!(
     {
       "type": "object",
+      "required": ["label", "value", "type", "style"],
+      "additionalProperties": false,
       "properties": {
         "label": {
           "type":"string",
+          "minLength": 1,
+          "maxLength": 128,
           "title":"主题标签",
         },
         "value": {
           "type":"string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_-]+$",
           "title":"主题值",
         },
         "type": {
@@ -23,6 +30,13 @@ fn get_schema() -> Value {
         "style": {
           "type":"object",
           "title": "主题样式",
+          "additionalProperties": false,
+          "required": [
+            "primaryBackgroundColor", "primaryBackgroundColorHover", "primaryBackgroundColorActive",
+            "primaryTextColor", "primaryTextColorHover", "primaryTextColorActive", "primaryBorderColor",
+            "contentBackgroundColor", "contentBackgroundColorActive", "contentBackgroundColorHover",
+            "contentTextColor", "contentTextColorActive", "contentTextColorHover", "contentBorderColor"
+          ],
           "properties": {
             "primaryBackgroundColor": {
               "type":"string",

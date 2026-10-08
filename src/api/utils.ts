@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import type { MarkdownPreferences } from '../utils/markdownPreferences';
 
 export type PlatformType="linux"|"macos"|"ios"|"freebsd"|"dragonfly"|"netbsd"|"openbsd"|"solaris"|"android"|"windows";
 
@@ -19,8 +20,8 @@ export function openExplorer(path:string){
 export function buildInfo(){
   return invoke('build_info');
 }
-export function renderMarkdown(markdown: string): Promise<string> {
-  return invoke('render_markdown', { markdown });
+export function renderMarkdown(markdown: string, options?: MarkdownPreferences): Promise<string> {
+  return invoke('render_markdown', { markdown, options });
 }
 export function triggerPaste(){
   return invoke('trigger_paste');

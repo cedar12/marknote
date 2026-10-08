@@ -66,6 +66,12 @@ yarn
 yarn tauri dev
 ```
 
+# Markdown 设置
+
+在“首选项 → Markdown”中调整单个换行、链接识别、智能标点、HTML 解析、紧凑列表、无序列表标记，以及粘贴和复制时的 Markdown 转换。设置自动保存并同步到其他窗口。
+
+解析选项用于新打开的文档、后续粘贴和加载的分段，不会重建当前文档或清除撤销历史。输出选项用于后续保存与复制；大文件中未编辑的分段继续保留原文。“粘贴纯文本”和“复制纯文本”继续使用纯文本。
+
 # 主题
 
 ## 内置主题
@@ -82,94 +88,39 @@ yarn tauri dev
 
 ### 安装主题
 
-JSON主题文件需遵循Schema
+打开“首选项 → 主题”，点击“安装主题文件”，选择 UTF-8 编码的 JSON 文件。安装完成后可在列表中选择应用。已安装的主题保存在应用数据目录的 `themes` 子目录（Windows 通常为 `%APPDATA%/com.github.marknote/themes`），原始文件会保留。
 
-```json
+文件最大 1 MiB，必须包含下例全部字段。`label` 为 1–128 个字符的非空名称，不能包含控制字符；`value` 为 1–128 个 ASCII 字母、数字、短横线或下划线；`type` 为 `light` 或 `dark`。所有 14 项颜色均须为 `#RGB`、`#RRGGBB` 或 `#RRGGBBAA`。不接受额外字段。
+
+主题 ID 忽略大小写去重；重复安装会提示错误。`light`、`dark` 为保留 ID。
+
+~~~json
 {
-  "type": "object",
-  "properties": {
-	"label": {
-	  "type":"string",
-	  "title":"主题标签",
-	},
-	"value": {
-	  "type":"string",
-	  "title":"主题值",
-	},
-	"type": {
-	  "type":"string",
-	  "title": "主题类型",
-	  "enum":["light","dark"]
-	},
-	"style": {
-	  "type":"object",
-	  "title": "主题样式",
-	  "properties": {
-		"primaryBackgroundColor": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"primaryBackgroundColorHover": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"primaryBackgroundColorActive": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentBackgroundColor": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"primaryTextColor": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"primaryTextColorHover": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"primaryTextColorActive": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentTextColor": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"primaryBorderColor": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentBorderColor": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentBackgroundColorActive": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentBackgroundColorHover": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentTextColorActive": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentTextColorHover": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		}
-	  }
-	}
+  "label": "My Light Theme",
+  "value": "my-light",
+  "type": "light",
+  "style": {
+    "primaryBackgroundColor": "#2e3a62",
+    "primaryBackgroundColorHover": "#334789",
+    "primaryBackgroundColorActive": "#1f294a",
+    "primaryTextColor": "#74bcd4",
+    "primaryTextColorHover": "#4fb8db",
+    "primaryTextColorActive": "#1e9fca",
+    "primaryBorderColor": "#52b5f9",
+    "contentBackgroundColor": "#ffffff",
+    "contentBackgroundColorActive": "#ececec",
+    "contentBackgroundColorHover": "#ececec",
+    "contentTextColor": "#3e3e3e",
+    "contentTextColorActive": "#4e4e4e",
+    "contentTextColorHover": "#c4c4c4",
+    "contentBorderColor": "#babec1"
   }
 }
-```
+~~~
 
 ### 卸载主题
 
-从themes目录中删除JSON主题文件
+在“首选项 → 主题”中，点击已安装主题下的“卸载”并确认。卸载正在使用的主题时，所有窗口将切换到同类型的内置主题。内置主题和随包主题不能卸载。取消安装或卸载不会产生变更；文件操作失败会显示可恢复的错误。
 
 # 许可
 

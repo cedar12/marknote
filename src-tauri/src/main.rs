@@ -98,6 +98,7 @@ fn main() {
             cmd::window::open_preferences,
             cmd::window::open_about,
             cmd::preferences::save_image_type,
+            cmd::preferences::save_markdown_preferences,
             cmd::preferences::get_config,
             cmd::preferences::set_ftype,
             cmd::utils::cmd_args,
@@ -107,6 +108,9 @@ fn main() {
             cmd::utils::open_explorer,
             cmd::utils::platform,
             cmd::utils::themes,
+            cmd::theme::theme_list,
+            cmd::theme::theme_install,
+            cmd::theme::theme_uninstall,
             cmd::utils::build_info,
             cmd::utils::render_markdown,
         ])

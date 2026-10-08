@@ -12,14 +12,14 @@ export default Mark.create({
             markdown: {
                 serialize: {
                     open(state, mark)  {
-                        if(!this.editor.storage.markdown.options.html) {
+                        if(!this.editor.storage.markdown.options.html && !this.editor.storage.markdown.options.preserveExistingHtml) {
                             console.warn(`Tiptap Markdown: "${mark.type.name}" mark is only available in html mode`);
                             return '';
                         }
                         return getMarkTags(mark)?.[0] ?? '';
                     },
                     close(state, mark) {
-                        if(!this.editor.storage.markdown.options.html) {
+                        if(!this.editor.storage.markdown.options.html && !this.editor.storage.markdown.options.preserveExistingHtml) {
                             return '';
                         }
                         return getMarkTags(mark)?.[1] ?? '';

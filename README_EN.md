@@ -55,6 +55,12 @@ yarn
 yarn tauri dev
 ```
 
+# Markdown settings
+
+Open Preferences → Markdown to configure single line breaks, link recognition, smart punctuation, HTML parsing, compact lists, bullet markers, and Markdown conversion on paste/copy. Settings save automatically and synchronize across windows.
+
+Parsing settings apply to newly opened documents, pasted text, and loaded segments while retaining the current content, selection, and undo history. Output settings apply to future saves and copies; untouched large-file segments retain their original source. Paste As Plain Text and Copy As Plain Text keep plain-text behavior.
+
 # Theme
 
 ## Built-in Theme
@@ -71,93 +77,40 @@ yarn tauri dev
 
 ### Install Theme
 
-Theme JSON Schema
+Open Preferences → Theme, select Install theme file, and choose a UTF-8 JSON file. Select the installed theme from the list to apply it. Installed themes are copied to the application data directory's `themes` folder (usually `%APPDATA%/com.github.marknote/themes` on Windows); the original file is retained.
 
-```json
+Files can be up to 1 MiB and must include every field below. `label` is a nonempty name of 1–128 Unicode characters without control characters. `value` contains 1–128 ASCII letters, digits, hyphens, or underscores. `type` is `light` or `dark`. All 14 colors must use `#RGB`, `#RRGGBB`, or `#RRGGBBAA` notation. Additional fields are rejected.
+
+Theme IDs are unique regardless of case. Duplicate installations are rejected, and `light` / `dark` are reserved IDs.
+
+~~~json
 {
-  "type": "object",
-  "properties": {
-	"label": {
-	  "type":"string",
-	  "title":"主题标签",
-	},
-	"value": {
-	  "type":"string",
-	  "title":"主题值",
-	},
-	"type": {
-	  "type":"string",
-	  "title": "主题类型",
-	  "enum":["light","dark"]
-	},
-	"style": {
-	  "type":"object",
-	  "title": "主题样式",
-	  "properties": {
-		"primaryBackgroundColor": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"primaryBackgroundColorHover": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"primaryBackgroundColorActive": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentBackgroundColor": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"primaryTextColor": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"primaryTextColorHover": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"primaryTextColorActive": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentTextColor": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"primaryBorderColor": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentBorderColor": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentBackgroundColorActive": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentBackgroundColorHover": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentTextColorActive": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		},
-		"contentTextColorHover": {
-		  "type":"string",
-		  "pattern":"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-		}
-	  }
-	}
+  "label": "My Light Theme",
+  "value": "my-light",
+  "type": "light",
+  "style": {
+    "primaryBackgroundColor": "#2e3a62",
+    "primaryBackgroundColorHover": "#334789",
+    "primaryBackgroundColorActive": "#1f294a",
+    "primaryTextColor": "#74bcd4",
+    "primaryTextColorHover": "#4fb8db",
+    "primaryTextColorActive": "#1e9fca",
+    "primaryBorderColor": "#52b5f9",
+    "contentBackgroundColor": "#ffffff",
+    "contentBackgroundColorActive": "#ececec",
+    "contentBackgroundColorHover": "#ececec",
+    "contentTextColor": "#3e3e3e",
+    "contentTextColorActive": "#4e4e4e",
+    "contentTextColorHover": "#c4c4c4",
+    "contentBorderColor": "#babec1"
   }
 }
-```
+~~~
 
 ### Uninstall Theme
-Remove the JSON theme file from the themes directory
+
+Select Uninstall below an installed theme and confirm. Removing the active theme applies the built-in theme of the same type in every window. Built-in and bundled themes cannot be uninstalled. Cancelling a picker or confirmation preserves the theme; file failures show a recoverable error.
+
 # License
 
 [MIT](https://github.com/cedar12/marknote/blob/main/LICENSE)

@@ -14,12 +14,13 @@ export class MarkdownParser {
      */
     md = null;
 
-    constructor(editor, { html, linkify, breaks }) {
+    constructor(editor, { html, linkify, breaks, typographer }) {
         this.editor = editor;
         this.md = markdownit({
             html,
             linkify,
             breaks,
+            typographer,
         });
         this.md.use(markdownitkatex);
     }

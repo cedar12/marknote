@@ -15,6 +15,7 @@
     "core:window:allow-set-title",
     "core:window:allow-show",
     "clipboard-manager:allow-write-text",
+    "clipboard-manager:allow-read-text",
     "dialog:default",
     "global-shortcut:allow-is-registered",
     "global-shortcut:allow-register",

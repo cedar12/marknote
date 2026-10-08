@@ -11,11 +11,14 @@
               <Code></Code>
           </ElButton>
         </ElTooltip>
-        <ElTooltip size="small " :content="t('copy')">
-          <ElButton size="small" :aria-label="t('copy')" @pointerdown.stop.prevent="handleCopy" @click.stop="handleCopyClick">
-              <Copy></Copy>
+        <ElTooltip size="small " :content="copyLabel" :trigger="['hover', 'focus']" :trigger-keys="[]">
+          <ElButton size="small" :aria-label="copyLabel" :aria-busy="copying" :aria-disabled="copying"
+            @pointerdown.stop.prevent @mousedown.stop.prevent @click.stop="handleCopy">
+              <Check v-if="copyStatus === 'copied'"></Check>
+              <Copy v-else></Copy>
           </ElButton>
         </ElTooltip>
+        <span class="copy-status" role="status">{{ copyStatus === 'idle' ? '' : copyLabel }}</span>
         
       </div>
     </div>
@@ -26,9 +29,9 @@
   </NodeViewWrapper>
 </template>
 <script lang="ts" setup>
-import { ref,onMounted,watch,getCurrentInstance  } from 'vue';
+import { computed,ref,onMounted,onBeforeUnmount,watch,getCurrentInstance  } from 'vue';
 import {ElSelect,ElOption,ElButton,ElTooltip} from 'element-plus';
-import { Copy,Code } from '@icon-park/vue-next';
+import { Copy,Code,Check } from '@icon-park/vue-next';
 import { NodeViewContent, NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import {useI18n} from 'vue-i18n';
@@ -44,6 +47,11 @@ const props = defineProps(nodeViewProps);
 const isEditable = ref(props.editor.isEditable);
 const value = ref(props.node.attrs.language || '');
 const showCode=ref(false);
+const copying=ref(false);
+const copyStatus=ref<'idle' | 'copied' | 'failed'>('idle');
+const copyLabel=computed(()=>t(copyStatus.value === 'copied' ? 'copied' : copyStatus.value === 'failed' ? 'copyFailed' : 'copy'));
+let copyStatusTimer: ReturnType<typeof setTimeout> | undefined;
+let disposed=false;
 
 const wrapperRef=ref<HTMLElement>();
 
@@ -62,17 +70,28 @@ const options=()=>{
 
 
 const handleCopy=async ()=>{
+  if (copying.value) return;
+  copying.value = true;
+  copyStatus.value = 'idle';
+  clearTimeout(copyStatusTimer);
   try {
     await writeText(props.node.textContent);
+    if (disposed) return;
+    copyStatus.value = 'copied';
+    copyStatusTimer = setTimeout(()=>{ copyStatus.value = 'idle'; }, 2000);
   } catch (error) {
+    if (disposed) return;
+    copyStatus.value = 'failed';
     console.error('Code block copy failed:', error);
+  } finally {
+    if (!disposed) copying.value = false;
   }
 }
 
-const handleCopyClick=(event: MouseEvent)=>{
-  // Keyboard activation has no pointerdown event.
-  if (event.detail === 0) void handleCopy();
-}
+onBeforeUnmount(()=>{
+  disposed = true;
+  clearTimeout(copyStatusTimer);
+});
 
 const renderMermaid=async ()=>{
   if(props.node.attrs.language==='mermaid'&&instance){
@@ -127,6 +146,15 @@ onMounted(async ()=>{
     position: absolute;
     top: 0;
     height:0px;
+    .copy-status {
+      position: absolute;
+      width: 1px;
+      height: 1px !important;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
     .left-wrapper{
       position:absolute;
       
@@ -151,6 +179,9 @@ onMounted(async ()=>{
     }
     .el-button{
       background-color: transparent;
+      &[aria-busy="true"] {
+        cursor: progress;
+      }
     }
   }
   pre{

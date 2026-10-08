@@ -1,9 +1,9 @@
 <template>
     <teleport to='#marknote-titlbar'>
         <div data-tauri-drag-region class="preferences-header">
-            <div class="header-btn" v-if="appStore.platform!=='macos'" @click="appWindow.close()">
-                <Close></Close>
-            </div>
+            <button type="button" class="header-btn" v-if="appStore.platform!=='macos'" :aria-label="t('closeWindow')" @click="appWindow.close()">
+                <Close aria-hidden="true"></Close>
+            </button>
         </div>
     </teleport>
     <ElConfigProvider :locale="elLocale">
@@ -12,11 +12,11 @@
                 <div class="left">
                     <div class="preferences-content">
                         <div class="window-title">{{ t('preferences') }}</div>
-                        <div class="preferences-router">
-                            <div v-for="item in options" :key="item" class="router-item" :class="{active:key===item}" @click="handleClick(item)">
+                        <nav class="preferences-router" :aria-label="t('preferences')">
+                            <button type="button" v-for="item in options" :key="item" class="router-item" :class="{active:key===item}" :aria-current="key===item ? 'page' : undefined" @click="handleClick(item)">
                                 <span>{{ t(item) }}</span>
-                            </div>
-                        </div>
+                            </button>
+                        </nav>
                     </div>
                 </div>
                 <div class="right">
@@ -26,6 +26,7 @@
                                 <General v-if="key==='general'"></General>
                                 <Editor v-if="key==='editor'"></Editor>
                                 <Image v-if="key==='image'"></Image>
+                                <Markdown v-if="key==='markdown'"></Markdown>
                                 <Theme v-if="key==='theme'"></Theme>
                             </div>
                         </ElScrollbar>
@@ -45,6 +46,7 @@ import General from './preferences/General.vue';
 import Editor from './preferences/Editor.vue';
 import Image from './preferences/Image.vue';
 import Theme from './preferences/Theme.vue';
+import Markdown from './preferences/Markdown.vue';
 import { ElConfigProvider,ElScrollbar } from 'element-plus';
 import * as elementPlusLocales from 'element-plus/es/locale/index';
 
@@ -192,4 +194,37 @@ const handleClick=(k:string)=>{
 }
 
 
+</style>
+
+<style lang="scss">
+.preferences-header .header-btn {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  &:focus-visible { outline: 2px solid var(--primaryBorderColor); outline-offset: -2px; }
+}
+.marknote-preferences .preferences {
+  > .left { flex: 0 0 180px; min-width: 0; }
+  > .right { min-width: 0; }
+  .preferences-router .router-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+    &:focus-visible { outline: 2px solid var(--primaryBorderColor); outline-offset: -2px; }
+  }
+  .preferences-content .preferences-item > .content .content-tip { color: var(--contentTextColor); }
+}
+@media (max-width: 600px) {
+  .marknote-preferences .preferences > .left { flex-basis: 130px; }
+  .marknote-preferences .preferences .preferences-content .preferences-router .router-item { font-size: 14px; padding: 10px; }
+}
 </style>

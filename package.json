@@ -1,13 +1,17 @@
 {
   "name": "marknote",
   "private": true,
-  "version": "0.0.9-alpha5",
+  "version": "0.0.9-alpha6",
   "packageManager": "yarn@4.9.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
+    "test:markdown-preferences": "node scripts/test-markdown-preferences.cjs",
+    "test:preferences:browser": "node scripts/test-preferences-browser.cjs",
     "test:large-file": "node scripts/test-large-file.cjs",
+    "test:outline": "node scripts/test-outline.cjs",
+    "test:outline:browser": "node scripts/test-outline-browser.cjs",
     "preview": "vite preview",
     "tauri": "tauri",
     "update": "node scripts/update.mjs"

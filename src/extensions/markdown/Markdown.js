@@ -31,10 +31,12 @@ export const Markdown = Extension.create({
     addOptions() {
         return {
             html: true,
+            preserveExistingHtml: false,
             tightLists: true,
             tightListClass: 'tight',
             bulletListMarker: '-',
             linkify: false,
+            typographer: false,
             breaks: false,
             transformPastedText: false,
             transformCopiedText: false,

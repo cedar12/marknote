@@ -33,6 +33,7 @@ import {readText,writeText} from '@tauri-apps/plugin-clipboard-manager';
 import {ElScrollbar} from 'element-plus';
 import Dialog from './dialog/index.vue';
 import SearchAndReplace from './SearchAndReplace.vue';
+import { pasteFromClipboard } from '../utils/clipboard';
 // import {triggerPaste} from '../api/utils';
 
 const { t } = useI18n();
@@ -78,28 +79,8 @@ const menuItems = ref<ContextMenuItem[]>([
   {
     label: t('paste'),
     disabled:false,
-    onClick(){
-      // readText().then((text)=>{
-      //   if(text&&editor.editor){
-      //     // const {state,view}=editor.editor;
-      //     // view.dispatch(state.tr.insertText(text));
-          
-      //   }
-      // })
-      editor.editor.commands.focus();
-      // triggerPaste();
-      window.navigator.clipboard.read().then(async c=>{
-        if(c.length==0)return;
-        const res=await c[0].getType('text/html');
-        // console.log(res);
-        return res.text();
-      }).then((res:any)=>{
-        // console.log(res);
-        if(res)
-        editor.editor.commands.insertContent(res);
-      }).catch(e=>{
-        console.error(e);
-      })
+    async onClick(){
+      return pasteFromClipboard(editor.editor);
     }
   },
   {

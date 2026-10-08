@@ -13,6 +13,15 @@ export class MarkdownSerializerState extends BaseMarkdownSerializerState {
         this.inlines = [];
     }
 
+    renderList(node, delim, firstDelim) {
+        // Formatting preferences apply on output without editing the stored document.
+        // Preserve per-list behavior for consumers that do not opt into the override.
+        const list = this.options.overrideTightLists
+            ? Object.assign(Object.create(node), { attrs: { ...node.attrs, tight: this.options.tightLists } })
+            : node;
+        return super.renderList(list, delim, firstDelim);
+    }
+
     render(node, parent, index) {
         super.render(node, parent, index);
         const top = this.inlines[this.inlines.length - 1];

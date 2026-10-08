@@ -1,192 +1,183 @@
-
 <template>
-   <div class="marknote-outliner" v-if="editor">
-        <div class="outliner-tree">
-          <div class="outliner-search">
-          <el-input
-            v-model="search"
-            size="small"
-            placeholder="过滤"
-            :suffix-icon="Search"
-            clearable
-          />
-          </div>
-            <ElScrollbar height="100%">
-                  <div class="outliner-item-container" v-show="heading.show" v-for="(heading, index) in headings" :key="index">
-                    <div class="outliner-item" v-if="search===''||heading.text.indexOf(search)>-1">
-                      <span class="outliner-icon" @click="onClickIcon(heading)" :style="{marginLeft: (heading.level*10)+'px'}">
-                        <span style="width: 1em;height:1em;" v-if="headings.length-1===index||(heading.level>=headings[index+1].level)"></span>
-                        <Plus v-else-if="heading.status==='close'"/>
-                        <Minus v-else-if="heading.status==='open'"/>
-                      </span>
-                      <a class="outliner-hash"  :class="`level-${heading.level}`"  :href="`#${heading.id}`">
-                        {{ heading.text }}
-                      </a>
-                    </div>
-                  </div>
-            </ElScrollbar>
-        </div>
+  <nav v-if="editor" class="marknote-outliner" :aria-label="t('outliner')" :aria-busy="busy">
+    <div class="outliner-search">
+      <ElInput ref="searchInput" v-model="search" size="small" :placeholder="t('filterHeadings')" :aria-label="t('filterHeadings')">
+        <template #suffix>
+          <button v-if="search" type="button" class="outliner-clear" :aria-label="t('clearHeadingFilter')" :title="t('clearHeadingFilter')" @click="clearSearch">
+            <CloseSmall aria-hidden="true" />
+          </button>
+          <Search v-else aria-hidden="true" />
+        </template>
+      </ElInput>
     </div>
- 
+    <ElScrollbar class="outliner-scrollbar">
+      <p v-if="!headings.length || !visibleHeadings.length" class="outliner-empty" role="status">
+        {{ t(headings.length ? 'noMatchingHeadings' : 'noHeadings') }}
+      </p>
+      <ul v-else class="outliner-list">
+        <li v-for="item in visibleHeadings" :key="item.heading.id" class="outliner-item" :style="{ paddingLeft: `${(item.heading.level - 1) * 10}px` }">
+          <button
+            v-if="item.hasChildren && !query"
+            type="button"
+            class="outliner-toggle"
+            :aria-expanded="item.heading.status === 'open'"
+            :aria-label="t(item.heading.status === 'open' ? 'collapseHeading' : 'expandHeading', { heading: item.heading.text || t('untitledHeading') })"
+            :title="t(item.heading.status === 'open' ? 'collapseHeading' : 'expandHeading', { heading: item.heading.text || t('untitledHeading') })"
+            @click="toggleHeading(item.heading)"
+          >
+            <Plus v-if="item.heading.status === 'close'" aria-hidden="true" />
+            <Minus v-else aria-hidden="true" />
+          </button>
+          <span v-else class="outliner-toggle-placeholder" aria-hidden="true"></span>
+          <button type="button" class="outliner-heading" :disabled="busy" @click="navigate(item.heading)">
+            {{ item.heading.text || t('untitledHeading') }}
+          </button>
+        </li>
+      </ul>
+      <p v-if="navigationFailed" class="outliner-error" role="alert">{{ t('headingNavigationFailed') }}</p>
+    </ElScrollbar>
+  </nav>
 </template>
-  
+
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { useEditorStore,Heading } from '../store/editor';
-// import { useAppStore } from '../store/app';
+import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import {ElScrollbar,ElInput} from 'element-plus';
-import {Plus,Minus,Search} from '@icon-park/vue-next';
+import { useI18n } from 'vue-i18n';
+import { ElScrollbar, ElInput, type InputInstance } from 'element-plus';
+import { Plus, Minus, Search, CloseSmall } from '@icon-park/vue-next';
+import { useEditorStore, type Heading } from '../store/editor';
 
-// const appStore=useAppStore();
+const { t } = useI18n();
 const editorStore = useEditorStore();
-const { editor,headings } = storeToRefs(editorStore);
-const search=ref('');
-// const headings = ref<Heading[]>([]);
-/*
-function handleUpdate() {
-  headings.value = [];
+const { editor, headings, loading, renderingDocument, navigatingToHeading } = storeToRefs(editorStore);
+const search = ref('');
+const searchInput = ref<InputInstance>();
+const navigating = ref(false);
+const navigationFailed = ref(false);
+const query = computed(() => search.value.trim().toLocaleLowerCase());
+const busy = computed(() => navigating.value || navigatingToHeading.value || loading.value || renderingDocument.value);
 
-  const items:Heading[]=[];
-  const transaction = editor.value.state.tr
+// Filtering searches the complete outline, including collapsed descendants.
+// Reopening a parent preserves the disclosure state of its descendants.
+const visibleHeadings = computed(() => {
+  const hiddenLevels: number[] = [];
+  return headings.value.flatMap((heading, index) => {
+    while (hiddenLevels.length && heading.level <= hiddenLevels[hiddenLevels.length - 1]) hiddenLevels.pop();
+    const hidden = hiddenLevels.length > 0;
+    if (heading.status === 'close') hiddenLevels.push(heading.level);
+    const matches = (heading.text || t('untitledHeading')).toLocaleLowerCase().includes(query.value);
+    if (query.value ? !matches : hidden) return [];
+    return [{ heading, hasChildren: headings.value[index + 1]?.level > heading.level }];
+  });
+});
 
-  editor.value.state.doc.descendants((node, pos) => {
-    if (node.type.name === 'heading') {
-      const id = `heading-${items.length + 1}`
-
-      if (node.attrs.id !== id) {
-        transaction.setNodeMarkup(pos, undefined, {
-          ...node.attrs,
-          id,
-        })
-      }
-
-      items.push({
-        level: node.attrs.level,
-        text: node.textContent,
-        id,
-        status:'open',
-        show:true,
-      })
-    }
-  })
-
-  transaction.setMeta('addToHistory', false)
-  transaction.setMeta('preventUpdate', true)
-
-  editor.value.view.dispatch(transaction)
-
-  headings.value=items;
-  console.log('headings',editorStore.headings);
-}*/
-// onMounted(() => {
-//   editor.value.on('update', editorStore.updateHeadings);
-//   nextTick(editorStore.updateHeadings);
-// })
-
-
-// watch(()=>appStore.filepath,()=>{
-//   editorStore.updateHeadings();
-// })
-
-const onClickIcon=(heading:Heading)=>{
-  if(heading.status==='open'){
-    heading.status='close';
-    showChild(heading,false);
-  }else if(heading.status==='close'){
-    heading.status='open';
-    showChild(heading,true);
-  }
+function toggleHeading(heading: Heading) {
+  heading.status = heading.status === 'open' ? 'close' : 'open';
 }
 
-const showChild=(heading:Heading,show:boolean)=>{
-  const hs:Heading[]=[];
-  const level=heading.level;
-  const id=heading.id;
-  let range=false;
-  for(let i=0;i<headings.value.length;i++){
-    const h=headings.value[i];
-    
-    if(range===false&&h.id===id){
-      range=true;
-    }else if(range&&h.level<=level){
-      range=false;
-    }
-    if(range&&h.id!==id){
-      h.show=show;
-      h.status=show?'open':'close';
-    }
-    hs.push({...h});
+function clearSearch() {
+  search.value = '';
+  searchInput.value?.focus();
+}
+
+async function navigate(heading: Heading) {
+  if (busy.value) return;
+  navigating.value = true;
+  navigationFailed.value = false;
+  try {
+    navigationFailed.value = !await editorStore.navigateToHeading(heading);
+  } catch {
+    navigationFailed.value = true;
+  } finally {
+    navigating.value = false;
   }
-  headings.value=hs;
 }
 </script>
-  
 
 <style lang="scss">
-.marknote-outliner{
-    // background-color: var(--primaryBackgroundColor);
-    // color: var(--primaryTextColor);
-    // padding-top: var(--titleBarHeight);
-    --el-fill-color-light: var(--primaryBackgroundColorHover);
-    --el-fill-color-blank: var(--primaryBackgroundColor);
-    --el-text-color-regular: var(--primaryTextColor);
-    .outliner-search{
-      padding-right: 8px;
-      .el-input__wrapper{
-        box-shadow:none;
-      }
-      .i-icon.i-icon-search{
-        display:flex;
-        justify-content:center;
-        align-items:center;
-      }
-    }
-    .outliner-tree{
-        height: calc(100vh - var(--titleBarHeight));
-        overflow: hidden;
-        .outliner-item{
-          user-select: none;
-            padding: 2px 0 4px 0;
-            display: flex;
-            align-items: center;
-            .outliner-hash{
-              text-decoration: none;
-              outline: none;
-              cursor: pointer;
-              color: var(--primaryTextColor);
-            }
-            .outliner-icon{
-              display: inline-block;
-              padding-right: 2px;
-              color: #a8a8a8;
-              .i-icon{
-                cursor: pointer;
-              }
-              &>span{
-                display: flex;
-                justify-content: center;
-                align-items: center;
-              }
-            }
-            @for $i from 1 through 6{
-                .level-#{$i}{
-                    // position: relative;
-                    // margin-left: 15px*$i;
-                    // &::after{
-                    //     content: '';
-                    //     display: block;
-                    //     position: absolute;
-                    //     top: 0;
-                    //     left: -18px;
-                    //     font-size: .4em;
-                    //     color: #abaeb1;
-                    // }
-                }
-            }
-        }
-    }
+.marknote-outliner {
+  --el-fill-color-light: var(--primaryBackgroundColorHover);
+  --el-fill-color-blank: var(--primaryBackgroundColor);
+  --el-text-color-regular: var(--primaryTextColor);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+
+  .outliner-search {
+    flex: none;
+    padding: 0 8px 4px 0;
+
+    .el-input__wrapper { box-shadow: none; }
+    .el-input__wrapper:focus-within { box-shadow: 0 0 0 1px var(--primaryBorderColor); }
+    .i-icon { display: inline-flex; }
+  }
+
+  .outliner-scrollbar {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .outliner-list {
+    list-style: none;
+    margin: 0;
+    padding: 0 8px 8px 0;
+  }
+
+  .outliner-item {
+    display: flex;
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .outliner-toggle,
+  .outliner-toggle-placeholder {
+    flex: 0 0 20px;
+    width: 20px;
+    height: 26px;
+    box-sizing: border-box;
+  }
+
+  button {
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--primaryTextColor);
+    font: inherit;
+    cursor: pointer;
+
+    &:hover { background: var(--primaryBackgroundColorHover); }
+    &:active { background: var(--primaryBackgroundColorActive); }
+    &:focus-visible { outline: 1px solid var(--primaryBorderColor); outline-offset: -1px; }
+    &:disabled { cursor: default; opacity: .6; background: transparent; }
+  }
+
+  .outliner-toggle,
+  .outliner-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .outliner-clear { width: 20px; height: 20px; }
+
+  .outliner-heading {
+    flex: 1;
+    min-width: 0;
+    padding: 4px 2px;
+    line-height: 18px;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  .outliner-empty,
+  .outliner-error {
+    margin: 12px 8px 12px 4px;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
 }
-
-
 </style>

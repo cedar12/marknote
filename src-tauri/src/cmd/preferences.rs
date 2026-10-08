@@ -30,6 +30,23 @@ pub fn get_config() ->Resp<HashMap<String,String>>{
     
 }
 
+#[tauri::command]
+pub fn save_markdown_preferences(options: crate::utils::md::MarkdownOptions) -> Resp<()> {
+    if let Err(error) = options.validate() {
+        return resp::err(error);
+    }
+    let json = match serde_json::to_string(&options) {
+        Ok(json) => json,
+        Err(error) => return resp::err(error.to_string()),
+    };
+    let mut config = HashMap::new();
+    config.insert("markdown_preferences".to_string(), json);
+    match db::config_set(config) {
+        Ok(()) => resp::data(None),
+        Err(error) => resp::err(error.to_string()),
+    }
+}
+
 
 #[tauri::command]
 pub fn set_ftype(){

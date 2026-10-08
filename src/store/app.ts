@@ -11,7 +11,8 @@ import { saveAs} from '../api/dialog';
 import { isPermissionGranted, requestPermission } from '@tauri-apps/plugin-notification';
 import { confirm, message } from '@tauri-apps/plugin-dialog';
 import i18n from '../i18n';
-import { findThemeByType, setTheme, ThemeItem } from '../theme';
+import themes, { applyThemeCatalog, findThemeByType, isBuiltInTheme, isThemeItem, refreshThemeCatalog, setTheme, type ThemeItem } from '../theme';
+import type { ThemeEntry } from '../api/theme';
 import { args, PlatformType } from '../api/utils';
 import * as appLog from '@tauri-apps/plugin-log';
 
@@ -25,22 +26,16 @@ let autoSaveTimer:ReturnType<typeof setTimeout>|null=null;
 let activeSave:Promise<boolean>|null=null;
 let closeGuardInProgress=false;
 
-function getTheme(){
-  var theme=null;
-  try{
-    const themeJson=localStorage.getItem('theme');
-    if(themeJson){
-      theme=JSON.parse(themeJson);
+function getTheme(): ThemeItem | undefined {
+  let theme: ThemeItem | undefined;
+  try {
+    const cached: unknown = JSON.parse(localStorage.getItem('theme') || 'null');
+    if (isThemeItem(cached)) {
+      theme = isBuiltInTheme(cached.value) ? findThemeByType(cached.type) : cached;
     }
-  }catch(e){
-    console.error(e);
-  }
-  if(!theme){
-    theme=findThemeByType('light');
-  }
-  if(theme){
-    setTheme(theme);
-  }
+  } catch { /* Fall back to the built-in theme when the saved selection is invalid. */ }
+  theme ||= findThemeByType('light');
+  if (theme) setTheme(theme);
   return theme;
 }
 
@@ -103,6 +98,15 @@ export const useAppStore = defineStore('app', {
     editRevision:0,
   }),
   actions:{
+    syncThemeWithCatalog() {
+      const current = this.theme;
+      const selected = themes.find(theme => theme.value === current?.value)
+        || findThemeByType(current?.type || 'light');
+      if (selected) {
+        this.theme = selected;
+        setTheme(selected);
+      }
+    },
     setFilepath(filepath:string|null){
       this.filepath=filepath;
       if(filepath){
@@ -198,7 +202,8 @@ export const useAppStore = defineStore('app', {
       if(autoTheme=='true'){
         this.autoTheme=true;
         const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)");
-        setTheme(findThemeByType(isDarkTheme.matches?'dark':'light') as any);
+        this.theme = findThemeByType(isDarkTheme.matches?'dark':'light');
+        if (this.theme) setTheme(this.theme);
       }
 
       
@@ -230,6 +235,12 @@ export const useAppStore = defineStore('app', {
       // });
 
       const preferencesStore=usePreferencesStore();
+      void preferencesStore.loadMarkdownPreferences().catch(error => {
+        appLog.error(`Markdown preferences loading failed: ${String(error)}`);
+      });
+      listen('markdownPreferences', event => {
+        preferencesStore.applyMarkdownPreferences(event.payload);
+      });
 
       if(appWindow.label==='main'){
         const editorStore=useEditorStore();
@@ -393,9 +404,26 @@ export const useAppStore = defineStore('app', {
       });
 
       
-      listen<ThemeItem>('theme', async (event) => {
-        const value=event.payload;
-        setTheme(value);
+      listen<ThemeItem>('theme', event => {
+        if (!isThemeItem(event.payload)) return;
+        this.theme = event.payload;
+        setTheme(event.payload);
+      });
+      listen<ThemeEntry[]>('themeCatalogChanged', event => {
+        applyThemeCatalog(event.payload);
+        this.syncThemeWithCatalog();
+      });
+      listen<boolean>('autoTheme', event => {
+        if (typeof event.payload !== 'boolean') return;
+        this.autoTheme = event.payload;
+        localStorage.setItem('autoTheme', String(event.payload));
+        if (this.autoTheme) {
+          this.theme = findThemeByType(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          if (this.theme) setTheme(this.theme);
+        }
+      });
+      void refreshThemeCatalog().then(() => this.syncThemeWithCatalog()).catch(error => {
+        appLog.error('Theme catalog loading failed: ' + String(error));
       });
 
       appWindow.listen(TauriEvent.WINDOW_THEME_CHANGED,(ev)=>{

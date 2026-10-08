@@ -22,6 +22,7 @@ import { nextTick } from 'vue';
 import html2canvas from 'html2canvas';
 import { renderWordDiagrams } from '../utils/wordDiagrams';
 import { renderWordEquations } from '../utils/wordEquations';
+import { pasteFromClipboard } from '../utils/clipboard';
 
 const appWindow=getCurrentWindow();
 // @ts-ignore
@@ -290,22 +291,9 @@ const events = {
     editorStore.editor?.commands.focus();
     document.execCommand('cut');
   },
-  paste(){
+  async paste(){
     const editorStore=useEditorStore();
-    editorStore.editor?.commands.focus();
-    // triggerPaste();
-    window.navigator.clipboard.read().then(async c=>{
-      if(c.length==0)return;
-      const res=await c[0].getType('text/html');
-      // console.log(res);
-      return res.text();
-    }).then((res:any)=>{
-      // console.log(res);
-      if(res)
-      editorStore.editor.commands.insertContent(res);
-    }).catch(e=>{
-      console.error(e);
-    })
+    return pasteFromClipboard(editorStore.editor);
   },
   selectAll(){
     const editorStore=useEditorStore();

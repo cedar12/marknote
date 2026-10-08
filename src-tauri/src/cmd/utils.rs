@@ -55,41 +55,13 @@ pub fn build_info() -> HashMap<String,String> {
 }
 
 #[tauri::command]
-pub async fn render_markdown(markdown: String) -> Result<String, String> {
-    tauri::async_runtime::spawn_blocking(move || crate::utils::md::md_to_html(&markdown))
+pub async fn render_markdown(markdown: String, options: Option<crate::utils::md::MarkdownOptions>) -> Result<String, String> {
+    tauri::async_runtime::spawn_blocking(move || crate::utils::md::md_to_html_with_options(&markdown, &options.unwrap_or_default()))
         .await
         .map_err(|error| error.to_string())
 }
 
 #[tauri::command]
-pub fn themes(app: AppHandle) -> Vec<String> {
-    let result = app.path().resource_dir();
-    match result {
-        Ok(dir) => {
-            let mut vec = vec![];
-            for entry in std::fs::read_dir(dir.join("themes")).unwrap() {
-                let entry = entry.unwrap();
-                let path = entry.path();
-                if path.is_file() && path.extension().unwrap() == "json"{
-                  let read_result=std::fs::read_to_string(path);
-                  match read_result {
-                    Ok(json_str)=>{
-                      let valid_result=crate::utils::schema::validate(&json_str);
-                      if let Err(e) = valid_result {
-                        log::error!("{:?}",e);
-                        continue;
-                      }
-                      vec.push(json_str.to_string());    
-                    },
-                    Err(e)=>{
-                      log::error!("{:?}",e);
-                    }
-                  };
-                    
-                }
-            }
-            vec
-        }
-        Err(_) => vec![],
-    }
+pub fn themes(app: AppHandle) -> Result<Vec<String>, super::theme::ThemeError> {
+    super::theme::theme_json(app)
 }

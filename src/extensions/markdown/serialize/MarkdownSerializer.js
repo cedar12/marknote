@@ -18,6 +18,8 @@ export class MarkdownSerializer {
     serialize(content) {
         const state = new MarkdownSerializerState(this.nodes, this.marks, {
             hardBreakNodeName: HardBreak.name,
+            tightLists: this.editor.storage.markdown.options.tightLists,
+            overrideTightLists: true,
         });
 
         state.renderContent(content);

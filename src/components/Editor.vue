@@ -5,10 +5,10 @@
       {{ t('segmentPosition', { current: segmentIndex + 1, total: segmentCount }) }}
     </span>
     <span v-if="segmentNavigationMode === 'scroll'" class="segment-scroll-hint">{{ t('segmentScrollHint') }}</span>
-    <button v-if="segmentNavigationMode === 'buttons'" type="button" :disabled="navigating || editorStore.loading || editorStore.renderingDocument || appStore.exporting || segmentIndex === 0" @click="changeSegment(segmentIndex - 1, 'end')">
+    <button v-if="segmentNavigationMode === 'buttons'" type="button" :disabled="navigating || editorStore.navigatingToHeading || editorStore.loading || editorStore.renderingDocument || appStore.exporting || segmentIndex === 0" @click="changeSegment(segmentIndex - 1, 'end')">
       {{ t('previousSegment') }}
     </button>
-    <button v-if="segmentNavigationMode === 'buttons'" type="button" :disabled="navigating || editorStore.loading || editorStore.renderingDocument || appStore.exporting || segmentIndex >= segmentCount - 1" @click="changeSegment(segmentIndex + 1, 'start')">
+    <button v-if="segmentNavigationMode === 'buttons'" type="button" :disabled="navigating || editorStore.navigatingToHeading || editorStore.loading || editorStore.renderingDocument || appStore.exporting || segmentIndex >= segmentCount - 1" @click="changeSegment(segmentIndex + 1, 'start')">
       {{ t('nextSegment') }}
     </button>
   </nav>
@@ -67,7 +67,7 @@ const anchorSegmentEnd=()=>{
 };
 
 const changeSegment = async (index:number, focusPosition:'start'|'end', automatic=false) => {
-  if(navigating.value || editorStore.loading || editorStore.renderingDocument || appStore.exporting || index<0 || index>=segmentCount.value || index===segmentIndex.value)return;
+  if(navigating.value || editorStore.navigatingToHeading || editorStore.loading || editorStore.renderingDocument || appStore.exporting || index<0 || index>=segmentCount.value || index===segmentIndex.value)return;
   stopEndAnchor();
   navigating.value=true;
   try{
@@ -90,7 +90,7 @@ const changeSegment = async (index:number, focusPosition:'start'|'end', automati
 };
 
 const checkScrollBoundary=(direction:-1|1)=>{
-  if(!scrollContainer || !segmented.value || segmentNavigationMode.value!=='scroll' || navigating.value || editorStore.loading || editorStore.renderingDocument || appStore.exporting)return;
+  if(!scrollContainer || !segmented.value || segmentNavigationMode.value!=='scroll' || navigating.value || editorStore.navigatingToHeading || editorStore.loading || editorStore.renderingDocument || appStore.exporting)return;
   if(performance.now()-lastAutomaticSwitchAt<AUTO_SWITCH_GUARD_MS)return;
   const atTop=scrollContainer.scrollTop<=EDGE_TOLERANCE_PX;
   const atBottom=scrollContainer.scrollTop+scrollContainer.clientHeight>=scrollContainer.scrollHeight-EDGE_TOLERANCE_PX;
@@ -201,6 +201,14 @@ watch(segmentNavigationMode,()=>{
   lastTouchY=null;
   lastScrollTop=scrollContainer?.scrollTop??0;
 });
+
+watch(()=>editorStore.navigatingToHeading,active=>{
+  if(!active)return;
+  stopEndAnchor();
+  inputDirection=0;
+  draggingScrollbar=false;
+  lastTouchY=null;
+},{flush:'sync'});
 
 onBeforeUnmount(()=>{
   stopEndAnchor();
