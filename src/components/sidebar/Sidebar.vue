@@ -1,5 +1,5 @@
 <template>
-  <div ref="sidebarRef" class="layout-sidebar" v-if="appStore.sidebar.visible" :style="`--sidebarWidth:${appStore.sidebar.width}px`">
+  <div ref="sidebarRef" class="layout-sidebar" v-if="appStore.sidebar.visible" :inert="appStore.exporting || editorStore.loading" :style="`--sidebarWidth:${appStore.sidebar.width}px`">
 
     <div class="sidebar-menu">
       <div class="menu-item" :class="{ 'active': appStore.sidebar.active === 'outliner' }" @click="changeActive('outliner')">
@@ -24,12 +24,14 @@ import { ref, watch } from 'vue';
 import Toc from '../Toc.vue';
 import FolderView from '../Folder.vue';
 import { useAppStore } from '../../store/app';
+import { useEditorStore } from '../../store/editor';
 import { Notes, MindmapList, ExpandRight } from '@icon-park/vue-next';
 import { useDragSidebar } from './useDragSidebar';
 
 const sidebarRef = ref<HTMLElement>();
 const resizeRef = ref<HTMLElement>();
 const appStore = useAppStore();
+const editorStore = useEditorStore();
 
 const { width } = useDragSidebar(resizeRef);
 

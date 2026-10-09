@@ -20,6 +20,7 @@ export default {
   export:'Export',
   exportFailed:'Export failed',
   documentNotReady:'Document is still loading',
+  loadingContent:'Loading content…',
   preferences:'Preferences',
   alwaysOnTop:'Alway On Top',
   closeTab:'Close Tab',

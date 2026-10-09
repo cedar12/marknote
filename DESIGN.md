@@ -95,6 +95,8 @@ Use the existing IconPark family. Icons support text labels for file and editing
 
 Motion is minimal and state-driven. Respect reduced-motion preferences; routine file operations do not need decorative animation.
 
+Content loading uses the shared `v-loading` directive in `src/directives/loading`: document-shaped Skeleton placeholders with a restrained 1.8s shimmer. The document mask stays inside the content viewport and preserves the title bar and sidebar; folder surfaces use the compact variant. Skeleton surfaces derive from `--contentBackgroundColor` and `--contentBackgroundColorActive`, so built-in and custom themes use the same runtime token mapping. Reduced motion shows static placeholders.
+
 ### Content and data visualization
 
 Copy is direct and operational. Errors name the failed action and preserve the document so the user can retry.

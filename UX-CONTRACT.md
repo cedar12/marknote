@@ -30,6 +30,7 @@ No separate PRD, ADR, permission policy, retention policy, billing flow, or lega
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
 | Scrollbar | Element Plus editor/sidebar scroll surfaces | `src/components/Layout.vue`, `src/components/Folder.vue` | geometry exceptions | desktop smoke test |
+| Content loading | Shared `v-loading` Skeleton directive | `src/directives/loading` | document / compact folder; animated / reduced motion | browser loading lifecycle + theme checks |
 | Toast/notification | Tauri notification and dialog plugins | shared menu/store actions | success / error | desktop smoke test |
 | Document transition | `useAppStore.guardUnsavedChanges` | `src/store/app.ts` | save / discard / cancel Save As | unit + desktop flow |
 | File mutation | `useAppStore.save` and Rust `save_md` | frontend store + Tauri command | existing path / Save As | unit + integration |

@@ -14,7 +14,7 @@ const key=computed(()=>{
 </script>
 
 <template>
-<div v-loading="appStore.loading">
+<div>
     <Titlebar></Titlebar>
     <Layout></Layout>
     <Menu :key="key"></Menu>

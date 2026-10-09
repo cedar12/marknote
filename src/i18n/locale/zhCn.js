@@ -20,6 +20,7 @@ export default {
   export:'导出',
   exportFailed:'导出失败',
   documentNotReady:'文档仍在加载中',
+  loadingContent:'正在加载内容…',
   preferences:'首选项',
   alwaysOnTop:'置顶窗口',
   closeTab:'关闭标签页',

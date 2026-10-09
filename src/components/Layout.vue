@@ -1,5 +1,5 @@
 <template>
-  <div class="marknote-layout" v-loading="appStore.exporting||editor.loading">
+  <div class="marknote-layout">
     <!-- <div class="layout-outliner" v-if="appStore.visible.outliner">
       <Outliner></Outliner>
     </div>
@@ -9,7 +9,7 @@
     <Sidebar></Sidebar>
     <div class="layout-content" :class="`code-theme-${editor.codeTheme} ${appStore.exporting?'exporting':''}`" >
       <ContextMenu :menu="menuItems">
-        <ElScrollbar class="layout-scrollbar" height="calc(100vh - var(--titleBarHeight))">
+        <ElScrollbar v-loading="appStore.exporting||editor.loading" class="layout-scrollbar" height="calc(100vh - var(--titleBarHeight))">
           <Editor></Editor>
         </ElScrollbar>
       </ContextMenu>

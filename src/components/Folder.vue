@@ -10,7 +10,7 @@
     />
   </div>
   <ElScrollbar style="height:calc(100% - 30px);">
-    <el-tree  :key="appStore.folder||undefined" ref="treeRef" :load="loadNode" lazy :data="treeData" node-key="path" :props="props" empty-text="" @node-click="nodeClick" v-loading="loading" :filter-node-method="filterNode">
+    <el-tree  :key="appStore.folder||undefined" ref="treeRef" :load="loadNode" lazy :data="treeData" node-key="path" :props="props" empty-text="" @node-click="nodeClick" v-loading.compact="loading" :filter-node-method="filterNode">
       <template #empty>
         <!-- <ElButton size="">打开文件夹</ElButton> -->
       </template>

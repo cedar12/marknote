@@ -1,141 +1,88 @@
-.marknote-loading{
+.marknote-loading {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  max-height: 100vh;
-  top: 0;
-  left: 0;
-  right:0;
-  bottom: 0;
+  inset: 0;
   z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  // background: var(--contentBackgroundColor);
-  &::before{
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-    background-color: var(--menuBackgroundColorGlass);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--contentBackgroundColor);
+  cursor: progress;
+
+  .marknote-skeleton {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 2rem 4rem;
   }
-  
-  .marknote-loading-box{
+
+  .marknote-skeleton-block {
     position: relative;
-    width: 3em;
-    height: 3em;
-    
-    &::before{
-      content: "";
-      display: block;
+    height: 1rem;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--contentBackgroundColorActive, var(--menuBorderColor));
+
+    &::after {
+      content: '';
       position: absolute;
-      left: 0.75em;
-      top: 0.75em;
-      border-radius: 50%;
-      background-color: var(--primaryBackgroundColor,#083D56);
-      width: 1.5em;
-      height: 1.5em;
-      z-index: 1;
-      -webkit-animation: blow-grow 4s infinite cubic-bezier(.45,-0.43,.63,1.94);
-      animation: blow-grow 4s infinite cubic-bezier(.45,-0.43,.63,1.94);
-   }
-  
-    &::after{
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 1rem;
-      height: 1rem;
-      z-index: 0;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      -webkit-animation: blow-fade-in 1s infinite cubic-bezier(.45,-0.43,.63,1.94), blow-shadow 1s infinite cubic-bezier(.45,-0.43,.63,1.94);
-      animation: blow-fade-in 1s infinite cubic-bezier(.45,-0.43,.63,1.94), blow-shadow 1s infinite cubic-bezier(.45,-0.43,.63,1.94);
+      inset: 0;
+      background: linear-gradient(90deg, transparent, var(--contentBackgroundColor), transparent);
+      opacity: 0.65;
+      transform: translateX(-100%);
+      animation: marknote-skeleton-shimmer 1.8s ease-in-out infinite;
     }
+  }
 
+  .marknote-skeleton-title {
+    width: 46%;
+    height: 2rem;
+    margin-bottom: 2rem;
+  }
 
+  .marknote-skeleton-heading {
+    width: 32%;
+    height: 1.4rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .marknote-skeleton-paragraph {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+
+    > :nth-child(2) { width: 94%; }
+    > :last-child { width: 72%; }
+    &:last-child > :last-child { width: 58%; }
+  }
+
+  .marknote-loading-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 
-@-webkit-keyframes blow-fade-in {
-  0% {
-    opacity: 0;
-  }
-  2%, 100% {
-    opacity: 1;
-  }
+.marknote-loading-compact {
+  .marknote-skeleton { padding: 1rem; }
+  .marknote-skeleton-title,
+  .marknote-skeleton-heading { display: none; }
+  .marknote-skeleton-paragraph { margin-bottom: 0.75rem; }
 }
-@keyframes blow-fade-in {
-  0% {
-    opacity: 0;
-  }
-  2%, 100% {
-    opacity: 1;
-  }
+
+@keyframes marknote-skeleton-shimmer {
+  100% { transform: translateX(100%); }
 }
-@-webkit-keyframes blow-shadow {
-  0% {
-    box-shadow: -4em 0 0 0.015em var(--primaryBackgroundColor,#083D56), 4em 0 0 0.015em var(--primaryBackgroundColor,#083D56);
-  }
-  75%, 100% {
-    box-shadow: 0 0 0 0.4em var(--primaryBackgroundColor,#083D56), 0 0 0 0.4em var(--primaryBackgroundColor,#083D56);
-  }
+
+@media (max-width: 600px) {
+  .marknote-loading .marknote-skeleton { padding-inline: 1.5rem; }
+  .marknote-loading-compact .marknote-skeleton { padding-inline: 1rem; }
 }
-@keyframes blow-shadow {
-  0% {
-    box-shadow: -4em 0 0 0.015em var(--primaryBackgroundColor,#083D56), 4em 0 0 0.015em var(--primaryBackgroundColor,#083D56);
-  }
-  75%, 100% {
-    box-shadow: 0 0 0 0.4em var(--primaryBackgroundColor,#083D56), 0 0 0 0.4em var(--primaryBackgroundColor,#083D56);
-  }
-}
-@-webkit-keyframes blow-grow {
-  0% {
-    transform: scale(0);
-    background-color: var(--primaryBackgroundColor,#083D56);
-  }
-  25% {
-    transform: scale(0.5);
-    background-color: var(--primaryBackgroundColor,#083D56);
-  }
-  50% {
-    transform: scale(1);
-    background-color: var(--primaryBackgroundColorHover,#083D56);
-  }
-  75% {
-    transform: scale(1.5);
-    background-color: var(--primaryBackgroundColorHover,#083D56);
-  }
-  100% {
-    transform: scale(2);
-    background-color:var(--primaryBackgroundColorActive,#083D56);
-  }
-}
-@keyframes blow-grow {
-  0% {
-    transform: scale(0);
-    background-color: var(--primaryBackgroundColor,#083D56);
-  }
-  25% {
-    transform: scale(0.5);
-    background-color: var(--primaryBackgroundColor,#083D56);
-  }
-  50% {
-    transform: scale(1);
-    background-color: var(--primaryBackgroundColorHover,#0E5F76);
-  }
-  75% {
-    transform: scale(1.5);
-    background-color: var(--primaryBackgroundColorHover,#0E5F76);
-  }
-  100% {
-    transform: scale(2);
-    background-color: var(--primaryBackgroundColorActive,#083D56);
+
+@media (prefers-reduced-motion: reduce) {
+  .marknote-loading .marknote-skeleton-block::after {
+    animation: none;
+    display: none;
   }
 }
