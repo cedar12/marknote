@@ -55,6 +55,14 @@ yarn
 yarn tauri dev
 ```
 
+# Editor font
+
+Open Preferences → Editor to choose system default, sans serif, serif, or monospace, or enter an installed font name and press Enter. Body size supports 12–32 px, with a live preview and Restore default font. Settings apply immediately, save automatically, and synchronize across windows while retaining document content and undo history. Unavailable fonts fall back to the system default; code keeps its monospace font.
+
+# Image export
+
+Use File → Export → Image to configure PNG or JPEG, document width, 1× / 2× resolution, background, and JPEG quality. The default 1× prioritizes speed; PNG supports transparency. Export includes the complete document, including all large-file segments, and uses the selected editor font. Settings remain available for retry after a failure.
+
 # Markdown settings
 
 Open Preferences → Markdown to configure single line breaks, link recognition, smart punctuation, HTML parsing, compact lists, bullet markers, and Markdown conversion on paste/copy. Settings save automatically and synchronize across windows.

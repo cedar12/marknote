@@ -1,7 +1,7 @@
 {
   "name": "marknote",
   "private": true,
-  "version": "0.0.9-alpha6",
+  "version": "0.0.9-alpha7",
   "packageManager": "yarn@4.9.2",
   "type": "module",
   "scripts": {
