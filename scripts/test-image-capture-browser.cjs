@@ -31,11 +31,13 @@ window.__capture = async (markdown, options = {}) => {
   const originalTauri=window.isTauri,originalInternals=window.__TAURI_INTERNALS__;
   const nativePaths=[];
   if(options.nativeImagePaths){window.isTauri=true;window.__TAURI_INTERNALS__={convertFileSrc(filePath){nativePaths.push(filePath);return 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Crect width=%2240%22 height=%2240%22 fill=%22red%22/%3E%3C/svg%3E';}};}
-  let staged, cloneCount=0, inlineMathDisplay;
+  let staged, cloneCount=0, inlineMathDisplay, stagedFont;
   const observer = new MutationObserver(records => {
     for (const record of records) for (const node of record.addedNodes) {
       if (node instanceof HTMLElement && node.classList.contains('image-export-document')) {
         staged = node;
+        const computed=getComputedStyle(node);
+        stagedFont={family:computed.fontFamily,size:computed.fontSize};
         const inline=node.querySelector('p .katex-html');
         if(inline)inlineMathDisplay=getComputedStyle(inline).display;
       }
@@ -62,7 +64,7 @@ window.__capture = async (markdown, options = {}) => {
     for(let i=0;i<glyphData.length;i+=4)if(glyphData[i]<180&&glyphData[i+1]<180&&glyphData[i+2]<180&&glyphData[i+3]>0)glyphPixels++;
     const result={type:blob.type,size:blob.size,width:bitmap.width,height:bitmap.height,cloneCount,glyphPixels,nativePaths,
       corner:pixel(0,0),center:pixel(Math.floor(bitmap.width/2),Math.floor(bitmap.height/2)),colors,
-      stagedHTML:staged?.innerHTML,inlineMathDisplay, clean:!document.querySelector('.image-export-document,iframe.html2canvas-container'),
+      stagedHTML:staged?.innerHTML,inlineMathDisplay,stagedFont, clean:!document.querySelector('.image-export-document,iframe.html2canvas-container'),
       unchanged:state===editor.state&&before.html===editor.getHTML()&&before.scroll===live.scrollTop&&before.selection===editor.state.selection.from};
     bitmap.close();canvas.width=0;canvas.height=0;return result;
   }catch(error){return {code:error.code,message:error.message,clean:!document.querySelector('.image-export-document,iframe.html2canvas-container'),unchanged:state===editor.state};}
@@ -101,6 +103,32 @@ async function main() {
     result=await capture('Text',{background:'transparent'});assert.equal(result.corner[3],0);record('Transparent PNG keeps alpha');
     await page.evaluate(()=>{document.documentElement.classList.add('dark');document.documentElement.style.setProperty('--contentBackgroundColor','#282828');document.documentElement.style.setProperty('--contentTextColor','#cbcbcb');});
     result=await capture('Readable',{background:'white'});assert(result.corner.slice(0,3).every(value=>value>245));record('White background overrides dark theme');
+
+    const savedFontVariables=await page.evaluate(()=>{
+      const style=document.documentElement.style;
+      const saved=['--editorFontFamily','--editorFontSize'].map(name=>({name,value:style.getPropertyValue(name),priority:style.getPropertyPriority(name)}));
+      style.setProperty('--editorFontFamily','Georgia, "Songti SC", SimSun, serif');
+      style.setProperty('--editorFontSize','24px');
+      return saved;
+    });
+    try {
+      const themedFont=await capture('Configured editor font',{background:'theme'});
+      assert.equal(themedFont.type,'image/png');
+      assert.match(themedFont.stagedFont.family,/Georgia.*serif/);
+      assert.equal(themedFont.stagedFont.size,'24px');
+      assert(themedFont.clean&&themedFont.unchanged);
+      const whiteFont=await capture('Configured editor font',{background:'white'});
+      assert.equal(whiteFont.type,'image/png');
+      assert.deepEqual(whiteFont.stagedFont,themedFont.stagedFont);
+      assert(whiteFont.corner.slice(0,3).every(value=>value>245));
+      assert(whiteFont.clean&&whiteFont.unchanged);
+      record('Editor font family and size reach the exported document for theme and white backgrounds');
+    } finally {
+      await page.evaluate(saved=>{
+        const style=document.documentElement.style;
+        for(const {name,value,priority} of saved)value ? style.setProperty(name,value,priority) : style.removeProperty(name);
+      },savedFontVariables);
+    }
 
     const bands='<div style="background:#ff0000;height:100px"></div>\n\n'+Array.from({length:80},(_,i)=>`Paragraph ${i}.\n\n`).join('')+'<div style="background:#00ff00;height:100px"></div>\n\n'+Array.from({length:80},(_,i)=>`Tail ${i}.\n\n`).join('')+'<div style="background:#0000ff;height:100px"></div>';
     result=await capture(bands,{width:480,background:'white'});assert(result.height>700);assert(result.colors.red>90&&result.colors.green>90&&result.colors.blue>90);assert(result.clean&&result.unchanged);record('Long document includes start, middle and end exactly once');

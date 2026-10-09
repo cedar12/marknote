@@ -9,6 +9,7 @@
     "build": "vue-tsc --noEmit && vite build",
     "test:markdown-preferences": "node scripts/test-markdown-preferences.cjs",
     "test:preferences:browser": "node scripts/test-preferences-browser.cjs",
+    "test:editor-font:browser": "node scripts/test-editor-font-browser.cjs",
     "test:large-file": "node scripts/test-large-file.cjs",
     "test:outline": "node scripts/test-outline.cjs",
     "test:outline:browser": "node scripts/test-outline-browser.cjs",

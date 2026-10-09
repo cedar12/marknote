@@ -55,7 +55,7 @@ Light and dark themes preserve the same hierarchy: primary chrome, content surfa
 
 ## Typography
 
-Application chrome and prose use the platform system stack for native rendering across supported operating systems and Chinese/Latin scripts. Code uses the established monospace stack. Controls use sentence-style labels from the active locale.
+Application chrome uses the platform system stack for native rendering across supported operating systems and Chinese/Latin scripts. Editor prose defaults to the same stack at 16px; the shared editor preferences allow system, sans-serif, serif, monospace, or a single installed font name, and a 12–32px body size. `--editorFontFamily` and `--editorFontSize` in `src/styles.css` map to the document surface and static image export; unavailable custom fonts fall back to `--fontFamily`. Code retains the established monospace stack. Controls use sentence-style labels from the active locale.
 
 ## Layout
 
@@ -87,7 +87,7 @@ Opening a recent file, a folder item, or a file picker uses the same document-tr
 
 Image export uses a compact, theme-aware Element Plus dialog above the application title bar. Options use labeled radio groups, a bounded document-width control, and JPEG quality; the default 1× resolution prioritizes speed, with explicit 2× output available. Rendering and writing retain the dialog footprint, with localized status and recoverable inline errors.
 
-Settings reuse Element Plus switches, selects, and explicit buttons. Group parsing, output, and clipboard settings within the existing desktop scroll surface; use compact labeled theme previews only where choosing colors needs a visual sample. Keep status space stable and identify built-in, bundled, installed, and selected themes in text. Use Tauri/Element Plus application dialogs rather than browser-native alert APIs. Dialog copy is localized and preserves editor focus after cancellation.
+Settings reuse Element Plus switches, selects, bounded number inputs, and explicit buttons. Editor font controls include a localized live sample and Restore default font, with persistent save/synchronization feedback in the existing settings scroll surface. Group parsing, output, and clipboard settings within the existing desktop scroll surface; use compact labeled theme previews only where choosing colors needs a visual sample. Keep status space stable and identify built-in, bundled, installed, and selected themes in text. Use Tauri/Element Plus application dialogs rather than browser-native alert APIs. Dialog copy is localized and preserves editor focus after cancellation.
 
 ### Iconography
 

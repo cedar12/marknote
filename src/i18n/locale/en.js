@@ -218,6 +218,22 @@ export default {
   closeTip:'The file is not saved, whether to give up saving?',
   giveUp:'Give UP',
 
+  editorFont: 'Editor font',
+  fontFamily: 'Font family',
+  fontSize: 'Font size (px)',
+  fontSystem: 'System default',
+  fontSansSerif: 'Sans serif',
+  fontSerif: 'Serif',
+  fontMonospace: 'Monospace',
+  fontFamilyHint: 'Choose a font category, or enter a font installed on your computer and press Enter. Unavailable fonts use the system default. Code keeps its monospace font.',
+  fontSizeHint: 'Body text size: {min}–{max} px. Changes apply immediately and are remembered.',
+  editorFontPreview: 'Editor font preview',
+  editorFontSample: 'Write clearly, read comfortably. Aa Bb 0123456789 — 中文字体预览',
+  restoreEditorFontDefaults: 'Restore default font',
+  editorFontInvalid: 'Enter a single font name (up to 128 characters) and a size from 12 to 32 px.',
+  editorFontSaveFailed: 'Could not save the font setting. The previous font is still in use. Try again.',
+  editorFontSyncFailed: 'Font setting saved. Other windows could not be updated. Try syncing again.',
+
   tabSize: 'Tab Size',
 
   find: 'Find',

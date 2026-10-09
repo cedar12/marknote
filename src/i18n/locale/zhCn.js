@@ -217,6 +217,22 @@ export default {
   closeTip:'文件未保存，是否放弃保存？',
   giveUp:'放弃',
 
+  editorFont: '编辑器字体',
+  fontFamily: '字体',
+  fontSize: '字号（px）',
+  fontSystem: '系统默认',
+  fontSansSerif: '无衬线字体',
+  fontSerif: '衬线字体',
+  fontMonospace: '等宽字体',
+  fontFamilyHint: '选择字体类别，或输入电脑上已安装的字体名称并按 Enter。未安装的字体会使用系统默认字体，代码保持等宽字体。',
+  fontSizeHint: '正文字号范围为 {min}–{max} px，修改后即时生效并自动记住。',
+  editorFontPreview: '编辑器字体预览',
+  editorFontSample: '写得清晰，读得舒适。中文字体预览 Aa Bb 0123456789',
+  restoreEditorFontDefaults: '恢复默认字体',
+  editorFontInvalid: '请输入单个字体名称（最多 128 个字符），字号范围为 12 到 32 px。',
+  editorFontSaveFailed: '字体设置未能保存，仍使用原来的字体，请重试。',
+  editorFontSyncFailed: '字体设置已保存，其他窗口未能同步，请重试同步。',
+
   tabSize: '制表符大小',
   code: '代码',
 

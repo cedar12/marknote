@@ -3,7 +3,8 @@
     outline: none;
     // margin: 1rem 0;
     padding: 1rem 4rem;
-    font-family: var(--fontFamily);
+    font-family: var(--editorFontFamily, var(--fontFamily));
+    font-size: var(--editorFontSize, 16px);
     color: var(--contentTextColor);
     background-color: var(--contentBackgroundColor);
     --editorHighlightBackgroundColor:var(--contentBackgroundColorActive);
