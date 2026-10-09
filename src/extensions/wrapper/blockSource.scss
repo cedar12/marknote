@@ -1,0 +1,11 @@
+.marknote .block-source {
+  padding: 14px 1em;
+  white-space-collapse: unset;
+  tab-size: var(--tabSize, 4);
+
+  code {
+    display: block;
+    min-height: 1.2em;
+    pointer-events: all;
+  }
+}

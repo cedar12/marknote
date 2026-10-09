@@ -6,6 +6,8 @@ import {useEditorStore} from './editor';
 import {usePreferencesStore} from './preferences';
 import { EDITOR_FONT_PREFERENCES_KEY, readEditorFont } from '../utils/editorFont';
 import { KeyBindingBuilder } from '../utils/keyBinding';
+import { watch } from 'vue';
+import { SHORTCUT_PREFERENCES_KEY, SHORTCUT_PREFERENCES_EVENT, readShortcutPreferences } from '../utils/shortcutPreferences';
 import { isImage } from '../utils';
 import { read, save, saveImagePath } from '../api/file';
 import { saveAs} from '../api/dialog';
@@ -237,11 +239,23 @@ export const useAppStore = defineStore('app', {
 
       const preferencesStore=usePreferencesStore();
       preferencesStore.applyEditorFont(readEditorFont());
+      watch(() => preferencesStore.shortcuts, shortcuts => {
+        this.keyBinding?.update(shortcuts);
+      }, { deep: true, immediate: true, flush: 'sync' });
+      void preferencesStore.loadShortcutPreferences().catch(error => {
+        appLog.error(`Shortcut preferences loading failed: ${String(error)}`);
+      });
+      listen(SHORTCUT_PREFERENCES_EVENT, event => {
+        preferencesStore.applyShortcutPreferences(event.payload);
+      });
       listen('editorFontPreferences', event => {
         preferencesStore.applyEditorFont(event.payload);
       });
       // Browser storage events also update other open windows if native broadcasting fails.
       window.addEventListener('storage', event => {
+        if (event.storageArea === localStorage && (event.key === SHORTCUT_PREFERENCES_KEY || event.key === null)) {
+          preferencesStore.applyShortcutPreferences(readShortcutPreferences());
+        }
         if (event.storageArea === localStorage && (event.key === EDITOR_FONT_PREFERENCES_KEY || event.key === null)) {
           preferencesStore.applyEditorFont(readEditorFont());
         }

@@ -23,6 +23,7 @@ import { useImageExportStore } from './imageExport';
 import { renderWordDiagrams } from '../utils/wordDiagrams';
 import { renderWordEquations } from '../utils/wordEquations';
 import { pasteFromClipboard } from '../utils/clipboard';
+import { SHORTCUT_DEFINITIONS } from '../utils/shortcutPreferences';
 
 const appWindow=getCurrentWindow();
 // @ts-ignore
@@ -413,11 +414,13 @@ const events = {
   },
 
   '*':async (item:Menu)=>{
-    if(/^heading([1-6])$/.test(item.key)){
-      //@ts-ignore
-      const level=/^heading([1-6])$/.exec(item.key)[1];
+    const definition=SHORTCUT_DEFINITIONS.find(definition=>definition.description[1]===item.key);
+    if(definition && ['format','paragraph'].includes(definition.description[0])){
       const editorStore=useEditorStore();
-      editorStore.editor.commands.toggleHeading({level:parseInt(level) as any});
+      if(editorStore.editor){
+        editorStore.editor.commands.focus();
+        useAppStore().keyBinding?.executeEditorAction(editorStore.editor,definition.id);
+      }
     }else if(item.key.startsWith('recent_')){
       const key=item.key.substring(7);
       const appStore=useAppStore();

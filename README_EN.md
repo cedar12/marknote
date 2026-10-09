@@ -24,6 +24,8 @@
 
 ![](https://cdn.jsdelivr.net/gh/cedar12/picgo@main/images/202310122323635.png)
 
+[Complete Markdown example preview](docs/marknote.jpg)
+
 # Download
 
 ### Windows
@@ -54,6 +56,14 @@ cd marknote
 yarn
 yarn tauri dev
 ```
+
+# Keyboard shortcuts
+
+Open Preferences → Keyboard shortcuts, focus a field, and press a key combination to configure file, edit, format, paragraph, and view actions. Clear assignments, restore defaults, and resolve conflicts before choosing Save shortcuts. Changes apply immediately, synchronize across windows, and persist after restarting.
+
+# Math block and Mermaid source
+
+Select a math block or Mermaid diagram to show the source and copy buttons in the top right. Expand the source to edit it, or copy its raw text. Both source editors use the same code theme and styling; empty math blocks accept formula input immediately.
 
 # Editor font
 

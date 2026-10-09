@@ -1,264 +1,157 @@
-import hotkeys, { HotkeysEvent } from 'hotkeys-js';
-import {useAppStore} from '../store/app';
-import * as globalShortcut from '@tauri-apps/plugin-global-shortcut';
-import {getCurrentWindow, Window} from '@tauri-apps/api/window';
+import type { Editor } from '@tiptap/core';
+import {
+  DEFAULT_SHORTCUT_PREFERENCES,
+  SHORTCUT_DEFINITIONS,
+  normalizeShortcutPreferences,
+  shortcutMatchesEvent,
+} from './shortcutPreferences';
+import { pasteFromClipboard } from './clipboard';
 
-export interface KeyBinding{
-  description:string[],
-  key:string,
-  replace?:string,
-  system?:boolean,
-  prevent?:boolean,
+export interface KeyBinding {
+  description: string[];
+  key: string;
 }
 
-const defaultKeyBinding:KeyBinding[]=[
-  {
-    description:['file','newWindow'],
-    key:'Mod+Shift+N',
-  },
-  {
-    description:['file','newFile'],
-    key:'Mod+N',
-  },
-  {
-    description:['file','openFile'],
-    key:'Mod+O',
-  },
-  {
-    description:['file','save'],
-    key:'Mod+S',
-  },
-  {
-    description:['file','saveAs'],
-    key:'Mod+Shift+S',
-  },
-  {
-    description:['file','preferences'],
-    key:'Mod+.',
-    system:false,
-  },
-  {
-    description:['file','closeWindow'],
-    key:'Mod+W',
-  },
-  {
-    description:['file','quit'],
-    key:'Mod+Q',
-  }
-  ,
-  {
-    description:['edit','cut'],
-    key:'Mod+X',
-  },
-  {
-    description:['edit','copy'],
-    key:'Mod+C',
-  },
-  {
-    description:['edit','paste'],
-    key:'Mod+V',
-  },
-  {
-    description:['edit','undo'],
-    key:'Mod+Z',
-  },
-  {
-    description:['edit','redo'],
-    key:'Mod+Y',
-  },
-  {
-    description:['edit','selectAll'],
-    key:'Mod+A',
-  },
-  {
-    description:['edit','find'],
-    key:'Mod+F',
-    prevent:true,
-  },
-  {
-    description:['edit','replace'],
-    key:'Mod+Shift+F',
-  },
-  {
-    description:['format','bold'],
-    key:'Mod+B',
-  },
-  {
-    description:['format','italic'],
-    key:'Mod+I',
-  },
-  {
-    description:['format','strikethrough'],
-    key:'Mod+Shift+X',
-  },
-  {
-    description:['format','inlineCode'],
-    key:'Mod+E',
-  },
-  {
-    description:['paragraph','normalText'],
-    key:'Mod+Alt+0',
-  },
-  {
-    description:['paragraph','heading1'],
-    key:'Mod+Alt+1',
-  },
-  {
-    description:['paragraph','heading2'],
-    key:'Mod+Alt+2',
-  },
-  {
-    description:['paragraph','heading3'],
-    key:'Mod+Alt+3',
-  },
-  {
-    description:['paragraph','heading4'],
-    key:'Mod+Alt+4',
-  },
-  {
-    description:['paragraph','heading5'],
-    key:'Mod+Alt+5',
-  },
-  {
-    description:['paragraph','heading6'],
-    key:'Mod+Alt+6',
-  },
-  {
-    description:['paragraph','table'],
-    key:'Mod+Shift+T',
-  },
-  {
-    description:['paragraph','codeFences'],
-    key:'Mod+Alt+C',
-  },
-  {
-    description:['paragraph','bulletList'],
-    key:'Mod+Shift+8',
-  },
-  {
-    description:['paragraph','orderedList'],
-    key:'Mod+Shift+7',
-  },
-  {
-    description:['paragraph','taskList'],
-    key:'Mod+Shift+9',
-  },
-  {
-    description:['paragraph','quoteBlock'],
-    key:'Mod+Shift+B',
-  },
-  {
-    description:['paragraph','paragraph'],
-    key:'Mod+Enter',
-  },
-  {
-    description:['view','sidebar'],
-    key:'Mod+Shift+E',
-  }
-];
+type KeyBindingFn = (bind: KeyBinding) => boolean | void;
+const clipboardActions = ['edit.copy', 'edit.cut', 'edit.paste'];
 
-type KeyBindingFn=(bind:KeyBinding,handler?: HotkeysEvent)=>boolean|void;
+function shortcutTarget(event: KeyboardEvent): Element | null {
+  return event.target instanceof Element ? event.target : null;
+}
 
-const contrlScopes=['file','view'];
+function isShortcutRecording(event: KeyboardEvent): boolean {
+  return Boolean(shortcutTarget(event)?.closest('[data-shortcut-recording], [data-shortcut-capture]'));
+}
 
-export class KeyBindingBuilder{
-  private binds:KeyBinding[];
-  private fn:KeyBindingFn|null=null;
-  private preKey:string|null=null;
-  private preTime:number=0;
-  constructor(binds=defaultKeyBinding){
-    hotkeys.filter = (event)=>{
-      const appStore = useAppStore();
-      var target = event.target || event.srcElement;
-      
-      
-      // @ts-ignore
-      var tagName = target.tagName;
-      
-      const keys = [];
-      
-      if (event.metaKey) {
-        keys.push(appStore.platform === 'macos' ? 'command' : 'win');
-      } else if (event.ctrlKey) {
-        keys.push('ctrl');
-      }
-      if(event.altKey){
-        keys.push('alt');
-      }
-      if(event.shiftKey){
-        keys.push('shift');
-      }
-      
-      keys.push(event.key);
-      const key = keys.join('+').toLocaleLowerCase();
-      // debugger;
-      const bind=binds.find(b=>b.key.replace(/Mod/g,appStore.platform === 'macos' ? 'command' : 'ctrl').toLocaleLowerCase()==key);
-      // if(bind?.prevent===true)
-      if(((Date.now()-this.preTime>200&&key==this.preKey)||key!==this.preKey)&&bind&&(bind.prevent===true||contrlScopes.includes(bind.description[0]))){
-        
-        console.log('handleKeyDown',event,key);
-        this.preKey=key;
-        this.preTime=Date.now();
-        event.preventDefault();
-        hotkeys.trigger(key, bind.description[0]);
-      }
-      
-      return !(tagName == 'INPUT' || tagName == 'SELECT' || tagName == 'TEXTAREA');
-    }
-    this.binds=binds;
+function isComposing(event: KeyboardEvent): boolean {
+  return event.isComposing || event.keyCode === 229 || event.key === 'Process' || event.key === 'Dead';
+}
+
+function consume(event: KeyboardEvent): void {
+  event.preventDefault();
+  event.stopPropagation();
+}
+
+/** One live binding table shared by the app menu and the editor. */
+export class KeyBindingBuilder {
+  private binds: KeyBinding[] = [];
+  private fn: KeyBindingFn | null = null;
+
+  constructor(preferences: unknown = DEFAULT_SHORTCUT_PREFERENCES) {
+    this.update(preferences);
     this.bind();
   }
 
-  getKey(desc:string){
-    const bind=this.binds.find(b=>b.description.join('.')===desc);
-    if(bind?.replace){
-      bind.key=bind.replace;
+  private get platform(): string {
+    return (window as unknown as { os?: string }).os || 'windows';
+  }
+
+  update(preferences: unknown): void {
+    const normalized = normalizeShortcutPreferences(preferences, this.platform);
+    this.binds = SHORTCUT_DEFINITIONS.map(definition => ({
+      description: [...definition.description],
+      key: normalized[definition.id],
+    }));
+  }
+
+  getKey(description: string): KeyBinding | undefined {
+    return this.binds.find(bind => bind.description.join('.') === description);
+  }
+
+  on(fn: KeyBindingFn): void {
+    this.fn = fn;
+  }
+
+  bind(): void {
+    document.removeEventListener('keydown', this.handleAppKeyDown, true);
+    document.addEventListener('keydown', this.handleAppKeyDown, true);
+  }
+
+  unbind(): void {
+    document.removeEventListener('keydown', this.handleAppKeyDown, true);
+  }
+
+  private findBinding(event: KeyboardEvent): KeyBinding | undefined {
+    return this.binds.find(bind => bind.key && shortcutMatchesEvent(bind.key, event, this.platform));
+  }
+
+  private handleAppKeyDown = (event: KeyboardEvent): void => {
+    if (event.defaultPrevented || isComposing(event) || isShortcutRecording(event) || !this.fn) return;
+    if (shortcutTarget(event)?.closest('input, textarea, select, [contenteditable="false"]')) return;
+    const bind = this.findBinding(event);
+    if (!bind || !(['file', 'view'].includes(bind.description[0]) || bind.description.join('.') === 'edit.find')) return;
+    // Consume repeats as well, so holding Save or New never opens multiple dialogs/windows.
+    if (event.repeat) {
+      consume(event);
+      return;
     }
-    return bind;
-  }
+    if (this.fn(bind) === true) consume(event);
+  };
 
-  unbind(){
-    globalShortcut.unregisterAll();
-    hotkeys.unbind();
-  }
+  /** Runs before Tiptap extension keymaps, preventing duplicate/default actions after rebinding. */
+  handleEditorKeyDown(editor: Editor, event: KeyboardEvent): boolean {
+    if (event.defaultPrevented || isComposing(event) || isShortcutRecording(event) || editor.isDestroyed || !editor.isEditable) return false;
+    // Editors embed ordinary controls in node views; their editing keys belong to those controls.
+    if (shortcutTarget(event)?.closest('input, textarea, select, [contenteditable="false"]')) return false;
 
-  on(fn:KeyBindingFn){
-    this.fn=fn;
-  }
-
-  bind(){
-    //@ts-ignore
-    const platform=window.os;
-    this.binds.forEach(bind=>{
-      if(bind.system===true){
-        const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,'CommandOrControl').toLocaleLowerCase();
-        globalShortcut.unregister(key);
-        globalShortcut.register(key,async ()=>{
-          if(this.fn){
-            const focused=await Window.getFocusedWindow();
-            if(focused&&focused.label===getCurrentWindow().label){
-              this.fn(bind);
-            }
-            
-          }
-        });
-      }else{
-        const key=(bind.replace?bind.replace:bind.key).replace(/Mod/g,platform==='macos'?'command':'ctrl').toLocaleLowerCase();
-        // console.log(key,bind.description[0]);
-        hotkeys(key, {
-          scope:bind.description[0],
-          // capture:true,
-        }, (event, handler)=>{
-          if(this.fn){
-            const result=this.fn(bind,handler);
-            if(result===true&&event){
-              event.preventDefault();
-            }
-          }
-        });
+    const bind = this.findBinding(event);
+    const id = bind?.description.join('.');
+    if (bind && id && (['format', 'paragraph'].includes(bind.description[0]) || (bind.description[0] === 'edit' && id !== 'edit.find'))) {
+      if (event.repeat) {
+        consume(event);
+        return true;
       }
-      
+      const definition = SHORTCUT_DEFINITIONS.find(item => item.id === id);
+      // Keep the native clipboard event pipeline for its conventional keys, including image paste.
+      if (clipboardActions.includes(id) && bind.key === definition?.defaultKey) return false;
+      consume(event);
+      this.executeEditorAction(editor, id);
+      return true;
+    }
+
+    const defaultBinding = SHORTCUT_DEFINITIONS.find(definition => {
+      const category = definition.description[0];
+      return (category === 'edit' || category === 'format' || category === 'paragraph')
+        && definition.defaultKey
+        && shortcutMatchesEvent(definition.defaultKey, event, this.platform)
+        && this.getKey(definition.id)?.key !== definition.defaultKey;
     });
+    const changedRedoAlias = shortcutMatchesEvent('Mod+Shift+Z', event, this.platform)
+      && this.getKey('edit.redo')?.key !== DEFAULT_SHORTCUT_PREFERENCES['edit.redo'];
+    if (defaultBinding || changedRedoAlias) {
+      consume(event);
+      return true;
+    }
+    return false;
   }
 
+  executeEditorAction(editor: Editor, id: string): void {
+    const commands = editor.commands;
+    switch (id) {
+      case 'edit.undo': commands.undo(); break;
+      case 'edit.redo': commands.redo(); break;
+      case 'edit.selectAll': commands.selectAll(); break;
+      case 'edit.copy': document.execCommand('copy'); break;
+      case 'edit.cut': document.execCommand('cut'); break;
+      case 'edit.paste': void pasteFromClipboard(editor); break;
+      case 'format.bold': commands.toggleBold(); break;
+      case 'format.italic': commands.toggleItalic(); break;
+      case 'format.strikethrough': commands.toggleStrike(); break;
+      case 'format.inlineCode': commands.toggleCode(); break;
+      case 'paragraph.normalText': commands.setParagraph(); break;
+      case 'paragraph.table': commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true }); break;
+      case 'paragraph.codeFences': commands.toggleCodeBlock(); break;
+      case 'paragraph.bulletList': commands.toggleBulletList(); break;
+      case 'paragraph.orderedList': commands.toggleOrderedList(); break;
+      case 'paragraph.taskList': commands.toggleTaskList(); break;
+      case 'paragraph.quoteBlock': commands.toggleBlockquote(); break;
+      case 'paragraph.paragraph': commands.setHardBreak(); break;
+      case 'paragraph.mathBlock': commands.setKatex(); break;
+      case 'paragraph.horizontalRule': commands.setHorizontalRule(); break;
+      default: {
+        const heading = /^paragraph\.heading([1-6])$/.exec(id);
+        if (heading) commands.toggleHeading({ level: Number(heading[1]) as 1 | 2 | 3 | 4 | 5 | 6 });
+      }
+    }
+  }
 }

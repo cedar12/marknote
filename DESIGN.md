@@ -79,6 +79,8 @@ Interactive controls require clear default, hover, keyboard-focus, active, disab
 
 Use explicit action labels. Destructive choices such as discarding edits are separated from the safe Save path and use the real verb rather than a generic confirmation label.
 
+Mermaid and block math share compact source-toggle and copy buttons above the focused block. Their source editors use the same `hljs` code theme, editor code font, and `src/extensions/wrapper/blockSource.scss` spacing; copy feedback uses the shared `BlockSourceActions` component. Empty math blocks open the source editor for immediate input.
+
 ### Navigation and data display
 
 Opening a recent file, a folder item, or a file picker uses the same document-transition contract. The sidebar remains secondary to the current document.

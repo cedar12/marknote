@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { MarkdownPreferences } from '../utils/markdownPreferences';
+import type { ShortcutPreferences } from '../utils/shortcutPreferences';
 
 export function save(save_type:string,path:string){
   return invoke('save_image_type', { saveType:save_type,path:path });
@@ -10,6 +11,9 @@ export function getConfig(){
 }
 export function saveMarkdownPreferences(options: MarkdownPreferences): Promise<{ code: number; info: string }> {
   return invoke('save_markdown_preferences', { options });
+}
+export function saveShortcutPreferences(options: ShortcutPreferences): Promise<{ code: number; info: string }> {
+  return invoke('save_shortcut_preferences', { options });
 }
 export function ftype(){
   return invoke('set_ftype');

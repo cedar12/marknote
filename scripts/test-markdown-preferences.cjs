@@ -22,6 +22,7 @@ function loadModule(relativePath, imports = {}) {
 
 const preferences = loadModule('src/utils/markdownPreferences.ts');
 const editorFont = loadModule('src/utils/editorFont.ts');
+const shortcuts = loadModule('src/utils/shortcutPreferences.ts');
 const { DEFAULT_MARKDOWN_PREFERENCES: defaults, normalizeMarkdownPreferences, applyMarkdownPreferencesToEditor } = preferences;
 
 function fixture() {
@@ -39,6 +40,7 @@ function fixture() {
   const { usePreferencesStore } = loadModule('src/store/preferences.ts', {
     '../utils/markdownPreferences': preferences,
     '../utils/editorFont': editorFont,
+    '../utils/shortcutPreferences': shortcuts,
     './editor': { useEditorStore: () => ({ editor, reindexOtherSegments() { calls.reindexes += 1; } }) },
     '@tauri-apps/api/core': { isTauri: () => true },
     '@tauri-apps/api/event': { emit: async (name, value) => { calls.emits.push({ name, value }); return api.emit(name, value); } },

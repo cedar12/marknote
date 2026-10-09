@@ -99,6 +99,7 @@ fn main() {
             cmd::window::open_about,
             cmd::preferences::save_image_type,
             cmd::preferences::save_markdown_preferences,
+            cmd::preferences::save_shortcut_preferences,
             cmd::preferences::get_config,
             cmd::preferences::set_ftype,
             cmd::utils::cmd_args,

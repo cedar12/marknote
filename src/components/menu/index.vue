@@ -48,12 +48,14 @@ import { ref, onBeforeMount,watch,nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Menu, useMenuStore } from '../../store/menu';
 import {useAppStore} from '../../store/app';
+import {usePreferencesStore} from '../../store/preferences';
 import { Check, Right } from '@icon-park/vue-next';
 import '../../scss/menu.scss';
 
 
 const appStore=useAppStore();
 const menuStore = useMenuStore();
+const preferencesStore = usePreferencesStore();
 const menusRef = ref<HTMLElement>();
 const { t, locale } = useI18n();
 
@@ -457,6 +459,10 @@ const onReset = () => {
   menuStore.visible = false;
 }
 
+watch(() => preferencesStore.shortcuts, () => {
+  loadMenuData();
+}, { deep: true });
+
 watch(()=>locale.value,()=>{
   loadMenuData();
 })
@@ -470,7 +476,7 @@ function replaceShortcut(shortcut?:string){
   if(!shortcut)return '';
   const mod=appStore.platform==='macos'?'Cmd':'Ctrl';
   const alt=appStore.platform==='macos'?'Option':'Alt';
-  const key=shortcut.replace(/Mod/g,mod).replace(/Alt/g,alt);
+  const key=shortcut.replace(/Mod/g,mod).replace(/Meta/g,appStore.platform==='macos'?'Cmd':'Win').replace(/Alt/g,alt);
   // console.log('key->',key);
   return key;
 }

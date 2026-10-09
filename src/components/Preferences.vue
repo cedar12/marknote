@@ -25,6 +25,7 @@
                             <div style="padding: 0 1rem;">
                                 <General v-if="key==='general'"></General>
                                 <Editor v-if="key==='editor'"></Editor>
+                                <Shortcuts v-show="key==='shortcuts'" @reveal="key='shortcuts'"></Shortcuts>
                                 <Image v-if="key==='image'"></Image>
                                 <Markdown v-if="key==='markdown'"></Markdown>
                                 <Theme v-if="key==='theme'"></Theme>
@@ -44,6 +45,7 @@ import {useAppStore} from '../store/app';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import General from './preferences/General.vue';
 import Editor from './preferences/Editor.vue';
+import Shortcuts from './preferences/Shortcuts.vue';
 import Image from './preferences/Image.vue';
 import Theme from './preferences/Theme.vue';
 import Markdown from './preferences/Markdown.vue';
@@ -62,7 +64,7 @@ const {t,locale} = useI18n();
 
 const elLocale=ref((elementPlusLocales as any)[locale.value]);
 
-const options=['general','editor','markdown','theme','image'];
+const options=['general','editor','shortcuts','markdown','theme','image'];
 
 appWindow.setTitle(t('preferences'));
 

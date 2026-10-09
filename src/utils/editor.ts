@@ -57,31 +57,10 @@ function createEditor() {
       handleDrop: (view, e) => {
         console.log('drop', view, e);
       },
-      handleKeyDown(_view, _event) {
-        /*
-        const keys = [];
-        const appStore = useAppStore();
-        if (event.metaKey) {
-          keys.push(appStore.platform === 'macos' ? 'command' : 'win');
-        } else if (event.ctrlKey) {
-          keys.push('ctrl');
-        }
-        if(event.altKey){
-          keys.push('alt');
-        }
-        if(event.shiftKey){
-          keys.push('shift');
-        }
-        if (event.key === 'Process' && event.ctrlKey) {
-          hotkeys.trigger('ctrl+.', 'file');
-        } else {
-          keys.push(event.key);
-          const key = keys.join('+').toLocaleLowerCase();
-          console.log('handleKeyDown',event,key);
-          hotkeys.trigger(key, 'file');
-          hotkeys.trigger(key, 'view');
-        }
-        */
+      handleKeyDown(_view, event) {
+        const current = editor.value;
+        if (!current) return false;
+        return useAppStore().keyBinding?.handleEditorKeyDown(current, event) || false;
       },
 
     },
