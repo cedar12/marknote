@@ -111,7 +111,7 @@ async function main() {
     fs.writeFileSync(path.join(temporary, 'main.js'), [
       "import { createApp } from 'vue';", "import i18n from '/src/i18n';",
       "import '/src/scss/element-plus.scss';", "import 'element-plus/theme-chalk/dark/css-vars.css';", "import '/src/styles.css';",
-      "import '/src/scss/editor.scss';", "import '/src/scss/codeTheme.scss';", "import 'katex/dist/katex.min.css';",
+      "import '/src/scss/editor.scss';", "import '/src/scss/codeTheme.scss';",
       "import Harness from './Harness.vue';", "createApp(Harness).use(i18n).mount('#test-root');",
     ].join('\n'));
     fs.writeFileSync(path.join(temporary, 'index.html'), '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"></head><body><div id="test-root"></div><script type="module" src="./main.js"></script></body></html>');
@@ -178,10 +178,39 @@ async function main() {
       assert.deepEqual(styles.formula,styles.diagram,'formula and Mermaid source surfaces share computed styles');
       assert.deepEqual(styles.formulaCode,styles.diagramCode,'formula and Mermaid source code share computed styles');
     };
+    const singleFormulaPreview = async () => {
+      const previews = await page.locator('.marknote-katex .katex-content:not(.katex-empty)').evaluateAll(elements => elements.map(element => {
+        const math = element.querySelector('math');
+        const rect = math?.getBoundingClientRect();
+        const extraText = [];
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        while (walker.nextNode()) {
+          const text = walker.currentNode;
+          if (!text.textContent.trim() || text.parentElement.closest('math')) continue;
+          const range = document.createRange();
+          range.selectNodeContents(text);
+          if (Array.from(range.getClientRects()).some(rect => rect.width > 0 && rect.height > 0)) extraText.push(text.textContent);
+        }
+        const annotation = math?.querySelector('annotation');
+        return { count:element.querySelectorAll('math').length, width:rect?.width, height:rect?.height, extraText, annotationDisplay:annotation && getComputedStyle(annotation).display };
+      }));
+      for (const preview of previews) {
+        assert.equal(preview.count,1,'preview renders one formula');
+        assert(preview.width>0 && preview.height>0,'formula remains visible');
+        assert.deepEqual(preview.extraText,[],'preview does not show duplicated formula characters below the math');
+        assert.equal(preview.annotationDisplay,'none','raw TeX annotation stays hidden');
+      }
+    };
 
     await api('select',{type:'paragraph',index:0});
     for(let index=0;index<3;index++)assert.equal(await math(index).locator('.katex-toolbar').isVisible(),false);
     assert.equal(await mermaid.locator('.codeblock-wrapper').isVisible(),false);
+    await singleFormulaPreview();
+    if(process.env.MARKNOTE_BLOCK_SOURCE_SCREENSHOT_DIR){
+      fs.mkdirSync(process.env.MARKNOTE_BLOCK_SOURCE_SCREENSHOT_DIR,{recursive:true});
+      await math(1).screenshot({path:path.join(process.env.MARKNOTE_BLOCK_SOURCE_SCREENSHOT_DIR,'formula-preview-light.png')});
+    }
+    record('Formula previews render once without duplicated raw text under production styles');
     await math(0).locator('.katex-content').focus();
     await math(0).locator('.katex-toolbar').waitFor({state:'visible'});
     assert.equal(await math(0).locator('.katex-content').evaluate(element=>element===document.activeElement),true);
@@ -312,6 +341,7 @@ async function main() {
     await api('setLocale','zhCn');
     await api('theme','dark');
     await page.setViewportSize({width:390,height:760});
+    await singleFormulaPreview();
     await api('select',{type:'katex',index:0,node:true});
     await math(0).locator('.katex-source').waitFor({state:'visible'});
     await matchingSourceStyles();

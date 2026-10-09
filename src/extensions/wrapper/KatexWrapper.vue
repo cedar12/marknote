@@ -59,6 +59,7 @@ const toggleCode = async (value: boolean) => {
 const preview = computed(() => katex.renderToString(source.value, {
   throwOnError: false,
   displayMode: true,
+  output: 'mathml',
 }));
 </script>
 

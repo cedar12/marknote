@@ -81,6 +81,8 @@ Use explicit action labels. Destructive choices such as discarding edits are sep
 
 Mermaid and block math share compact source-toggle and copy buttons above the focused block. Their source editors use the same `hljs` code theme, editor code font, and `src/extensions/wrapper/blockSource.scss` spacing; copy feedback uses the shared `BlockSourceActions` component. Empty math blocks open the source editor for immediate input.
 
+Block math previews render one native MathML formula. The raw formula source appears only in the dedicated source editor.
+
 ### Navigation and data display
 
 Opening a recent file, a folder item, or a file picker uses the same document-transition contract. The sidebar remains secondary to the current document.
