@@ -5,6 +5,9 @@ use std::{fs, io::Write, path::Path, time::{SystemTime, UNIX_EPOCH}};
 
 fn write_file_safely(path:&str,content:&[u8])->std::io::Result<()> {
     let target=Path::new(path);
+    if target.exists() && !target.is_file(){
+        return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput,"save path is not a file"));
+    }
     let parent=target.parent().unwrap_or_else(||Path::new("."));
     let filename=target.file_name().and_then(|name|name.to_str()).unwrap_or("marknote");
     let nonce=SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_nanos();
@@ -15,6 +18,7 @@ fn write_file_safely(path:&str,content:&[u8])->std::io::Result<()> {
         let mut file=fs::OpenOptions::new().write(true).create_new(true).open(&temp)?;
         file.write_all(content)?;
         file.sync_all()?;
+        drop(file);
 
         if target.exists(){
             fs::rename(target,&backup)?;
@@ -170,17 +174,20 @@ pub fn ls_md(path: &str) -> Result<resp::Resp<utils::PathInfo>, String> {
 #[tauri::command]
 pub async fn export_image(
     path: String,
-    base64: &str,
+    base64: String,
 ) -> Result<resp::Resp<String>, String> {
-    match utils::write_image(path.clone(), base64.into()) {
-        Ok(_) => {
-            Ok(resp::ok(path, None))
-        }
-        Err(e) => {
-            println!("{:?}", e);
-            Err(e.to_string())
-        }
-    }
+    tauri::async_runtime::spawn_blocking(move || {
+        write_export_image(&path, &base64).map_err(|error| error.to_string())?;
+        Ok(resp::ok(path, None))
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+fn write_export_image(path: &str, data_url: &str) -> anyhow::Result<()> {
+    let bytes = utils::image_export::decode_data_url(path, data_url)?;
+    write_file_safely(path, &bytes)?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -236,4 +243,75 @@ pub async fn export_word(
     })
     .await
     .map_err(|error| error.to_string())?
+}
+
+#[cfg(test)]
+mod image_export_tests {
+    use super::*;
+    use base64::{engine::general_purpose, Engine as _};
+    use image::{DynamicImage, ImageOutputFormat};
+    use std::{io::Cursor, path::PathBuf};
+
+    struct ExportDirectory(PathBuf);
+
+    impl ExportDirectory {
+        fn new() -> Self {
+            let nonce = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+            let path = std::env::temp_dir().join(format!("marknote-image-export-{}-{nonce}", std::process::id()));
+            fs::create_dir(&path).unwrap();
+            Self(path)
+        }
+
+        fn image_path(&self) -> String {
+            self.0.join("export.png").to_string_lossy().into_owned()
+        }
+    }
+
+    impl Drop for ExportDirectory {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
+    fn png_data() -> (String, Vec<u8>) {
+        let mut bytes = Cursor::new(Vec::new());
+        DynamicImage::new_rgb8(3, 2).write_to(&mut bytes, ImageOutputFormat::Png).unwrap();
+        let bytes = bytes.into_inner();
+        let data_url = format!("data:image/png;base64,{}", general_purpose::STANDARD.encode(&bytes));
+        (data_url, bytes)
+    }
+
+    #[test]
+    fn invalid_export_preserves_existing_file() {
+        let directory = ExportDirectory::new();
+        let path = directory.image_path();
+        fs::write(&path, b"existing image").unwrap();
+        assert!(write_export_image(&path, "data:image/png;base64,aGVsbG8=").is_err());
+        assert_eq!(fs::read(&path).unwrap(), b"existing image");
+        assert_eq!(fs::read_dir(&directory.0).unwrap().count(), 1);
+    }
+
+    #[test]
+    fn export_replaces_existing_file_without_temporary_files() {
+        let directory = ExportDirectory::new();
+        let path = directory.image_path();
+        fs::write(&path, b"existing image").unwrap();
+        let (data_url, bytes) = png_data();
+        write_export_image(&path, &data_url).unwrap();
+        assert_eq!(fs::read(&path).unwrap(), bytes);
+        assert_eq!(fs::read_dir(&directory.0).unwrap().count(), 1);
+    }
+
+    #[test]
+    fn export_rejects_a_directory_without_moving_it() {
+        let directory = ExportDirectory::new();
+        let path = directory.image_path();
+        fs::create_dir(&path).unwrap();
+        fs::write(Path::new(&path).join("existing.txt"), b"keep this file").unwrap();
+        let (data_url, _) = png_data();
+        assert!(write_export_image(&path, &data_url).is_err());
+        assert!(Path::new(&path).is_dir());
+        assert_eq!(fs::read(Path::new(&path).join("existing.txt")).unwrap(), b"keep this file");
+        assert_eq!(fs::read_dir(&directory.0).unwrap().count(), 1);
+    }
 }

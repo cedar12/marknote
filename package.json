@@ -12,6 +12,8 @@
     "test:large-file": "node scripts/test-large-file.cjs",
     "test:outline": "node scripts/test-outline.cjs",
     "test:outline:browser": "node scripts/test-outline-browser.cjs",
+    "test:image-export:browser": "node scripts/test-image-export-browser.cjs",
+    "test:image-capture:browser": "node scripts/test-image-capture-browser.cjs",
     "preview": "vite preview",
     "tauri": "tauri",
     "update": "node scripts/update.mjs"

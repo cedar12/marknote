@@ -8,7 +8,7 @@ import { ask, message, open,save } from '@tauri-apps/plugin-dialog';
 import * as appLog from '@tauri-apps/plugin-log';
 import { exit } from '@tauri-apps/plugin-process';
 import {openFile} from '../api/dialog';
-import {collectWordEquations, exportHTML, exportImage,exportPDF, exportWord, read,readToHTML} from '../api/file';
+import {collectWordEquations, exportHTML,exportPDF, exportWord, read,readToHTML} from '../api/file';
 import i18n from '../i18n';
 import { openAbout, openPreferences, openWindow } from '../api/window';
 import {
@@ -17,9 +17,9 @@ import {
 import { relaunch } from '@tauri-apps/plugin-process';
 import { sendNotification } from '@tauri-apps/plugin-notification';
 import { PlatformType, openExplorer } from '../api/utils';
-import {toImage,handleHtml} from '../utils';
-import { nextTick } from 'vue';
-import html2canvas from 'html2canvas';
+import {handleHtml} from '../utils';
+
+import { useImageExportStore } from './imageExport';
 import { renderWordDiagrams } from '../utils/wordDiagrams';
 import { renderWordEquations } from '../utils/wordEquations';
 import { pasteFromClipboard } from '../utils/clipboard';
@@ -230,38 +230,7 @@ const events = {
     }
   },
   image(){
-    save({
-      title:`${t('export')}${t('image')}`,
-      filters:[{name:t('image'),extensions:['png']}]
-    }).then(path=>{
-      if(!path)return;
-      const div=document.querySelector('.layout-scrollbar>.el-scrollbar__wrap');
-      // const titleBarHeight=document.documentElement.style.getPropertyValue('--titleBarHeight');
-      const appStore=useAppStore();
-      appStore.exporting=true;
-      const editorStore=useEditorStore();
-      editorStore.editor.commands.blur();
-      appWindow.setResizable(false);
-      nextTick(() =>{
-        toImage(div,window.innerHeight-30).then(async (canvas) => {
-          appStore.exporting=false;
-          appWindow.setResizable(true);
-          const imgData = canvas.toDataURL('image/jpeg', 1.0);
-          console.log((imgData));
-          try{
-            await exportImage(path,imgData);
-            sendNotification(`${t('export')}${t('image')}`,path);
-          }catch(e){
-            appLog.error(e);
-          }
-          
-        }).catch(e=>{
-          appWindow.setResizable(true);
-          appStore.exporting=false;
-          console.error(e);
-        });
-      });
-    })
+    useImageExportStore().open();
   },
 
   preferences() {

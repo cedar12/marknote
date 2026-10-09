@@ -21,6 +21,7 @@ pub mod schema;
 pub mod pdf;
 pub mod md;
 pub mod docx;
+pub mod image_export;
 
 pub mod rule;
 

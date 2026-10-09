@@ -85,6 +85,8 @@ Opening a recent file, a folder item, or a file picker uses the same document-tr
 
 ### Forms and overlays
 
+Image export uses a compact, theme-aware Element Plus dialog above the application title bar. Options use labeled radio groups, a bounded document-width control, and JPEG quality; the default 1× resolution prioritizes speed, with explicit 2× output available. Rendering and writing retain the dialog footprint, with localized status and recoverable inline errors.
+
 Settings reuse Element Plus switches, selects, and explicit buttons. Group parsing, output, and clipboard settings within the existing desktop scroll surface; use compact labeled theme previews only where choosing colors needs a visual sample. Keep status space stable and identify built-in, bundled, installed, and selected themes in text. Use Tauri/Element Plus application dialogs rather than browser-native alert APIs. Dialog copy is localized and preserves editor focus after cancellation.
 
 ### Iconography
