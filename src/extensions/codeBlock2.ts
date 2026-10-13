@@ -1,166 +1,103 @@
-import { findChildren } from '@tiptap/core';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
-import {CodeBlockLowlight,CodeBlockLowlightOptions as BaseCodeBlockLowlightOptions} from '@tiptap/extension-code-block-lowlight';
-import { lowlight } from 'lowlight/lib/all';
-import { Node as ProsemirrorNode } from 'prosemirror-model';
-import { Plugin, PluginKey } from 'prosemirror-state';
+import { CodeBlock as BaseCodeBlock, type CodeBlockOptions } from '@tiptap/extension-code-block';
+import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
+import { lowlight, AUTO_HIGHLIGHT_LANGUAGES } from '../utils/lowlight';
+import { changedBlockNodes, changedDocumentRanges } from '../utils/editorTransactions';
 import CodeBlockWrapper from './wrapper/CodeBlockWrapper.vue';
 
+export const MAX_AUTO_HIGHLIGHT_SIZE = 12 * 1024;
+export const MAX_HIGHLIGHT_SIZE = 256 * 1024;
 
 function parseNodes(nodes: any[], className: string[] = []): { text: string; classes: string[] }[] {
-  return nodes
-    .map((node) => {
-      const classes = [...className, ...(node.properties ? node.properties.className : [])];
-
-      if (node.children) {
-        return parseNodes(node.children, classes);
-      }
-
-      return {
-        text: node.value,
-        classes,
-      };
-    })
-    .flat();
-}
-
-function getHighlightNodes(result: any) {
-  // `.value` for lowlight v1, `.children` for lowlight v2
-  return result.value || result.children || [];
-}
-
-function getDecorations({
-  doc,
-  name,
-  lowlight,
-  defaultLanguage,
-}: {
-  doc: ProsemirrorNode;
-  name: string;
-  lowlight: any;
-  defaultLanguage: string | null | undefined;
-}) {
-  const decorations: Decoration[] = [];
-
-  findChildren(doc, (node) => node.type.name === name).forEach((block) => {
-    let from = block.pos + 1;
-    const language = block.node.attrs.language || defaultLanguage;
-    const languages = lowlight.listLanguages();
-    const nodes =
-      language && languages.includes(language)
-        ? getHighlightNodes(lowlight.highlight(language, block.node.textContent))
-        : getHighlightNodes(lowlight.highlightAuto(block.node.textContent));
-
-    parseNodes(nodes).forEach((node) => {
-      const to = from + node.text.length;
-
-      if (node.classes.length) {
-        const decoration = Decoration.inline(from, to, {
-          class: node.classes.join(' '),
-        });
-
-        decorations.push(decoration);
-      }
-
-      from = to;
-    });
+  return nodes.flatMap(node => {
+    const classes = [...className, ...(node.properties?.className || [])];
+    return node.children ? parseNodes(node.children, classes) : [{ text: node.value, classes }];
   });
-
-  return DecorationSet.create(doc, decorations);
 }
 
-function isFunction(param: Function) {
-  return typeof param === 'function';
-}
+interface HighlightRange { from: number; to: number; classes: string; }
 
-export function LowlightPlugin({
-  name,
-  lowlight,
-  defaultLanguage,
-}: {
+export function LowlightPlugin({ name, lowlight, defaultLanguage }: {
   name: string;
   lowlight: any;
   defaultLanguage: string | null | undefined;
 }) {
-  if (!['highlight', 'highlightAuto', 'listLanguages'].every((api) => isFunction(lowlight[api]))) {
-    throw Error('You should provide an instance of lowlight to use the code-block-lowlight extension');
+  if (!['highlight', 'highlightAuto', 'listLanguages'].every(api => typeof lowlight[api] === 'function')) {
+    throw Error('A lowlight instance is required for code highlighting');
   }
+  // PM nodes are immutable and unchanged blocks retain their node identity.
+  // Weak keys release token arrays along with evicted documents/history.
+  const highlights = new WeakMap<ProseMirrorNode, HighlightRange[]>();
+  const languages: string[] = lowlight.listLanguages();
+  const autoSubset = AUTO_HIGHLIGHT_LANGUAGES.filter(language => languages.includes(language));
 
-  const lowlightPlugin: Plugin<any> = new Plugin({
-    key: new PluginKey('lowlight'),
+  const highlightBlock = (node: ProseMirrorNode): HighlightRange[] => {
+    const cached = highlights.get(node);
+    if (cached) return cached;
+    const text = node.textContent;
+    const language = node.attrs.language || defaultLanguage;
+    const known = language && (typeof lowlight.registered === 'function' ? lowlight.registered(language) : languages.includes(language));
+    let ranges: HighlightRange[] = [];
+    if (text.length <= MAX_HIGHLIGHT_SIZE && (known || text.length <= MAX_AUTO_HIGHLIGHT_SIZE)) {
+      try {
+        const result = known ? lowlight.highlight(language, text) : lowlight.highlightAuto(text, { subset: autoSubset });
+        let from = 0;
+        ranges = parseNodes(result.value || result.children || []).flatMap(token => {
+          const to = from + token.text.length;
+          const range = token.classes.length ? [{ from, to, classes: token.classes.join(' ') }] : [];
+          from = to;
+          return range;
+        });
+      } catch {
+        // Unsupported/malformed grammars must not block document editing.
+      }
+    }
+    highlights.set(node, ranges);
+    return ranges;
+  };
 
+  const decorationsForBlock = ({ node, pos }: { node: ProseMirrorNode; pos: number }): Decoration[] =>
+    highlightBlock(node).map(range => Decoration.inline(pos + 1 + range.from, pos + 1 + range.to, { class: range.classes }, { codeBlockNode: node }));
+
+  const plugin: Plugin<DecorationSet> = new Plugin<DecorationSet>({
+    key: new PluginKey('marknoteLowlight'),
     state: {
-      init: (_, { doc }) =>
-        getDecorations({
-          doc,
-          name,
-          lowlight,
-          defaultLanguage,
-        }),
-      apply: (transaction, decorationSet, oldState, newState) => {
-        const oldNodeName = oldState.selection.$head.parent.type.name;
-        const newNodeName = newState.selection.$head.parent.type.name;
-        const oldNodes = findChildren(oldState.doc, (node) => node.type.name === name);
-        const newNodes = findChildren(newState.doc, (node) => node.type.name === name);
-
-        if (
-          transaction.docChanged &&
-          // Apply decorations if:
-          // selection includes named node,
-          ([oldNodeName, newNodeName].includes(name) ||
-            // OR transaction adds/removes named node,
-            newNodes.length !== oldNodes.length ||
-            // OR transaction has changes that completely encapsulte a node
-            // (for example, a transaction that affects the entire document).
-            // Such transactions can happen during collab syncing via y-prosemirror, for example.
-            transaction.steps.some((step) => {
-              // @ts-ignore
-              return (
-                // @ts-ignore
-                step.from !== undefined &&
-                // @ts-ignore
-                step.to !== undefined &&
-                oldNodes.some((node) => {
-                  // @ts-ignore
-                  return (
-                    // @ts-ignore
-                    node.pos >= step.from &&
-                    // @ts-ignore
-                    node.pos + node.node.nodeSize <= step.to
-                  );
-                })
-              );
-            }))
-        ) {
-          return getDecorations({
-            doc: transaction.doc,
-            name,
-            lowlight,
-            defaultLanguage,
-          });
+      init: (_, { doc }) => {
+        const decorations: Decoration[] = [];
+        doc.descendants((node, pos) => {
+          if (node.type.name !== name) return;
+          for (const decoration of decorationsForBlock({ node, pos })) decorations.push(decoration);
+          return false;
+        });
+        return DecorationSet.create(doc, decorations);
+      },
+      apply: (transaction, oldDecorations) => {
+        if (!transaction.docChanged) return oldDecorations;
+        let mapped = oldDecorations.map(transaction.mapping, transaction.doc);
+        const ranges = changedDocumentRanges(transaction);
+        const previous = changedBlockNodes(transaction.before, ranges.map(range => ({ from: range.oldFrom, to: range.oldTo })), name);
+        for (const block of previous) {
+          const from = transaction.mapping.map(block.pos + 1, -1);
+          const to = transaction.mapping.map(block.pos + block.node.nodeSize - 1, 1);
+          mapped = mapped.remove(mapped.find(from, Math.max(from, to)).filter(decoration => decoration.spec.codeBlockNode === block.node));
         }
-
-        return decorationSet.map(transaction.mapping, transaction.doc);
+        const changed = changedBlockNodes(transaction.doc, ranges, name);
+        return mapped.add(transaction.doc, changed.flatMap(decorationsForBlock));
       },
     },
-
-    props: {
-      decorations(state) {
-        return lowlightPlugin.getState(state);
-      },
-    },
+    props: { decorations(state) { return plugin.getState(state); } },
   });
-
-  return lowlightPlugin;
+  return plugin;
 }
 
-export interface CodeBlockLowlightOptions extends BaseCodeBlockLowlightOptions {
+export interface CodeBlockLowlightOptions extends CodeBlockOptions {
   lowlight: any;
   defaultLanguage: string | null | undefined;
 }
 
-export const CodeBlock = CodeBlockLowlight.extend<CodeBlockLowlightOptions>({
+export const CodeBlock = BaseCodeBlock.extend<CodeBlockLowlightOptions>({
   addOptions() {
     return {
       ...this.parent?.(),
@@ -175,7 +112,10 @@ export const CodeBlock = CodeBlockLowlight.extend<CodeBlockLowlightOptions>({
 
   addProseMirrorPlugins() {
     return [
-      ...(this.parent?.() || []),
+      // configure()/extend() can add several copies of this field to the
+      // inheritance chain. Call the base paste handler directly so there is
+      // exactly one syntax plugin, regardless of the number of extensions.
+      ...(BaseCodeBlock.config.addProseMirrorPlugins?.call(this) || []),
       LowlightPlugin({
         name: this.name,
         lowlight: this.options.lowlight,

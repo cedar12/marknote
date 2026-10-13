@@ -3,22 +3,7 @@
         :style="`--titlbarSidebarWidth: ${appStore.sidebar.visible ? 'var(--sidebarWidth)' : '0'}`">
         <div data-tauri-drag-region class="titlebar">
             <div class="words-info">
-                <el-popover placement="bottom-start" :width="'auto'" :offset="-4" trigger="hover"
-                    popper-class="titlebar-words-popover" popper-style="min-width:auto;">
-                    <template #reference>
-                        <div data-tauri-drag-region class="titlebar-words">
-                            <span v-if="mode === 'words'"
-                                data-tauri-drag-region>{{ editorStore.editor?.storage.characterCount.words() }}</span>
-                            <span v-if="mode === 'chars'"
-                                data-tauri-drag-region>{{ editorStore.editor?.storage.characterCount.characters() }}</span>
-                            <span data-tauri-drag-region>{{ t(mode) }}</span>
-                        </div>
-                    </template>
-                    <div class="titlebar-words-wrapper" @contextmenu.prevent="">
-                        <div @click="mode = 'words'">{{ t('words') }}</div>
-                        <div @click="mode = 'chars'">{{ t('chars') }}</div>
-                    </div>
-                </el-popover>
+<Statistics />
             </div>
             <div data-tauri-drag-region class="titlebar-info">
                 <span data-tauri-drag-region class="marknote-title" :title="appStore.filepath || ''">{{ appStore.title
@@ -39,19 +24,13 @@
     </div>
 </template>
 <script lang="ts" setup>
-import { ElPopover } from 'element-plus';
+import Statistics from './Statistics.vue';
 import { HamburgerButton } from '@icon-park/vue-next';
 import { useMenuStore } from '../../store/menu';
 import { useAppStore } from '../../store/app';
-import { useEditorStore } from '../../store/editor';
-import { useI18n } from 'vue-i18n';
-import { ref } from 'vue';
 
-const { t } = useI18n();
-const mode = ref('words');
 const menuStore = useMenuStore();
 const appStore = useAppStore();
-const editorStore = useEditorStore();
 
 </script>
   

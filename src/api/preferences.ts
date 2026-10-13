@@ -3,7 +3,7 @@ import type { MarkdownPreferences } from '../utils/markdownPreferences';
 import type { ShortcutPreferences } from '../utils/shortcutPreferences';
 
 export function save(save_type:string,path:string){
-  return invoke('save_image_type', { saveType:save_type,path:path });
+  return invoke<{ code: number; info?: string }>('save_image_type', { saveType:save_type,path:path });
 }
 
 export function getConfig(){

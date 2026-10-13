@@ -4,6 +4,7 @@ import { sendNotification } from '@tauri-apps/plugin-notification';
 import * as appLog from '@tauri-apps/plugin-log';
 import { useAppStore } from './app';
 import { useEditorStore } from './editor';
+import { useDraftsStore } from './drafts';
 import { exportImage as writeImage } from '../api/file';
 import i18n from '../i18n';
 import { ImageExportError, renderDocumentImage } from '../utils/imageExport';
@@ -41,7 +42,7 @@ export const useImageExportStore = defineStore('imageExport', {
   }),
   actions: {
     open() {
-      if (this.pending || this.visible) return;
+      if (this.pending || this.visible || useAppStore().lifecycleBusy) return;
       this.options = readImageExportOptions();
       this.error = null;
       this.stage = 'idle';
@@ -55,7 +56,7 @@ export const useImageExportStore = defineStore('imageExport', {
       const app = useAppStore();
       const editorStore = useEditorStore();
       const editor = editorStore.editor;
-      if (!editor || app.exporting || editorStore.loading || editorStore.renderingDocument || editorStore.navigatingToHeading) {
+      if (!editor || app.exporting || app.lifecycleBusy || editorStore.loading || editorStore.renderingDocument || editorStore.segmentLoading || editorStore.sourceComposing || editorStore.navigatingToHeading) {
         this.error = 'imageExportUnavailable';
         return;
       }
@@ -65,13 +66,13 @@ export const useImageExportStore = defineStore('imageExport', {
         this.error = 'imageExportUnavailable';
         return;
       }
-      const sourcePath = app.filepath;
+      const sourcePath = app.filepath || useDraftsStore().resourceSourcePath;
       const options = normalizeImageExportOptions(this.options);
       this.options = options;
       this.pending = true;
+      app.exporting = true;
       this.error = null;
       let phase: 'picker' | 'render' | 'write' = 'picker';
-      let capturing = false;
       try {
         const extension = options.format === 'jpeg' ? 'jpg' : 'png';
         const defaultPath = sourcePath
@@ -95,7 +96,6 @@ export const useImageExportStore = defineStore('imageExport', {
         phase = 'render';
         this.stage = 'rendering';
         app.exporting = true;
-        capturing = true;
         const blob = await renderDocumentImage(editor, markdown, options, sourcePath);
         this.stage = 'saving';
         const dataUrl = await blobDataUrl(blob);
@@ -121,7 +121,7 @@ export const useImageExportStore = defineStore('imageExport', {
         this.error = key;
         void appLog.error('Image export ' + phase + ' failed: ' + String(error));
       } finally {
-        if (capturing) app.exporting = false;
+        app.exporting = false;
         this.pending = false;
         this.stage = 'idle';
       }

@@ -6,8 +6,31 @@ use super::utils::cmd_args;
 
 
 
-#[tauri::command]
-pub fn save_image_type(save_type:&str,path:&str) ->Resp<()>{
+fn validate_image_preferences<'a>(save_type: &str, path: &'a str) -> Result<&'a str, &'static str> {
+    let path = path.trim();
+    if path.is_empty() { return Err("imagePathRequired"); }
+    if path.chars().count() > 32768 || path.chars().any(char::is_control) { return Err("imagePathInvalid"); }
+    match save_type {
+        "default" => {
+            let bytes = path.as_bytes();
+            if std::path::Path::new(path).is_absolute() || path.starts_with('\\') || path.starts_with('/')
+                || (bytes.len() >= 2 && bytes[0].is_ascii_alphabetic() && bytes[1] == b':') {
+                return Err("imagePathRelative");
+            }
+        },
+        "sepc" => if !std::path::Path::new(path).is_absolute() { return Err("imagePathAbsolute"); },
+        "picgo" => if !std::path::Path::new(path).is_absolute() {
+            let url = url::Url::parse(path).map_err(|_| "picgoPathInvalid")?;
+            if !["http", "https"].contains(&url.scheme()) || url.host_str().is_none() { return Err("picgoPathInvalid"); }
+        },
+        _ => return Err("imagePathInvalid"),
+    }
+    Ok(path)
+}
+
+#[tauri::command(async)]
+pub fn save_image_type(save_type:String,path:String) ->Resp<()>{
+    let path = match validate_image_preferences(&save_type, &path) { Ok(path) => path, Err(error) => return resp::err(error.into()) };
     let mut map=HashMap::new();
     map.insert(constant::config::IMAGE_SAVE_TYPE.into(), save_type.to_string());
     map.insert(constant::config::IMAGE_SAVE_PATH.into(), path.to_string());
@@ -18,6 +41,27 @@ pub fn save_image_type(save_type:&str,path:&str) ->Resp<()>{
         Err(e)=>{
             resp::err(e.to_string())
         }
+    }
+}
+
+#[cfg(test)]
+mod image_preferences_tests {
+    use super::validate_image_preferences;
+    #[test]
+    fn validates_modes_without_changing_legacy_sepc_identifier() {
+        assert_eq!(validate_image_preferences("default", " ${filename}.assets "), Ok("${filename}.assets"));
+        assert_eq!(validate_image_preferences("sepc", " "), Err("imagePathRequired"));
+        assert_eq!(validate_image_preferences("sepc", "relative/assets"), Err("imagePathAbsolute"));
+        assert_eq!(validate_image_preferences("default", "/relative/assets"), Err("imagePathRelative"));
+        assert_eq!(validate_image_preferences("default", "\\relative\\assets"), Err("imagePathRelative"));
+        let absolute = std::env::temp_dir().to_string_lossy().into_owned();
+        assert!(validate_image_preferences("sepc", &absolute).is_ok());
+        assert_eq!(validate_image_preferences("default", &absolute), Err("imagePathRelative"));
+        assert!(validate_image_preferences("picgo", "http://127.0.0.1:36677/upload").is_ok());
+        assert_eq!(validate_image_preferences("picgo", "file:///tmp/command"), Err("picgoPathInvalid"));
+        assert_eq!(validate_image_preferences("picgo", "relative.exe"), Err("picgoPathInvalid"));
+        assert_eq!(validate_image_preferences("spec", &absolute), Err("imagePathInvalid"));
+        assert_eq!(validate_image_preferences("sepc", "a\0b"), Err("imagePathInvalid"));
     }
 }
 
@@ -50,13 +94,13 @@ pub fn save_markdown_preferences(options: crate::utils::md::MarkdownOptions) -> 
 const SHORTCUT_COMMANDS: &[&str] = &[
     "file.newWindow", "file.newFile", "file.openFile", "file.save", "file.saveAs",
     "file.preferences", "file.closeWindow", "file.quit",
-    "edit.cut", "edit.copy", "edit.paste", "edit.undo", "edit.redo", "edit.selectAll", "edit.find",
+    "edit.cut", "edit.copy", "edit.paste", "edit.undo", "edit.redo", "edit.selectAll", "edit.find", "edit.searchAll",
     "format.bold", "format.italic", "format.strikethrough", "format.inlineCode",
     "paragraph.normalText", "paragraph.heading1", "paragraph.heading2", "paragraph.heading3",
     "paragraph.heading4", "paragraph.heading5", "paragraph.heading6", "paragraph.table",
     "paragraph.codeFences", "paragraph.bulletList", "paragraph.orderedList", "paragraph.taskList",
     "paragraph.quoteBlock", "paragraph.mathBlock", "paragraph.paragraph", "paragraph.horizontalRule",
-    "view.sidebar",
+    "view.sidebar", "view.sourceMode", "view.splitPreview",
 ];
 
 fn validate_shortcut_preferences(options: &HashMap<String, String>) -> Result<(), String> {

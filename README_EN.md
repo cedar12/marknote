@@ -1,5 +1,27 @@
 # MarkNote
 
+Local recovery drafts preserve unnamed documents and the complete contents of segmented files. Reopening the app offers Restore copy, Later, or an explicit discard confirmation. Restoring opens an unsaved copy without overwriting the original file. Drafts remain on this computer until saved or discarded; each draft supports up to 128 MiB, and storage failures retain editor content with a retry action.
+
+Changes made by another window or application retain your editor content and pause auto-save. A persistent notice offers Review differences, Reload, Save As, or explicitly confirmed Overwrite. The read-only comparison uses the complete current Markdown and latest disk snapshot; partial comparisons identify their limits and failed reads offer retry. Saving still stops if the file changes again after confirmation. Opening from a picker, recent files or a folder shares the same protection.
+
+Unnamed documents accept pasted and dropped images, stored locally until saved. Unique filenames prevent collisions and failed uploads clean temporary caches. Save As copies referenced local images beside the target into `<document name>.assets` and rewrites their references, preserving originals. Missing attachments stop the save while retaining your document and draft. PicGo HTTP and CLI uploads must return an HTTP(S) image URL and time out after 30 seconds.
+
+Quit and update installation check every document window. Cancelled or failed saves prevent the operation. Updates download first, then protect documents before installation. HTML, PDF, Word and image exports use complete snapshots, including all large-file segments and unsaved changes. HTML/PDF embed document resources; PDF exports have no 100-page limit.
+
+Single replacement affects the current match, clearing search removes previous results, and Replace all is one undoable operation. Large-file segmentation preserves complete Markdown blocks and document-wide reference definitions. Code-block serialization uses safe fence lengths when the content contains backticks.
+
+Whole document search (Ctrl/Cmd+Shift+F by default) finds literal Markdown across every segment and opens results at precise source positions. Replacement requires a preview and confirmation, then supports one source Undo. The list shows up to 300 results; Replace all separately scans up to 10,000 matches and requests a narrower query beyond that. Changed documents invalidate old results and IME composition keeps its own input behavior.
+
+The search sidebar can recursively search `.md` and `.markdown` files in the open workspace, with cancellation, retry and skipped-file feedback. Limits are 2,000 files, 20,000 directory entries, 4 MiB per file, 64 MiB read, depth 32 and 300 results; links are skipped. Workspace search is read-only. Opening a result checks unsaved changes and validates the disk version before locating text. Browser previews support document search only.
+
+The editor mode strip and View menu offer Rendered, Source and Split preview. Source edits the complete Markdown used by save, drafts, exports and search. An unchanged mode round trip retains rendered undo history; actual source edits restart rendered history while source undo remains available. Source history keeps up to 100 actions and 8 MiB of change records; a single action exceeding the budget preserves content and requests smaller edits. Split preview supports synchronized scrolling and identifies its nearby line window for large documents. Rendered formatting actions explain their disabled state while source is active.
+
+Statistics can show the whole document or current segment. The most recent eight segments retain individual undo/redo, selection and scroll, within an additional approximate 16 MiB content/history budget. Evicted segments retain Markdown and position, but lose old undo history when reloaded. Ordinary prose edits reuse the outline and code decorations. Unknown-language code over 12,288 characters and known-language code over 262,144 characters render as plain text.
+
+Folders support refresh, failed-read retry, empty states, and case-insensitive filtering of loaded names. Expand subfolders to include their items. The sidebar supports pointer and keyboard resizing; image settings include path selection, validation and persistent save feedback.
+
+Closing a document window remembers its width and height. Startup and new windows restore the last closed document window's size in logical pixels, fitting the available display area when necessary. Minimizing does not overwrite the remembered size. Sidebar visibility and the preferred width also survive reopening; temporary narrowing in a small window retains the preferred width for a larger viewport.
+
 ![](https://img.shields.io/github/stars/cedar12/marknote)![](https://img.shields.io/github/forks/cedar12/marknote)![](https://img.shields.io/github/downloads/cedar12/marknote/total)[![Release](https://github.com/cedar12/marknote/actions/workflows/release.yml/badge.svg)](https://github.com/cedar12/marknote/actions/workflows/release.yml)
 
 🎉A simple `WYSIWYG` markdown editor, available for Linux, macOS and Windows.
@@ -9,6 +31,7 @@
 # Features
 
 - Multiple Window
+- Whole-document source editing, split preview, document/workspace search and conflict comparison
 - Multiple Themes, Support for custom themes
 - Support CommonMark Spec, GitHub Flavored Markdown Spec
 - Support paragraphs and inline style shortcuts
@@ -28,24 +51,14 @@
 
 # Download
 
-### Windows
-
-You can download the lastest `MarkNote_%version%_x64-setup.exe` or `MarkNote_%version%_x64-en-US.msi` from the [release page](https://github.com/cedar12/marknote/releases/latest)
-
-### MacOS
-
-You can download the lastest `MarkNote_%version%_x64.dmg` from the [release page](https://github.com/cedar12/marknote/releases/latest)
-
-### Linux
-
-You can download the lastest Mar`kNote_%version%_x64.AppImage` from the [release page](https://github.com/cedar12/marknote/releases/latest)
+[Latest stable release](https://github.com/cedar12/marknote/releases/latest), or [all releases](https://github.com/cedar12/marknote/releases) for prereleases. Choose Windows `.msi` / `.exe`, macOS `.dmg` for Intel or Apple silicon, or Linux `.deb` / `.AppImage` from the assets actually listed on that release.
 
 # Development
 
 ## Environment
 
-1. `Node 18+`
-2. `Rust 1.7+`
+1. Node.js 22 with Corepack; the project pins Yarn 4.9.2.
+2. Current Rust stable and the [Tauri platform prerequisites](https://v2.tauri.app/start/prerequisites/). Older Rust toolchains cannot read the current lockfile.
 
 ```shell
 git clone https://github.com/cedar12/marknote.git
@@ -53,9 +66,12 @@ git clone https://github.com/cedar12/marknote.git
 
 ```shell
 cd marknote
-yarn
+corepack enable
+yarn install --immutable
 yarn tauri dev
 ```
+
+Run `yarn test:unit`, `yarn build`, `yarn test:browser`, and `cargo test --locked --manifest-path src-tauri/Cargo.toml --no-default-features`. Browser checks need Playwright and Chromium; optional `MARKNOTE_PLAYWRIGHT_PATH` and `MARKNOTE_BROWSER_PATH` select their locations. PRs and branch pushes run frontend, browser and native checks; tagged releases pass the same checks before building installers.
 
 # Keyboard shortcuts
 

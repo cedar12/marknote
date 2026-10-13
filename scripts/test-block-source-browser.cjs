@@ -136,6 +136,7 @@ async function main() {
       };
       window.__TAURI_EVENT_PLUGIN_INTERNALS__={unregisterListener(){}};
       window.__TAURI_INTERNALS__={
+        metadata:{currentWindow:{label:'main'},currentWebview:{label:'main'}},
         transformCallback(callback){const id=++callbackId;callbacks.set(id,callback);return id;},
         async invoke(command,args){
           if(command==='plugin:event|listen'){listeners.push(args);return listeners.length;}

@@ -3344,7 +3344,7 @@ dependencies = [
 
 [[package]]
 name = "marknote"
-version = "0.0.9-alpha9"
+version = "0.0.10-alpha.1"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -3365,6 +3365,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
+ "sha2",
  "shadow-rs",
  "tauri",
  "tauri-build",

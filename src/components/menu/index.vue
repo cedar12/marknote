@@ -1,20 +1,20 @@
 <template>
   <Teleport to="body">
-    <div class="marknote-menus" ref="menusRef" v-if="menuStore.visible">
-      <div class="marknote-menu-mask" @click="onReset"  @contextmenu.prevent="onReset"></div>
+    <div class="marknote-menus" ref="menusRef" v-if="menuStore.visible" @keydown.esc.stop.prevent="onReset(true)">
+      <div class="marknote-menu-mask" @click="onReset()"  @contextmenu.prevent="onReset()"></div>
       <div class="menus menus-level-1  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" @contextmenu.prevent="">
         <div class="menu-item" :class="{ split: item.split }" v-for="item in menus" :key="item.key" >
-          <div class="menu-content" :class="{ 'has-children': item.children && item.children.length > 0 }"
+          <button type="button" class="menu-content" :class="{ 'has-children': item.children && item.children.length > 0 }" :disabled="item.disabled" :title="item.disabledReason"
             @click="onClick($event, item, 1)"  v-if="item.platform==undefined||item.platform.includes(appStore.platform as any)">
             <label class="menu-title">{{ item.label }}</label>
             <i>
               <Right v-if="item.children && item.children.length > 0"></Right>
             </i>
-          </div>
+          </button>
           <div class="menus menus-level-2  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" v-if="key1 === item.key">
             
             <div class="menu-item" :class="{ split: item2.split }" v-for="item2 in item.children" :key="item2.key">
-              <div class="menu-content" @click="onClick($event, item2, 2)" v-if="item2.platform==undefined||item2.platform.includes(appStore.platform as any)">
+              <button type="button" class="menu-content" :disabled="item2.disabled" :aria-pressed="item2.type==='checkbox' ? Boolean(item2.checked) : undefined" :title="item2.disabledReason" @click="onClick($event, item2, 2)" v-if="item2.platform==undefined||item2.platform.includes(appStore.platform as any)">
                 <label class="menu-checkbox">
                   <Check v-if="item2.checked"></Check>
                 </label>
@@ -23,14 +23,14 @@
                 <i>
                   <Right v-if="item2.children && item2.children.length > 0"></Right>
                 </i>
-              </div>
+              </button>
               <div class="menus  menus-level-3  glass" :class="{ 'right-menu': appStore.platform === 'macos' }" v-if="key2 === item2.key&&item2.children&&item2.children.length>0">
                 
                 <div class="menu-item" :class="{ split: item3.split }" v-for="item3 in item2.children" :key="item3.key" >
-                  <div class="menu-content" @click="onClick($event, item3, 3)" :title="item3.label"  v-if="item3.platform==undefined||item3.platform.includes(appStore.platform  as any)">
+                  <button type="button" class="menu-content" :disabled="item3.disabled" @click="onClick($event, item3, 3)" :title="item3.disabledReason || item3.label"  v-if="item3.platform==undefined||item3.platform.includes(appStore.platform  as any)">
                     <label class="menu-title">{{ item3.label }}</label>
                     <span v-if="item3.shortcut">{{ replaceShortcut(item3.shortcut) }}</span>
-                  </div>
+                  </button>
 
                 </div>
               </div>
@@ -49,6 +49,7 @@ import { useI18n } from 'vue-i18n';
 import { Menu, useMenuStore } from '../../store/menu';
 import {useAppStore} from '../../store/app';
 import {usePreferencesStore} from '../../store/preferences';
+import { useEditorStore } from '../../store/editor';
 import { Check, Right } from '@icon-park/vue-next';
 import '../../scss/menu.scss';
 
@@ -56,12 +57,14 @@ import '../../scss/menu.scss';
 const appStore=useAppStore();
 const menuStore = useMenuStore();
 const preferencesStore = usePreferencesStore();
+const editorStore=useEditorStore();
 const menusRef = ref<HTMLElement>();
 const { t, locale } = useI18n();
 
 
 const key1 = ref<string | null>(null);
 const key2 = ref<string | null>(null);
+let previousFocus:HTMLElement|null=null;
 
 onBeforeMount(async () => {
   loadMenuData();
@@ -233,6 +236,8 @@ const loadMenuData=()=>{
           key: 'find',
           shortcut:appStore.keyBinding?.getKey('edit.find')?.key,
         },
+        { label:t('searchAll'),key:'searchAll',shortcut:appStore.keyBinding?.getKey('edit.searchAll')?.key },
+        { label:t('searchWorkspace'),key:'searchWorkspace' },
         // {
         //   label: t('replace'),
         //   key: 'replace',
@@ -243,6 +248,8 @@ const loadMenuData=()=>{
     {
       label:t('format'),
       key: 'format',
+      disabled:editorStore.sourceMode!=='wysiwyg',
+      disabledReason:editorStore.sourceMode!=='wysiwyg'?t('sourceFormattingHint'):undefined,
       children:[
         {
           label: t('bold'),
@@ -279,6 +286,8 @@ const loadMenuData=()=>{
     {
       label: t('paragraph'),
       key: 'paragraph',
+      disabled:editorStore.sourceMode!=='wysiwyg',
+      disabledReason:editorStore.sourceMode!=='wysiwyg'?t('sourceFormattingHint'):undefined,
       children: [
       {
           label: t('normalText'),
@@ -378,6 +387,8 @@ const loadMenuData=()=>{
           checked:appStore.sidebar.visible,
           shortcut:appStore.keyBinding?.getKey('view.sidebar')?.key,
         },
+        {label:t('sourceMode'),key:'sourceMode',type:'checkbox',checked:editorStore.sourceMode==='source',shortcut:appStore.keyBinding?.getKey('view.sourceMode')?.key},
+        {label:t('splitPreview'),key:'splitPreview',type:'checkbox',checked:editorStore.sourceMode==='split',shortcut:appStore.keyBinding?.getKey('view.splitPreview')?.key},
         // {
         //   label: t('folder'),
         //   key: 'folderView',
@@ -413,12 +424,13 @@ const loadMenuData=()=>{
       for (let i = 0; i < bind.description.length-1; i++) {
         const b = bind.description[i];
         var item=temp.find(t=>t.key===b);
+        if(item?.disabled)return false;
         if(item&&item.children){
           temp=item.children;
         }
       }
       const menu=temp.find(t=>t.key===bind.description[bind.description.length-1]);
-      if(menu&&((!menu.children) || menu.children.length === 0)){
+      if(menu&&!menu.disabled&&((!menu.children) || menu.children.length === 0)){
         if (menu.type === 'checkbox') {
            menu.checked = !menu.checked;
         }
@@ -433,8 +445,9 @@ const loadMenuData=()=>{
 }
 
 const onClick = (e: MouseEvent, item: Menu, level: number) => {
+  if(item.disabled)return;
   // console.log(item);
-  const el = (e.target as HTMLElement);
+  const el = (e.currentTarget as HTMLElement);
 
   const top = el.offsetTop;
   menusRef.value?.style.setProperty(`--menu${level + 1}Top`, top + 'px');
@@ -453,11 +466,18 @@ const onClick = (e: MouseEvent, item: Menu, level: number) => {
   }
 }
 
-const onReset = () => {
+const onReset = (restoreFocus=false) => {
   key1.value = null;
   key2.value = null;
   menuStore.visible = false;
+  if(restoreFocus&&previousFocus?.isConnected)previousFocus.focus();
 }
+
+watch(()=>menuStore.visible,(visible)=>{
+  if(!visible)return;
+  previousFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
+  nextTick(()=>menusRef.value?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus());
+});
 
 watch(() => preferencesStore.shortcuts, () => {
   loadMenuData();
@@ -470,6 +490,7 @@ watch(()=>locale.value,()=>{
 watch(()=>appStore.sidebar.visible,()=>{
   loadMenuData();
 })
+watch(()=>editorStore.sourceMode,loadMenuData);
 
 
 function replaceShortcut(shortcut?:string){

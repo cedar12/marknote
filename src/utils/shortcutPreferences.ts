@@ -19,6 +19,7 @@ const commands: [string, string][] = [
   ['file.preferences', 'Mod+.'], ['file.closeWindow', 'Mod+W'], ['file.quit', 'Mod+Q'],
   ['edit.cut', 'Mod+X'], ['edit.copy', 'Mod+C'], ['edit.paste', 'Mod+V'],
   ['edit.undo', 'Mod+Z'], ['edit.redo', 'Mod+Y'], ['edit.selectAll', 'Mod+A'], ['edit.find', 'Mod+F'],
+  ['edit.searchAll', 'Mod+Shift+F'],
   ['format.bold', 'Mod+B'], ['format.italic', 'Mod+I'], ['format.strikethrough', 'Mod+Shift+X'],
   ['format.inlineCode', 'Mod+E'],
   ['paragraph.normalText', 'Mod+Alt+0'], ['paragraph.heading1', 'Mod+Alt+1'],
@@ -29,6 +30,7 @@ const commands: [string, string][] = [
   ['paragraph.taskList', 'Mod+Shift+9'], ['paragraph.quoteBlock', 'Mod+Shift+B'],
   ['paragraph.mathBlock', ''], ['paragraph.paragraph', 'Mod+Enter'], ['paragraph.horizontalRule', ''],
   ['view.sidebar', 'Mod+Shift+E'],
+  ['view.sourceMode', 'Mod+Shift+M'], ['view.splitPreview', 'Mod+Alt+P'],
 ];
 
 export const SHORTCUT_DEFINITIONS: readonly ShortcutDefinition[] = commands.map(([id, defaultKey]) => ({
@@ -122,7 +124,15 @@ export function normalizeShortcutPreferences(value: unknown, platform = shortcut
   for (const definition of SHORTCUT_DEFINITIONS) {
     next[definition.id] = normalizeShortcut(source[definition.id], platform) ?? definition.defaultKey;
   }
-  // Never install ambiguous bindings from a damaged or older configuration.
+  // New actions must not invalidate a user's older custom binding. If a new
+  // default conflicts with an explicitly stored binding, leave the new action unassigned.
+  for (const definition of SHORTCUT_DEFINITIONS) {
+    if (Object.prototype.hasOwnProperty.call(source,definition.id) || !next[definition.id]) continue;
+    const resolved = resolvedShortcut(next[definition.id],platform);
+    if (SHORTCUT_DEFINITIONS.some(other => other.id!==definition.id && Object.prototype.hasOwnProperty.call(source,other.id)
+      && next[other.id] && resolvedShortcut(next[other.id],platform)===resolved)) next[definition.id]='';
+  }
+  // Never install ambiguous bindings from a damaged configuration.
   return Object.keys(validateShortcutPreferences(next, platform)).length ? { ...DEFAULT_SHORTCUT_PREFERENCES } : next;
 }
 

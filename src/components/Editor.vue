@@ -1,4 +1,6 @@
 <template>
+  <SourceModeBar />
+  <div v-show="editorStore.sourceMode === 'wysiwyg'">
   <nav v-if="segmented" class="segment-navigation" :aria-label="t('largeFileNavigation')">
     <span class="segment-mode">{{ t('largeFileMode') }}</span>
     <span class="segment-position" aria-live="polite">
@@ -15,6 +17,8 @@
   <!-- <LinkMenu :editor="editor"></LinkMenu> -->
   <Menu></Menu>
   <EditorContent :editor="editor" ></EditorContent>
+  </div>
+  <SourceWorkspace v-show="editorStore.sourceMode !== 'wysiwyg'" />
 </template>
 <script lang="ts" setup> 
 import {computed,onBeforeUnmount,onMounted,onUpdated,ref,watch,nextTick} from 'vue';
@@ -27,6 +31,8 @@ import Menu from '../extensions/menu/index.vue';
 import { useI18n } from 'vue-i18n';
 import { createEditor } from '../utils/editor';
 import * as appLog from '@tauri-apps/plugin-log';
+import SourceModeBar from './source/SourceModeBar.vue';
+import SourceWorkspace from './source/SourceWorkspace.vue';
 
 const appStore=useAppStore();
 const editorStore=useEditorStore();
@@ -71,13 +77,14 @@ const changeSegment = async (index:number, focusPosition:'start'|'end', automati
   stopEndAnchor();
   navigating.value=true;
   try{
-    const changed=await editorStore.showSegment(index, focusPosition);
+    const position=automatic?focusPosition:'restore';
+    const changed=await editorStore.showSegment(index, position);
     if(!changed)return;
     await nextTick();
     if(scrollContainer){
-      scrollContainer.scrollTop=focusPosition==='end'?scrollContainer.scrollHeight:0;
+      if(position!=='restore')scrollContainer.scrollTop=focusPosition==='end'?scrollContainer.scrollHeight:0;
       lastScrollTop=scrollContainer.scrollTop;
-      if(focusPosition==='end')anchorSegmentEnd();
+      if(position!=='restore' && focusPosition==='end')anchorSegmentEnd();
     }
     if(automatic)lastAutomaticSwitchAt=performance.now();
   }catch(error){
@@ -90,7 +97,7 @@ const changeSegment = async (index:number, focusPosition:'start'|'end', automati
 };
 
 const checkScrollBoundary=(direction:-1|1)=>{
-  if(!scrollContainer || !segmented.value || segmentNavigationMode.value!=='scroll' || navigating.value || editorStore.navigatingToHeading || editorStore.loading || editorStore.renderingDocument || appStore.exporting)return;
+  if(editorStore.sourceMode!=='wysiwyg' || !scrollContainer || !segmented.value || segmentNavigationMode.value!=='scroll' || navigating.value || editorStore.navigatingToHeading || editorStore.loading || editorStore.renderingDocument || appStore.exporting)return;
   if(performance.now()-lastAutomaticSwitchAt<AUTO_SWITCH_GUARD_MS)return;
   const atTop=scrollContainer.scrollTop<=EDGE_TOLERANCE_PX;
   const atBottom=scrollContainer.scrollTop+scrollContainer.clientHeight>=scrollContainer.scrollHeight-EDGE_TOLERANCE_PX;
@@ -201,6 +208,7 @@ watch(segmentNavigationMode,()=>{
   lastTouchY=null;
   lastScrollTop=scrollContainer?.scrollTop??0;
 });
+watch(()=>editorStore.sourceMode,()=>{ stopEndAnchor(); inputDirection=0; draggingScrollbar=false; lastTouchY=null; });
 
 watch(()=>editorStore.navigatingToHeading,active=>{
   if(!active)return;
@@ -281,7 +289,6 @@ onMounted(()=>{
     await nextTick();
     bindScrollListeners();
     editor.value?.commands.focus();
-    editor.value?.on('update', editorStore.updateHeadings);
     editorStore.updateHeadings();
   })
   
@@ -292,7 +299,7 @@ onMounted(()=>{
 <style lang="scss">
 .segment-navigation {
   position: sticky;
-  top: 0;
+  top: 36px;
   z-index: 3;
   min-height: 34px;
   padding: 4px 12px;

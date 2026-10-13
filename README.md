@@ -18,6 +18,38 @@
 - Markdown 扩展，如数学表达式（KaTeX）和Mermaid图表
 - 支持导出图像、HTML、PDF 和 Word（.docx）文档
 - 支持图床[PicGO](https://molunerfinn.com/PicGo/)
+- 本地草稿恢复，支持未命名文档和大文件的完整内容
+- 整篇源码编辑、分屏预览、全文与工作区搜索，以及文件冲突差异查看
+
+# 文件安全与草稿恢复
+
+关闭文档提供保存、放弃和取消。退出应用或安装更新前，会检查全部编辑窗口；任一窗口取消、保存失败或仍在处理文档时，保留应用和当前内容。更新先下载，安装前再检查文档。
+
+编辑后的内容会独立保存到此电脑的应用数据目录 `drafts` 子目录，不会替代原 Markdown 文件。重启后可恢复草稿、暂不恢复或确认丢弃；暂不恢复的草稿可通过“查看草稿”再次打开。恢复会打开未保存的副本，保留原文件和相对图片的来源路径。成功保存或明确放弃后清理当前草稿；失败时保留内容并提供重试。单个草稿最多 128 MiB，超过限制会提示先保存文件。
+
+文件在磁盘上被其他应用或窗口修改时，会保留当前内容并暂停自动保存。提示栏可查看当前整篇内容与磁盘版本的差异，再选择重新加载、另存为或确认覆盖；确认后文件再次变化，保存仍会停止。差异窗口只读，超出比较预算时明确显示未比较部分，刷新失败可重试。打开文件、最近文件和文件夹项目使用同一套保护。
+
+未命名文档可以直接粘贴或拖入图片，默认先存到本机应用数据目录。图片使用独立文件名，上传失败也会清理临时缓存。另存为到其他文档时，将实际使用的本地图片复制到目标旁的 `<文档名称>.assets` 文件夹并调整引用；原始图片保留。找不到附件时停止保存，当前文档和草稿仍保留。PicGo HTTP 和命令行上传必须返回有效的 HTTP(S) 图片地址，超过 30 秒会停止。
+
+# 完整文档导出
+
+HTML、PDF、Word 和图片导出均使用完整文档，包括大文件中所有分段及当前修改。未命名或尚未保存的文档也可直接导出。HTML 与 PDF 嵌入图片、Mermaid 图表和文档样式，公式使用原生 MathML；PDF 不再限制为前 100 页。导出失败会保留原文档，取消文件选择不产生文件。
+
+# 查找替换与 Markdown 保真
+
+编辑菜单的“查找替换”作用于当前所见即所得段；“全文搜索”（默认 Ctrl/Cmd+Shift+F）查找整篇 Markdown，包括所有分段。结果显示行列和原文片段，点击进入源码定位。单处及全部替换先预览、再确认，可一次源码撤销；结果最多显示 300 条，全部替换独立扫描最多 10000 处，超过限制请缩小查询。文档变化后旧结果暂停定位和替换；输入法组合输入期间不会触发查找导航。
+
+搜索侧栏可切换“工作区”，递归查找已打开文件夹中的 `.md` 和 `.markdown` 文件，可取消、重试并显示跳过项目。最多扫描 2000 个文件、20000 个目录项目、单文件 4 MiB、累计读取 64 MiB、32 层目录，显示最多 300 条结果；跳过链接。工作区搜索只读，打开结果仍检查未保存修改与磁盘版本。浏览器预览中仅提供整篇文档搜索。
+
+编辑区顶部可切换所见即所得、源码和分屏预览；视图菜单也提供快捷键。源码显示完整文档，保存、草稿、导出和搜索均使用其内容；未修改时切回保留所见即所得撤销历史，修改源码后重置该历史，源码自身撤销仍可用。源码历史最多保留 100 次操作、8 MiB 变更记录；单次超出预算时保留内容并提示分次修改。分屏预览支持同步滚动，大文件只预览当前位置附近，并标明行范围。源码模式中的格式和段落菜单会提示切回所见即所得使用。
+
+大文件在完整 Markdown 块之间分段，保留列表续段、引用、代码块、公式及 HTML 容器；各段共享全文引用链接定义，修改包含定义的段时仍保留这些定义。保存代码块时会选用足够长的围栏，避免代码中的反引号提前结束代码块。
+
+大文件可切换全文或当前段的统计范围。最近访问的最多 8 段保留各自的撤销、重做、选区和滚动位置，缓存另有约 16 MiB 内容与历史预算；超出预算的段仍保留 Markdown 和位置，重新加载后不保留旧撤销记录。普通文字输入不重新扫描全部目录或代码块；未知语言代码超过 12,288 字符、已知语言代码超过 262,144 字符时使用纯文本显示。
+
+文件夹支持刷新、读取失败重试、空目录提示，以及忽略大小写的已加载名称过滤。展开子目录后才纳入其中的项目。侧栏支持拖动和键盘调整宽度，图片设置提供路径选择、校验和保存反馈。
+
+关闭编辑窗口时记住其宽高，下次启动或新建窗口恢复上次关闭窗口的尺寸。使用逻辑像素，屏幕变小后会调整至可用范围；最小化不会覆盖正常尺寸。侧栏显示或隐藏状态与用户选择的宽度也会保留；窄窗口临时收窄侧栏后，扩大窗口仍恢复原宽度。
 
 # 界面
 
@@ -29,34 +61,14 @@
 
 # 下载
 
-> 国内github下载慢、以下下载链接使用了 `gh-proxy` 代理
-
-### Windows
-
-[MarkNote_0.0.7_x64_en-US.msi](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.7/MarkNote_0.0.7_x64_en-US.msi)
-
-### MacOS
-
-英特尔芯片
-
-[MarkNote_0.0.7_x64.dmg](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.7/MarkNote_0.0.7_x64.dmg)
-
-苹果M系芯片
-
-[MarkNote_0.0.7_aarch64.dmg](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.7/MarkNote_0.0.7_aarch64.dmg)
-
-### Linux
-
-[mark-note_0.0.7_amd64.deb](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.7/mark-note_0.0.7_amd64.deb)
-
-[mark-note_0.0.7_amd64.AppImage](https://gh-proxy.com/https://github.com/cedar12/marknote/releases/download/v0.0.7/mark-note_0.0.7_amd64.AppImage)
+[下载最新稳定版本](https://github.com/cedar12/marknote/releases/latest)，或在[全部版本](https://github.com/cedar12/marknote/releases)中选择预发布版本。按系统选择 Windows `.msi` / `.exe`、macOS 对应 Intel 或 Apple 芯片的 `.dmg`，以及 Linux `.deb` / `.AppImage`。请以发布页实际附件为准。
 
 # 开发
 
 ## 环境要求
 
-1. `Node 18+`
-2. `Rust 1.7+`
+1. Node.js 22，启用 Corepack；项目固定使用 Yarn 4.9.2。
+2. 当前 Rust stable，以及 [Tauri 平台依赖](https://v2.tauri.app/start/prerequisites/)。旧 Rust 工具链无法读取当前 lockfile。
 
 ```shell
 git clone https://github.com/cedar12/marknote.git
@@ -64,9 +76,12 @@ git clone https://github.com/cedar12/marknote.git
 
 ```shell
 cd marknote
-yarn
+corepack enable
+yarn install --immutable
 yarn tauri dev
 ```
+
+回归检查：`yarn test:unit`、`yarn build`、`yarn test:browser`、`cargo test --locked --manifest-path src-tauri/Cargo.toml --no-default-features`。浏览器检查需要 Playwright 与 Chromium，可通过 `MARKNOTE_PLAYWRIGHT_PATH` 和 `MARKNOTE_BROWSER_PATH` 指定位置。PR 和分支推送运行前端、浏览器及原生检查；标签发布先通过同一套检查，再构建安装包。
 
 # 快捷键
 

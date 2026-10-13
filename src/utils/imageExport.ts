@@ -1,11 +1,11 @@
 import type { Editor } from '@tiptap/core';
-import { convertFileSrc, isTauri } from '@tauri-apps/api/core';
 import html2canvas from 'html2canvas';
 import mermaid from 'mermaid';
 import katexStyles from 'katex/dist/katex.min.css?inline';
 import light from '../theme/style/light';
 import { lowlight } from './lowlight';
 import type { ImageExportOptions } from './imageExportOptions';
+import { resolveDocumentResource } from './documentResources';
 
 export type ImageExportErrorCode = 'imageExportTooLarge' | 'imageExportImageFailed' | 'imageExportRenderFailed';
 
@@ -26,7 +26,7 @@ let nextCaptureId = 0;
 const scopedKatexStyles = katexStyles.replace(/(^|})([^{}@]+)\{/g, (_match, boundary, selectors) =>
   `${boundary}${selectors.split(',').map((selector: string) => `.image-export-document ${selector.trim()}`).join(',')}{`);
 
-const exportStyles = `
+export const staticDocumentStyles = `
 .image-export-document { box-sizing:border-box; min-height:0; overflow:visible; overflow-wrap:anywhere; padding:32px; }
 .image-export-document > h1::before,.image-export-document > h2::before,.image-export-document > h3::before,
 .image-export-document > h4::before,.image-export-document > h5::before,.image-export-document > h6::before { display:none; }
@@ -37,20 +37,6 @@ const exportStyles = `
 .image-export-document .katex-display { overflow:visible; }
 .image-export-document * { animation:none!important; transition:none!important; caret-color:transparent!important; }
 `;
-
-function resourcePath(source: string, sourcePath: string | null): string {
-  if (/^(?:data:|blob:|https?:|asset:|tauri:)/i.test(source)) return source;
-  if (/^\/\//.test(source)) return new URL(source, window.location.href).href;
-  if (!isTauri()) return new URL(source, window.location.href).href;
-  // markdown-it URL-encodes local image paths; convertFileSrc expects the
-  // original filesystem path, including spaces and non-ASCII characters.
-  let fileSource = source;
-  try { fileSource = decodeURIComponent(source); } catch { /* A literal % is a valid filename character. */ }
-  if (/^(?:[a-z]:[\\/]|\/)/i.test(fileSource)) return convertFileSrc(fileSource);
-  if (!sourcePath) throw new ImageExportError('imageExportImageFailed', `Relative image has no document path: ${source}`);
-  const directory = sourcePath.slice(0, Math.max(sourcePath.lastIndexOf('/'), sourcePath.lastIndexOf('\\')) + 1);
-  return convertFileSrc(directory + fileSource);
-}
 
 async function readBlob(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -91,7 +77,7 @@ async function prepareImages(root: HTMLElement, sourcePath: string | null): Prom
       const source = image.getAttribute('src') || '';
       try {
         if (!source) throw new Error('Image source is empty');
-        const resolved = resourcePath(source, sourcePath);
+        const resolved = resolveDocumentResource(source, sourcePath);
         image.removeAttribute('srcset');
         image.removeAttribute('sizes');
         image.loading = 'eager';
@@ -203,6 +189,28 @@ function canvasBlob(canvas: HTMLCanvasElement, options: ImageExportOptions): Pro
   }, mime, options.quality));
 }
 
+/** Shared preparation for image, HTML and PDF exports of a complete snapshot. */
+export async function prepareStaticDocument(editor: Editor, markdown: string, root: HTMLElement, sourcePath: string | null, white = false): Promise<void> {
+  const parsed = new DOMParser().parseFromString(editor.storage.markdown.parser.parse(markdown), 'text/html').body;
+  parsed.querySelectorAll('script,iframe,object,embed,style,link,base,meta').forEach(element => element.remove());
+  parsed.querySelectorAll('*').forEach(element => {
+    Array.from(element.attributes).forEach(attribute => {
+      if (/^on/i.test(attribute.name) || ['autofocus', 'srcdoc'].includes(attribute.name)
+        || (['href', 'src', 'xlink:href', 'action', 'formaction'].includes(attribute.name)
+          && /^(?:javascript|vbscript):/i.test(attribute.value.replace(/[\s\u0000-\u001f]/g, '')))) {
+        element.removeAttribute(attribute.name);
+      }
+    });
+  });
+  root.replaceChildren(...Array.from(parsed.childNodes));
+  restoreTaskItems(root);
+  highlightCode(root);
+  await renderDiagrams(root, white);
+  await prepareImages(root, sourcePath);
+  root.getBoundingClientRect();
+  await fontsReady();
+}
+
 /** Render a complete Markdown snapshot without changing editor state or scroll. */
 export async function renderDocumentImage(editor: Editor, markdown: string, options: ImageExportOptions, sourcePath: string | null = null): Promise<Blob> {
   const captureId = `image-export-${Date.now()}-${nextCaptureId++}`;
@@ -220,27 +228,12 @@ export async function renderDocumentImage(editor: Editor, markdown: string, opti
   }
   if (options.background === 'transparent') root.style.backgroundColor = 'transparent';
   const style = document.createElement('style');
-  style.textContent = scopedKatexStyles + exportStyles;
+  style.textContent = scopedKatexStyles + staticDocumentStyles;
   let canvas: HTMLCanvasElement | undefined;
   try {
-    const parsed = new DOMParser().parseFromString(editor.storage.markdown.parser.parse(markdown), 'text/html').body;
-    // Exported HTML is inert; do not run document-provided scripts or handlers.
-    parsed.querySelectorAll('script,iframe,object,embed,style,link,base,meta').forEach(element => element.remove());
-    parsed.querySelectorAll('*').forEach(element => {
-      Array.from(element.attributes).forEach(attribute => {
-        if (attribute.name.startsWith('on') || attribute.name === 'autofocus') element.removeAttribute(attribute.name);
-      });
-    });
-    root.replaceChildren(...Array.from(parsed.childNodes));
-    restoreTaskItems(root);
-    highlightCode(root);
     document.head.append(style);
     document.body.append(root);
-    await renderDiagrams(root, white);
-    await prepareImages(root, sourcePath);
-    // Ensure layout has requested the KaTeX/font-family resources before waiting.
-    root.getBoundingClientRect();
-    await fontsReady();
+    await prepareStaticDocument(editor, markdown, root, sourcePath, white);
     const width = Math.ceil(root.getBoundingClientRect().width);
     const height = Math.max(1, Math.ceil(root.getBoundingClientRect().height));
     const pixelWidth = width * options.scale;

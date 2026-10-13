@@ -72,6 +72,9 @@ fn main() {
             let window = app.get_webview_window("main").unwrap();
             
             window.set_decorations(IS_MACOS).unwrap();
+            if let Err(error) = utils::window_size::restore(&window) {
+                log::warn!("could not restore window size: {}", error);
+            }
             #[cfg(debug_assertions)]
             window.open_devtools();
             set_shadow(app.get_webview_window("main").unwrap());
@@ -80,9 +83,14 @@ fn main() {
         .on_page_load(|window,_|{
             window.eval(&format!("window.os='{}'",std::env::consts::OS)).unwrap();
         })
+        .on_window_event(utils::window_size::on_window_event)
         .invoke_handler(tauri::generate_handler![
             cmd::file::save_md,
+            cmd::file_version::probe_file_version,
             cmd::file::read_md,
+            cmd::workspace_search::workspace_search_start,
+            cmd::workspace_search::workspace_search_next,
+            cmd::workspace_search::workspace_search_cancel,
             cmd::file::read_md_to_html,
             cmd::file::save_image,
             cmd::file::save_image_path,
@@ -95,12 +103,19 @@ fn main() {
             cmd::dialog::save_as_md,
             cmd::dialog::open_file,
             cmd::window::open_window,
+            utils::window_size::remember_window_size,
+            utils::window_size::restore_window_size,
             cmd::window::open_preferences,
             cmd::window::open_about,
             cmd::preferences::save_image_type,
             cmd::preferences::save_markdown_preferences,
             cmd::preferences::save_shortcut_preferences,
             cmd::preferences::get_config,
+            cmd::drafts::draft_register,
+            cmd::drafts::draft_list,
+            cmd::drafts::draft_write,
+            cmd::drafts::draft_claim,
+            cmd::drafts::draft_remove,
             cmd::preferences::set_ftype,
             cmd::utils::cmd_args,
             cmd::utils::log_info,

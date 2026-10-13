@@ -1,4 +1,9 @@
 .marknote-menus {
+  button.menu-content {
+    width:100%;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;
+    &:disabled { opacity:.5;cursor:default; }
+    &:focus-visible { outline:2px solid var(--primaryTextColorActive);outline-offset:-2px; }
+  }
   --menuShadowColor:var(--menuShadowColor);
   position: absolute;;
   top: 0;
@@ -73,7 +78,7 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         user-select: none;
-        &:hover {
+        &:hover:not(:disabled) {
           background-color: var(--menuBackgroundColorHover, #e8e8e9);
         }
       }
@@ -100,7 +105,7 @@
         padding: .2rem .6rem;
         display: flex;
 
-        &:hover {
+        &:hover:not(:disabled) {
           background-color: var(--menuBackgroundColorHover, #e8e8e9);
         }
         

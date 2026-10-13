@@ -1,7 +1,7 @@
 <template>
     <teleport to='#marknote-titlbar'>
         <div data-tauri-drag-region class="preferences-header">
-            <button type="button" class="header-btn" v-if="appStore.platform!=='macos'" :aria-label="t('closeWindow')" @click="appWindow.close()">
+            <button type="button" class="header-btn" v-if="appStore.platform!=='macos'" :disabled="closingPreferences" :aria-label="t('closeWindow')" @click="appWindow.close()">
                 <Close aria-hidden="true"></Close>
             </button>
         </div>
@@ -25,7 +25,7 @@
                             <div style="padding: 0 1rem;">
                                 <General v-if="key==='general'"></General>
                                 <Editor v-if="key==='editor'"></Editor>
-                                <Shortcuts v-show="key==='shortcuts'" @reveal="key='shortcuts'"></Shortcuts>
+                                <Shortcuts v-show="key==='shortcuts'" :before-close="guardImageClose" :close-busy="imagePreferences.busy || imagePreferences.closePrompt" @reveal="key='shortcuts'" @close-pending="value => closingPreferences = value"></Shortcuts>
                                 <Image v-if="key==='image'"></Image>
                                 <Markdown v-if="key==='markdown'"></Markdown>
                                 <Theme v-if="key==='theme'"></Theme>
@@ -39,7 +39,7 @@
     </ElConfigProvider>
 </template>
 <script lang="ts" setup>
-import {ref,watch} from 'vue';
+import {nextTick,ref,watch} from 'vue';
 import {Close} from '@icon-park/vue-next';
 import {useAppStore} from '../store/app';
 import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -51,6 +51,7 @@ import Theme from './preferences/Theme.vue';
 import Markdown from './preferences/Markdown.vue';
 import { ElConfigProvider,ElScrollbar } from 'element-plus';
 import * as elementPlusLocales from 'element-plus/es/locale/index';
+import { useImagePreferencesStore } from '../store/imagePreferences';
 
 const appWindow=getCurrentWindow();
 
@@ -59,6 +60,8 @@ appStore.init();
 import { useI18n } from 'vue-i18n';
 
 const key=ref<string>('general');
+const imagePreferences = useImagePreferencesStore();
+const closingPreferences = ref(false);
 
 const {t,locale} = useI18n();
 
@@ -75,6 +78,15 @@ watch(()=>locale.value,()=>{
 
 const handleClick=(k:string)=>{
     key.value=k;
+}
+async function guardImageClose(): Promise<boolean> {
+    const allowed = await imagePreferences.guardClose();
+    if (!allowed && (imagePreferences.errorKey || imagePreferences.invalidPathKey)) {
+        key.value = 'image';
+        await nextTick();
+        if (imagePreferences.invalidPathKey) document.getElementById('image-save-path')?.focus();
+    }
+    return allowed;
 }
 </script>
 <style lang="scss">

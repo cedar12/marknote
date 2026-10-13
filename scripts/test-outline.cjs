@@ -4,11 +4,12 @@ const path = require('node:path');
 const ts = require('typescript');
 const { createPinia, setActivePinia } = require('pinia');
 const MarkdownIt = require('markdown-it');
+const mathPlugin = require('markdown-it-katex');
 
 function loadTypeScript(relativePath, dependencies = {}) {
   const file = path.join(__dirname, '..', relativePath);
   const compiled = ts.transpileModule(fs.readFileSync(file, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true },
   }).outputText;
   const module = { exports: {} };
   new Function('exports', 'require', 'module', '__filename', '__dirname', compiled)(
@@ -24,6 +25,11 @@ function loadTypeScript(relativePath, dependencies = {}) {
 const outline = loadTypeScript('src/utils/outline.ts');
 const largeFile = loadTypeScript('src/utils/largeFile.ts');
 const markdownPreferences = loadTypeScript('src/utils/markdownPreferences.ts');
+const editorTransactions = loadTypeScript('src/utils/editorTransactions.ts');
+const editorStatistics = loadTypeScript('src/utils/editorStatistics.ts');
+const segmentCache = loadTypeScript('src/utils/segmentCache.ts');
+const attachments = loadTypeScript('src/utils/attachments.ts');
+const sourceDocument = loadTypeScript('src/utils/sourceDocument.ts');
 const markdown = new MarkdownIt({ html: true });
 
 // This adapter reads controlled test fragments. Production uses the browser DOMParser.
@@ -93,6 +99,12 @@ const { useEditorStore } = loadTypeScript('src/store/editor.ts', {
   '../api/utils': {},
   '../utils/largeFile': largeFile,
   '../utils/outline': outline,
+  '../utils/editorTransactions': editorTransactions,
+  '../utils/editorStatistics': editorStatistics,
+  '../utils/segmentCache': segmentCache,
+  '../utils/attachments': attachments,
+  '../utils/sourceDocument': sourceDocument,
+  './app': { useAppStore: () => ({ loading: false, lifecycleBusy: false, exporting: false, resourceTasks: 0, markEdited() {} }) },
   './preferences': { usePreferencesStore: () => ({ markdown: markdownPreferences.DEFAULT_MARKDOWN_PREFERENCES }) },
   '../utils/markdownPreferences': markdownPreferences,
 });
@@ -234,11 +246,13 @@ async function testStore() {
   editor.view.dom.closest = () => scrollContainer;
   const navigation = store.navigateToHeading(parent);
   assert.equal(store.navigatingToHeading, true);
+  assert.equal(store.segmentLoading, true, 'ordinary lifecycle guards can see an in-flight segment render');
   assert.equal(await store.navigateToHeading(parent), false, 'overlapping heading clicks cannot start competing loads');
   releaseRender();
   assert.equal(await navigation, true);
   assert.equal(scrollContainer.scrollTop, 27, 'cross-segment headings receive the same measured sticky-header correction');
   assert.equal(store.navigatingToHeading, false);
+  assert.equal(store.segmentLoading, false, 'navigation releases its segment render lock');
 
   store.renderEditorBody = async content => { store.renderVersion += 1; return { content }; };
   assert.equal(await store.navigateToHeading(target), false, 'a newer document load cancels stale heading navigation');
@@ -258,6 +272,7 @@ async function testParsingPreferenceReindex() {
     '<h2>Removed HTML</h2>\n\n# Markdown target\n\n## Retained collapse\n\n',
     '<h2>Duplicate title</h2>\n\n## Duplicate title\n\n',
     '# "Quoted" heading\n\n',
+    '<script>\n\n[hidden]: https://reference.example.com\n\n</script>\n\n',
   ];
   store.segmentDirty = true;
   store.readMarkdownHeadings = collect;
@@ -274,6 +289,7 @@ async function testParsingPreferenceReindex() {
 
   markdown.set({ html: false });
   store.reindexOtherSegments();
+  assert.ok(store.referenceDefinitions.includes('reference.example.com'), 'parsing-option changes also refresh the document-wide reference context');
   assert.equal(store.headings.some(heading => heading.text === 'Removed HTML'), false);
   const target = store.headings.find(heading => heading.text === 'Markdown target');
   assert.equal(target.headingIndex, 0, 'HTML removal refreshes cached ordinals before navigation');
@@ -311,7 +327,23 @@ async function testParsingPreferenceReindex() {
   markdown.set({ html: true, typographer: false });
 }
 
-testStore().then(testParsingPreferenceReindex).then(() => {
+async function testStartupReferenceContext() {
+  setActivePinia(createPinia());
+  const store = useEditorStore();
+  store.setEditor(undefined);
+  const source = '$$\n[fake]: https://fake.example.com\n$$\n\n' + 'Paragraph\n\n'.repeat(60000) + '[real]: https://real.example.com\n';
+  await store.setContent(source);
+  assert.equal(store.segmented, true);
+  assert.ok(store.pendingContent !== null);
+  const editor = createEditorMock([], { value: '' });
+  editor.storage.markdown.parser.md = new MarkdownIt({ html: true }).use(mathPlugin);
+  store.setEditor(editor);
+  assert.ok(!store.referenceDefinitions.includes('fake.example.com'), 'startup context is rebuilt with the actual math-aware parser');
+  assert.ok(store.referenceDefinitions.includes('real.example.com'));
+  assert.equal(store.segments.join(''), source, 'startup reference reindex never modifies original source');
+}
+
+testStore().then(testParsingPreferenceReindex).then(testStartupReferenceContext).then(() => {
   console.log('outline: markdown headings, full-document cache, collapse state, unsaved segment navigation, parsing-preference reindexing and failures verified');
 }).catch(error => {
   console.error(error);

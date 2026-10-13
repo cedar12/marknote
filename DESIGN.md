@@ -87,7 +87,17 @@ Block math previews render one native MathML formula. The raw formula source app
 
 Opening a recent file, a folder item, or a file picker uses the same document-transition contract. The sidebar remains secondary to the current document.
 
+Document windows reopen at the last closed window's remembered width and height, fitting the current display when required. The sidebar retains its visible/hidden preference and user-selected width. Temporary responsive narrowing preserves the preferred width; restoration does not introduce a new dialog or alter document protection.
+
+Disk conflicts use one persistent, theme-aware notice with Review differences, Reload, Save As and Overwrite. Reload and Overwrite require native confirmations naming the file; pending actions keep the notice geometry stable. The read-only comparison uses line numbers, explicit add/remove symbols and localized partial-result feedback. Folder filters identify their loaded-item scope, with compact empty/error/retry states. Sidebar controls are real buttons; its resize separator exposes keyboard instructions and current width. Large-file statistics expose a labeled whole-document/current-segment scope and an explicit calculating state.
+
+Document mode uses a compact three-button strip: Rendered, Source and Split preview. Source is the complete Markdown document in a labeled, theme-aware textarea with independent undo, selection and scroll. Split preview shares the code and content typography, remains read-only and stacks vertically in narrow windows; bounded previews identify the visible line range. Source statistics explicitly identify their Markdown scope. Rendered formatting actions explain their disabled state while source is active.
+
+The search sidebar has a labeled document/workspace scope, literal query, case switch, cancellable status and a scrollable list of escaped snippets with file and line/column labels. Whole-document replacement previews examples before explicit confirmation; workspace search remains read-only. Search limits, stale results, skipped files and retries remain visible. Replacement and conflict dialogs trap focus, isolate background controls and return focus to the initiating surface.
+
 ### Forms and overlays
+
+Draft recovery reuses the theme-aware Element Plus dialog and overlay level of image export. A compact list shows the document name, original path and localized time. Later is initially focused; Restore copy opens an unsaved copy, and Discard draft requires an explicit inline confirmation. A persistent, compact notice offers review or retry without changing the editor viewport. Recovery and asynchronous operations keep actions visible in narrow or short windows and restore editor focus after closing.
 
 Image export uses a compact, theme-aware Element Plus dialog above the application title bar. Options use labeled radio groups, a bounded document-width control, and JPEG quality; the default 1× resolution prioritizes speed, with explicit 2× output available. Rendering and writing retain the dialog footprint, with localized status and recoverable inline errors.
 

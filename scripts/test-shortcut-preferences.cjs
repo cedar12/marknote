@@ -64,6 +64,47 @@ async function main() {
   assert.equal(SHORTCUT_DEFINITIONS.length, new Set(SHORTCUT_DEFINITIONS.map(item => item.id)).size);
   assert.deepEqual(plain(validateShortcutPreferences(defaults, 'windows')), {});
   assert.deepEqual(plain(validateShortcutPreferences(defaults, 'macos')), {});
+  {
+    const listeners = new Map(), calls = [];
+    class Surface {
+      constructor(kind) { this.kind = kind; }
+      closest(selector) { return selector.includes(this.kind) ? this : null; }
+    }
+    const { KeyBindingBuilder } = loadModule('src/utils/keyBinding.ts', {
+      './shortcutPreferences': shortcuts,
+      './clipboard': { pasteFromClipboard() {} },
+    }, { Element: Surface, window: { os: 'windows' }, document: {
+      addEventListener(name, handler) { listeners.set(name, handler); },
+      removeEventListener(name) { listeners.delete(name); },
+    } });
+    const binding = new KeyBindingBuilder();
+    binding.on(bind => { calls.push(bind.description.join('.')); return true; });
+    const keyboard = (patch = {}) => ({ ...event({}), defaultPrevented: false, repeat: false, target: new Surface('[data-source-editor]'),
+      preventDefault() { this.defaultPrevented = true; }, stopPropagation() {}, ...patch });
+    let ev = keyboard({ key: 's', code: 'KeyS' }); listeners.get('keydown')(ev);
+    assert.equal(calls.pop(), 'file.save'); assert.equal(ev.defaultPrevented, true);
+    ev = keyboard({ key: 'f', code: 'KeyF', shiftKey: true }); listeners.get('keydown')(ev);
+    assert.equal(calls.pop(), 'edit.searchAll');
+    ev = keyboard({ key: 's', code: 'KeyS', target: new Surface('textarea') }); listeners.get('keydown')(ev);
+    assert.equal(ev.defaultPrevented, false, 'ordinary form fields keep their shortcuts');
+    const adapter = Object.fromEntries(['undo', 'redo', 'selectAll', 'copy', 'cut', 'paste'].map(key => [key, () => calls.push(key)]));
+    ev = keyboard({ key: 'z', code: 'KeyZ' });
+    assert.equal(binding.handleSourceKeyDown(adapter, ev), true); assert.equal(calls.pop(), 'undo');
+    ev = keyboard({ key: 'v', code: 'KeyV' });
+    assert.equal(binding.handleSourceKeyDown(adapter, ev), false, 'default paste retains the textarea event pipeline');
+    binding.update({ ...defaults, 'edit.undo': 'Mod+Alt+U', 'edit.paste': 'Mod+Alt+V' });
+    ev = keyboard({ key: 'z', code: 'KeyZ' }); assert.equal(binding.handleSourceKeyDown(adapter, ev), true);
+    assert.equal(calls.length, 0, 'the old source undo key is suppressed after rebinding');
+    ev = keyboard({ key: 'u', code: 'KeyU', altKey: true });
+    assert.equal(binding.handleSourceKeyDown(adapter, ev), true); assert.equal(calls.pop(), 'undo');
+    ev = keyboard({ key: 'v', code: 'KeyV', altKey: true });
+    assert.equal(binding.handleSourceKeyDown(adapter, ev), true); assert.equal(calls.pop(), 'paste');
+    ev = keyboard({ key: 'u', code: 'KeyU', altKey: true, isComposing: true });
+    assert.equal(binding.handleSourceKeyDown(adapter, ev), false, 'IME owns source keys');
+    ev = keyboard({ key: 'u', code: 'KeyU', altKey: true, repeat: true });
+    assert.equal(binding.handleSourceKeyDown(adapter, ev), true); assert.equal(calls.length, 0);
+    binding.unbind();
+  }
   assert.equal(normalizeShortcut(' control + shift + k ', 'windows'), 'Mod+Shift+K');
   assert.equal(normalizeShortcut('Command+Option+K', 'macos'), 'Mod+Alt+K');
   assert.equal(normalizeShortcut('Ctrl+K', 'macos'), 'Ctrl+K', 'Mac Control is distinct from Command');
@@ -86,6 +127,16 @@ async function main() {
   assert.deepEqual(plain(normalizeShortcutPreferences({ 'format.bold': null, unknown: 'Mod+K' })), plain(defaults));
   assert.deepEqual(plain(normalizeShortcutPreferences({ ...defaults, 'format.bold': 'Mod+I' })), plain(defaults), 'ambiguous saved maps fall back safely');
   assert.equal(normalizeShortcutPreferences({ ...defaults, 'format.bold': '' })['format.bold'], '', 'disabled binding remains disabled');
+  for (const id of ['edit.searchAll', 'view.sourceMode', 'view.splitPreview']) {
+    const legacy = { ...defaults, 'format.bold': defaults[id] };
+    delete legacy['edit.searchAll'];
+    delete legacy['view.sourceMode'];
+    delete legacy['view.splitPreview'];
+    const migrated = normalizeShortcutPreferences(legacy);
+    assert.equal(migrated['format.bold'], defaults[id], 'new defaults preserve an existing custom binding');
+    assert.equal(migrated[id], '', 'a conflicting newly introduced command starts unassigned');
+    assert.deepEqual(plain(validateShortcutPreferences(migrated, 'windows')), {});
+  }
 
   assert.equal(shortcutFromKeyboardEvent(event({ key: 'K', code: 'KeyK', shiftKey: true })), 'Mod+Shift+K');
   assert.equal(shortcutFromKeyboardEvent(event({ key: '*', code: 'Digit8', shiftKey: true })), 'Mod+Shift+8', 'shifted number row is matched using physical key');

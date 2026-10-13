@@ -12,6 +12,7 @@ lerna-debug.log*
 .vscode
 
 node_modules
+.ci-tools
 dist
 dist-ssr
 *.local

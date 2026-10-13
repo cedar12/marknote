@@ -10,7 +10,7 @@
           <span>![</span>{{altValue}}<span>](</span>{{value}}<span>)</span>
         </div>
     </div>
-    <el-image :src="imgSrc"  :alt="alt" :title="title" referrerpolicy="origin-when-cross-origin">
+    <el-image :src="imgSrc"  :alt="altValue" :title="props.node.attrs.title" referrerpolicy="origin-when-cross-origin">
       <template #error>
         <div class="image-slot">
           <el-icon><ImageFiles fill="#dfdfdf"/></el-icon>
@@ -39,14 +39,18 @@
   </NodeViewWrapper>
 </template>
 <script lang="ts" setup>
-import { ref,onMounted,watch,nextTick,computed } from 'vue';
+import { ref,watch,nextTick,computed } from 'vue';
 import {ImageFiles} from '@icon-park/vue-next';
 import {ElImage,ElIcon,ElScrollbar} from 'element-plus';
 import { NodeViewWrapper, nodeViewProps} from '@tiptap/vue-3';
-import { convertFileSrc } from '@tauri-apps/api/core';
 import {useAppStore} from '../../store/app';
+import { useDraftsStore } from '../../store/drafts';
+import { useEditorStore } from '../../store/editor';
+import { resolveDocumentResource } from '../../utils/documentResources';
 import AutoWidthInput from '../../components/input/AutoWidthInput.vue';
 const appStroe=useAppStore();
+const drafts=useDraftsStore();
+const documentStore=useEditorStore();
 const props = defineProps(nodeViewProps);
 // ![图片](./vite.svg)
 // @ts-ignore
@@ -59,16 +63,10 @@ const altValue=ref(alt||'');
 const altRef=ref();
 
 const imgSrc=ref('');
-watch(()=>value.value,()=>{
-  if(value.value.startsWith('http://')||value.value.startsWith('https://')){
-    imgSrc.value=value.value;
-  }else{
-    // 相对markdown文件路径待优化
-
-    imgSrc.value=convertFileSrc(value.value);
-  }
-  // srcList.value[0]=imgSrc.value;
-})
+watch([()=>value.value,()=>appStroe.filepath,()=>drafts.resourceSourcePath,()=>documentStore.attachmentMapping],()=>{
+  try { imgSrc.value=value.value ? resolveDocumentResource(value.value,appStroe.filepath||drafts.resourceSourcePath,documentStore.attachmentMapping) : ''; }
+  catch { imgSrc.value=''; }
+},{immediate:true});
 
 const isFocus=computed(()=>{
   const {anchor}=props.editor.state.selection;
@@ -82,11 +80,13 @@ const isFocus=computed(()=>{
   
   return is;
 })
+watch(()=>props.node.attrs.src, source=>{value.value=source||'';});
+watch(()=>props.node.attrs.alt, text=>{altValue.value=text||'';});
 
-watch(()=>isFocus.value,()=>{
+watch(()=>isFocus.value,focused=>{
+  if(!focused)return;
   nextTick(()=>{
-    console.log(altRef.value);
-    altRef.value.focus();
+    altRef.value?.focus();
   })
 })
 /*
@@ -116,38 +116,6 @@ const setImageAlt=()=>{
   props.updateAttributes({alt:altValue.value});
 }
 
-const isAbsolute=(path:string)=>{
-  if(path.startsWith('/')){
-    return true;
-  }
-  if(/^[a-zA-Z]:(\\|\/)/.test(path)){
-    return true;
-  }
-  return false;
-}
-
-const getDir=(path:string)=>{
-  var index=path.lastIndexOf('/');
-  if(index==-1){
-    var index=path.lastIndexOf('\\');
-  }
-  return path.substring(0,index+1);
-}
-
-onMounted(()=>{
-  if(value.value.startsWith('http')){
-    imgSrc.value=value.value;
-  }else if(isAbsolute(value.value)){
-    imgSrc.value=convertFileSrc(value.value);
-  }else if(appStroe.filepath){
-    const dir=getDir(appStroe.filepath);
-    console.log(dir+value.value,convertFileSrc);
-    imgSrc.value=convertFileSrc(dir+value.value);
-  }
-
-  console.log(alt,altValue.value);
-  // srcList.value[0]=imgSrc.value;
-})
 </script>
 
 <style lang="scss">

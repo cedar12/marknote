@@ -65,7 +65,7 @@ function createEditor() {
 
     },
     extensions: [
-      StarterKit,
+      StarterKit.configure({ codeBlock: false }),
       SearchAndReplace.configure(),
       Link.configure({
         openOnClick: false
@@ -121,11 +121,13 @@ function createEditor() {
       // console.log('tr',props,node,dom);
 
     },
-    onUpdate: () => {
+    onUpdate: event => {
       const editorStore = useEditorStore();
       const appStore = useAppStore();
       editorStore.markCurrentSegmentEdited();
       appStore.markEdited();
+      editorStore.updateHeadings(event);
+      editorStore.updateCurrentStatistics(event.transaction);
       // editorStore.tree = getTree();
     },
     onCreate: () => {

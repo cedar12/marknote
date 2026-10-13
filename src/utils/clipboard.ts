@@ -9,6 +9,8 @@ interface ClipboardContent {
   text: string;
 }
 
+function isReadOnly(editor: Editor): boolean { return editor.isEditable === false; }
+
 async function readClipboardContent(): Promise<ClipboardContent> {
   try {
     if (typeof navigator.clipboard?.read === 'function') {
@@ -58,7 +60,7 @@ function pasteEvent(content: ClipboardContent): ClipboardEvent {
 
 /** Use the same paste pipeline as the keyboard, including the live Markdown preferences. */
 export async function pasteFromClipboard(editor: Editor | undefined): Promise<boolean> {
-  if (!editor || editor.isDestroyed) return false;
+  if (!editor || editor.isDestroyed || isReadOnly(editor)) return false;
   const view = editor.view;
   const document = view.state.doc;
   const bookmark = view.state.selection.getBookmark();
@@ -67,7 +69,7 @@ export async function pasteFromClipboard(editor: Editor | undefined): Promise<bo
     const content = await readClipboardContent();
     if (!content.html && !content.text) return false;
     // Do not insert into another document if editing or navigation happened during the read.
-    if (editor.isDestroyed || view.state.doc !== document) return false;
+    if (editor.isDestroyed || isReadOnly(editor) || view.state.doc !== document) return false;
     const selection = bookmark.resolve(document);
     if (!view.state.selection.eq(selection)) {
       view.dispatch(view.state.tr.setSelection(selection).setMeta('addToHistory', false));

@@ -78,4 +78,8 @@ lowlight.registerLanguage('c#', csharp)
 lowlight.registerLanguage('cpp', cpp)
 lowlight.registerLanguage('cmake', cmake)
 
+// Keep every registered language available for explicit selection. Automatic
+// detection has a small, predictable budget instead of trying all grammars.
+export const AUTO_HIGHLIGHT_LANGUAGES = ['javascript', 'typescript', 'json', 'xml', 'css', 'python', 'shell', 'sql', 'markdown', 'yaml', 'rust', 'go'];
+
 export {lowlight}

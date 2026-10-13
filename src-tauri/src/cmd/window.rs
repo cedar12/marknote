@@ -11,6 +11,7 @@ pub static WINDOW_ID: AtomicUsize = AtomicUsize::new(1);
 #[tauri::command]
 pub async fn open_window(handle: tauri::AppHandle) {
     let window_id = WINDOW_ID.fetch_add(1, Ordering::SeqCst);
+    let preferred_size = window_size::remembered_size();
 
     let win = tauri::WebviewWindowBuilder::new(
         &handle,
@@ -19,18 +20,22 @@ pub async fn open_window(handle: tauri::AppHandle) {
     )
     .decorations(IS_MACOS)
     .title("marknote")
-    .inner_size(WIDTH, HEIGHT)
+    .inner_size(preferred_size.width, preferred_size.height)
     .min_inner_size(MIN_WIDTH, MIN_HEIGTH)
     .visible(false)
     .build()
     .unwrap();
 
+    if let Err(error) = window_size::restore(&win) {
+        log::warn!("could not restore window size: {}", error);
+    }
     set_shadow(win);
 }
 #[cfg(target_os = "macos")]
 #[tauri::command]
 pub async fn open_window(handle: tauri::AppHandle) {
     let window_id = WINDOW_ID.fetch_add(1, Ordering::SeqCst);
+    let preferred_size = window_size::remembered_size();
 
     let win = tauri::WebviewWindowBuilder::new(
         &handle,
@@ -39,13 +44,16 @@ pub async fn open_window(handle: tauri::AppHandle) {
     )
     .decorations(IS_MACOS)
     .title("marknote")
-    .inner_size(WIDTH, HEIGHT)
+    .inner_size(preferred_size.width, preferred_size.height)
     .min_inner_size(MIN_WIDTH, MIN_HEIGTH)
     .title_bar_style(tauri::TitleBarStyle::Overlay)
     .hidden_title(true)
     .visible(false)
     .build()
     .unwrap();
+    if let Err(error) = window_size::restore(&win) {
+        log::warn!("could not restore window size: {}", error);
+    }
     #[cfg(debug_assertions)]
     {
         win.open_devtools();

@@ -1,4 +1,4 @@
-use rusqlite::{Connection, Result};
+use rusqlite::{Connection, OptionalExtension, Result};
 use std::{sync::{Arc,Mutex}, collections::HashMap, path::PathBuf};
 use crate::{model::Config, utils::{self, constant}};
 
@@ -57,6 +57,30 @@ pub fn config_map()->Result<HashMap<String,String>>{
   }
   println!("config map {:?}",config_map);
   Ok(config_map)
+}
+
+// Window preferences must remain best-effort even when the main config database
+// is unavailable. Do not initialize the legacy panic-on-error connection here.
+fn preference_connection() -> std::result::Result<Connection, String> {
+  let folder = dirs_next::data_dir().ok_or("application data directory unavailable")?.join("com.github.marknote");
+  std::fs::create_dir_all(&folder).map_err(|error| error.to_string())?;
+  let connection = Connection::open(folder.join("marknote.db")).map_err(|error| error.to_string())?;
+  connection.busy_timeout(std::time::Duration::from_millis(250)).map_err(|error| error.to_string())?;
+  Ok(connection)
+}
+
+pub fn config_get(key: &str) -> std::result::Result<Option<String>, String> {
+  let conn = preference_connection()?;
+  let exists: bool = conn.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name='config')", [], |row| row.get(0)).map_err(|error| error.to_string())?;
+  if !exists { return Ok(None); }
+  conn.query_row("SELECT value FROM config WHERE key=?1", [key], |row| row.get(0)).optional().map_err(|error| error.to_string())
+}
+
+pub fn config_set_value(key: &str, value: &str) -> std::result::Result<(), String> {
+  let conn = preference_connection()?;
+  conn.execute("CREATE TABLE IF NOT EXISTS config (key TEXT PRIMARY KEY, value TEXT NOT NULL)", []).map_err(|error| error.to_string())?;
+  conn.execute("INSERT INTO config(key,value) VALUES(?1,?2) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (key,value)).map_err(|error| error.to_string())?;
+  Ok(())
 }
 
 pub fn config_set(config_map:HashMap<String,String>)->Result<()>{

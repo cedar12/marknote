@@ -13,13 +13,30 @@
           <Editor></Editor>
         </ElScrollbar>
       </ContextMenu>
-      <SearchAndReplace></SearchAndReplace>
+      <SearchAndReplace v-if="editor.sourceMode==='wysiwyg'"></SearchAndReplace>
+      <div v-if="appStore.fileConflict" class="document-notice" role="alert">
+        <span>{{ t('fileConflictDetected') }}</span>
+        <div class="document-notice-actions">
+          <button type="button" :disabled="documentActionBusy" @click="comparison.open()">{{ t('fileComparisonReview') }}</button>
+          <button type="button" :disabled="documentActionBusy" @click="appStore.reloadFileAfterConflict()">{{ t('fileConflictReload') }}</button>
+          <button type="button" :disabled="documentActionBusy" @click="appStore.save(true)">{{ t('saveAs') }}</button>
+          <button type="button" :disabled="documentActionBusy" @click="appStore.overwriteFileAfterConflict()">{{ t('fileConflictOverwrite') }}</button>
+        </div>
+      </div>
+      <div v-else-if="appStore.openError" class="document-notice" role="alert">
+        <span>{{ t('fileOpenFailed') }}</span>
+        <div class="document-notice-actions">
+          <button v-if="appStore.openFailedPath" type="button" :disabled="documentActionBusy" @click="appStore.openMarkdownDocument(appStore.openFailedPath)">{{ t('retry') }}</button>
+          <button type="button" @click="appStore.openError=null;appStore.openFailedPath=null">{{ t('dismiss') }}</button>
+        </div>
+      </div>
     </div>
     <Dialog></Dialog>
+    <FileComparisonDialog />
   </div>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import Editor from "./Editor.vue";
 import ContextMenu from "./contextMenu/index.vue";
 import { ContextMenuItem } from "./contextMenu/useContextMenu";
@@ -34,12 +51,17 @@ import {ElScrollbar} from 'element-plus';
 import Dialog from './dialog/index.vue';
 import SearchAndReplace from './SearchAndReplace.vue';
 import { pasteFromClipboard } from '../utils/clipboard';
+import FileComparisonDialog from './dialog/FileComparisonDialog.vue';
+import { useFileComparisonStore } from '../store/fileComparison';
 // import {triggerPaste} from '../api/utils';
 
 const { t } = useI18n();
 const appStore=useAppStore();
 
 const editor = useEditorStore();
+const comparison=useFileComparisonStore();
+const documentActionBusy=computed(()=>appStore.lifecycleBusy||appStore.saving||appStore.exporting||appStore.resourceTasks>0
+  ||editor.loading||editor.renderingDocument||editor.segmentLoading||editor.sourceComposing);
 
 
 const menuItems = ref<ContextMenuItem[]>([
@@ -47,10 +69,12 @@ const menuItems = ref<ContextMenuItem[]>([
   {
     label: t('copy'),
     disabled() {
+      if(editor.sourceMode!=='wysiwyg')return !editor.hasSourceSelection();
       const content = editor.editor?.state.selection.content();
       return content?.size === 0;
     },
     onClick() {
+      if(editor.sourceMode!=='wysiwyg'){void editor.runSourceCommand('copy');return;}
       /*
       if(!editor.editor){
         return;
@@ -80,16 +104,19 @@ const menuItems = ref<ContextMenuItem[]>([
     label: t('paste'),
     disabled:false,
     async onClick(){
+      if(editor.sourceMode!=='wysiwyg')return editor.runSourceCommand('paste');
       return pasteFromClipboard(editor.editor);
     }
   },
   {
     label: t('cut'),
     disabled() {
+      if(editor.sourceMode!=='wysiwyg')return !editor.hasSourceSelection();
       const content = editor.editor?.state.selection.content();
       return content?.size === 0;
     },
     onClick(){
+      if(editor.sourceMode!=='wysiwyg'){void editor.runSourceCommand('cut');return;}
       editor.editor.commands.focus();
       document.execCommand('cut');
     },
@@ -98,10 +125,12 @@ const menuItems = ref<ContextMenuItem[]>([
   {
     label: t('copyPlainText'),
     disabled() {
+      if(editor.sourceMode!=='wysiwyg')return !editor.hasSourceSelection();
       const content = editor.editor?.state.selection.content();
       return content?.size === 0;
     },
     onClick() {
+      if(editor.sourceMode!=='wysiwyg'){void editor.runSourceCommand('copy');return;}
       
       if(!editor.editor){
         return;
@@ -120,9 +149,13 @@ const menuItems = ref<ContextMenuItem[]>([
     label: t('pastePlainText'),
     disabled:false,
     onClick(){
+      if(editor.sourceMode!=='wysiwyg'){void editor.runSourceCommand('paste');return;}
+      if(appStore.lifecycleBusy || editor.editor?.isEditable === false)return;
       editor.editor.commands.focus();
+      const currentEditor=editor.editor;
+      const currentDocument=currentEditor.state.doc;
       readText().then((text)=>{
-        if(text&&editor.editor){
+        if(text&&editor.editor===currentEditor && !appStore.lifecycleBusy && currentEditor.isEditable !== false && currentEditor.state.doc===currentDocument){
           const {state,view}=editor.editor;
           view.dispatch(state.tr.insertText(text));
           
@@ -136,6 +169,7 @@ const menuItems = ref<ContextMenuItem[]>([
     label: t('selectAll'),
     disabled:false,
     onClick(){
+      if(editor.sourceMode!=='wysiwyg'){void editor.runSourceCommand('selectAll');return;}
       if(!editor.editor){
         return;
       }
@@ -148,6 +182,12 @@ const menuItems = ref<ContextMenuItem[]>([
     label: t('newLine'),
     disabled:false,
     onClick(){
+      if(editor.sourceMode!=='wysiwyg'){
+        const {from,to}=editor.sourceSelection;
+        const markdown=editor.getMarkdown();
+        if(typeof markdown==='string')void editor.replaceSourceRanges([{from,to,replacement:'\n'}],markdown);
+        return;
+      }
       if(!editor.editor){
         return;
       }
@@ -185,6 +225,7 @@ const menuItems = ref<ContextMenuItem[]>([
   }
 
   .layout-content {
+    position: relative;
     flex: 1;
     overflow: hidden;
     padding-top: var(--titleBarHeight);
@@ -193,6 +234,28 @@ const menuItems = ref<ContextMenuItem[]>([
     //   max-height: calc(100vh - var(--titleBarHeight));
     //   overflow: auto;
     // }
+  }
+  .document-notice {
+    position:absolute;
+    bottom:40px;
+    left:12px;
+    right:12px;
+    z-index:20;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+    padding:10px 12px;
+    border:1px solid var(--contentBorderColor);
+    border-radius:4px;
+    background:var(--contentBackgroundColor);
+    color:var(--contentTextColor);
+    font-size:13px;
+    .document-notice-actions { display:flex;flex-wrap:wrap;gap:8px; }
+    button { min-height:30px;padding:4px 8px;background:var(--contentBackgroundColorActive);color:inherit;border:1px solid var(--contentBorderColor);border-radius:4px;cursor:pointer; }
+    button:disabled { opacity:.55;cursor:default; }
+    button:focus-visible { outline:2px solid var(--primaryTextColorActive);outline-offset:2px; }
   }
 }
 </style>

@@ -13,6 +13,10 @@ export interface KeyBinding {
 }
 
 type KeyBindingFn = (bind: KeyBinding) => boolean | void;
+export interface SourceEditingCommands {
+  undo(): unknown; redo(): unknown; selectAll(): unknown;
+  copy(): unknown; cut(): unknown; paste(): unknown;
+}
 const clipboardActions = ['edit.copy', 'edit.cut', 'edit.paste'];
 
 function shortcutTarget(event: KeyboardEvent): Element | null {
@@ -77,9 +81,10 @@ export class KeyBindingBuilder {
 
   private handleAppKeyDown = (event: KeyboardEvent): void => {
     if (event.defaultPrevented || isComposing(event) || isShortcutRecording(event) || !this.fn) return;
-    if (shortcutTarget(event)?.closest('input, textarea, select, [contenteditable="false"]')) return;
+    const source = shortcutTarget(event)?.closest('[data-source-editor]');
+    if (!source && shortcutTarget(event)?.closest('input, textarea, select, [contenteditable="false"]')) return;
     const bind = this.findBinding(event);
-    if (!bind || !(['file', 'view'].includes(bind.description[0]) || bind.description.join('.') === 'edit.find')) return;
+    if (!bind || !(['file', 'view'].includes(bind.description[0]) || ['edit.find','edit.searchAll'].includes(bind.description.join('.')))) return;
     // Consume repeats as well, so holding Save or New never opens multiple dialogs/windows.
     if (event.repeat) {
       consume(event);
@@ -87,6 +92,29 @@ export class KeyBindingBuilder {
     }
     if (this.fn(bind) === true) consume(event);
   };
+
+  /** Source input owns its history, while file/view commands retain the app bindings. */
+  handleSourceKeyDown(commands: SourceEditingCommands, event: KeyboardEvent): boolean {
+    if (event.defaultPrevented || isComposing(event) || isShortcutRecording(event)) return false;
+    const bind=this.findBinding(event);
+    const id=bind?.description.join('.');
+    const action=id?.replace(/^edit\./,'') as keyof SourceEditingCommands | undefined;
+    if (bind && bind.description[0]==='edit' && action && typeof commands[action]==='function') {
+      if (clipboardActions.includes(id!) && bind.key===DEFAULT_SHORTCUT_PREFERENCES[id!]) return false;
+      consume(event);
+      if (!event.repeat) commands[action]();
+      return true;
+    }
+    const changedDefault=SHORTCUT_DEFINITIONS.some(definition => definition.description[0]==='edit'
+      && definition.id!=='edit.find' && definition.id!=='edit.searchAll' && definition.defaultKey
+      && shortcutMatchesEvent(definition.defaultKey,event,this.platform)
+      && this.getKey(definition.id)?.key!==definition.defaultKey);
+    if (changedDefault || (shortcutMatchesEvent('Mod+Shift+Z',event,this.platform)
+      && this.getKey('edit.redo')?.key!==DEFAULT_SHORTCUT_PREFERENCES['edit.redo'])) {
+      consume(event); return true;
+    }
+    return false;
+  }
 
   /** Runs before Tiptap extension keymaps, preventing duplicate/default actions after rebinding. */
   handleEditorKeyDown(editor: Editor, event: KeyboardEvent): boolean {
@@ -96,7 +124,7 @@ export class KeyBindingBuilder {
 
     const bind = this.findBinding(event);
     const id = bind?.description.join('.');
-    if (bind && id && (['format', 'paragraph'].includes(bind.description[0]) || (bind.description[0] === 'edit' && id !== 'edit.find'))) {
+    if (bind && id && (['format', 'paragraph'].includes(bind.description[0]) || (bind.description[0] === 'edit' && id !== 'edit.find' && id !== 'edit.searchAll'))) {
       if (event.repeat) {
         consume(event);
         return true;

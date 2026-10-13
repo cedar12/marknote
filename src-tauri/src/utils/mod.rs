@@ -1,17 +1,16 @@
-use std::collections::HashMap;
+
 use std::path::Path;
-use std::process::Command;
 use std::str::FromStr;
 use std::{path::PathBuf, fs};
 
 use anyhow::anyhow;
-use reqwest::Client;
+
 use tauri::WebviewWindow;
 
-use std::fs::File;
-use std::io::Write;
-use base64::{Engine as _, engine::general_purpose};
-use chrono::Local;
+
+
+
+
 use crate::db;
 
 pub mod constant;
@@ -22,6 +21,10 @@ pub mod pdf;
 pub mod md;
 pub mod docx;
 pub mod image_export;
+pub mod attachments;
+pub mod image_resources;
+pub mod window_size;
+pub use image_resources::{save_image, write_cache_image};
 
 pub mod rule;
 
@@ -91,29 +94,6 @@ pub fn get_extension_from_filename(path: String) -> anyhow::Result<String> {
   }
 }
 
-pub fn write_image(path:String,base64:String)->anyhow::Result<PathBuf>{
-  let (_,encoded)=base64
-    .split_once(',')
-    .ok_or_else(||anyhow!("invalid image data URL"))?;
-  if encoded.is_empty(){
-    return Err(anyhow!("image data is empty"));
-  }
-  let img_data = general_purpose::STANDARD
-  .decode(encoded)?;
-  
-  println!("{:?}", path);
-  let mut img_file = File::create(path.clone())?;
-  img_file.write_all(&img_data)?;
-  Ok(PathBuf::from(path))
-}
-
-pub fn write_cache_image(filename:String,base64:String)->anyhow::Result<PathBuf>{
-  let path=get_cache_dir().join(filename);
-  let path_str=path.to_str().ok_or_else(||anyhow!("cache path is not valid UTF-8"))?;
-  write_image(path_str.to_string(),base64)
-}
-
-
 pub enum ImageSaveType{
   /// 默认 
   /// markdown存储相对路径存储
@@ -171,7 +151,7 @@ pub fn get_save_image_type()->anyhow::Result<ImageSaveType>{
           Err(e)=>return Err(anyhow!(e))
         }
       }else{
-        ImageSaveType::Default(None)
+        ImageSaveType::from_str(t).map_err(|error|anyhow!(error))?
       }
     }
     None=>{
@@ -180,111 +160,6 @@ pub fn get_save_image_type()->anyhow::Result<ImageSaveType>{
   };
   Ok(save_type)
 }
-
-pub async fn save_image(md_path:String,image_path:String)->anyhow::Result<String>{
-  let save_type=get_save_image_type()?;
-  let mut now=Local::now().format("%Y%m%d%H%M%S.").to_string();
-  let save_path=match save_type{
-    ImageSaveType::Default(path)=>{
-      let filename=get_extension_from_filename(image_path.clone())?;
-      let md_filename=get_extension_from_filename(md_path.clone())?;
-      let mut pb=PathBuf::from(md_path);
-      pb.pop();
-      let mut pb2=PathBuf::new();
-      if let Some(path)=path{
-        let path=path.replace("${filename}", &md_filename);
-        pb.push(path.clone());
-        pb2.push(path);
-      }
-      now.push_str(&filename);
-      pb.push(now.clone());
-      pb2.push(now);
-      if let Some(p)=pb.parent(){
-        not_exists_create_dir_all(p)?;
-      }
-      fs::copy(image_path.clone(),pb.clone())?;
-      match pb2.to_str() {
-          Some(p) => p.into(),
-          None => return Err(anyhow!("path error")),
-      }
-    }
-    ImageSaveType::Sepc(path)=>{
-      not_exists_create_dir_all(path.clone())?;
-      let filename=get_extension_from_filename(image_path.clone())?;
-      let mut pb=PathBuf::from(path);
-      now.push_str(&filename);
-      pb.push(now);
-      fs::copy(image_path.clone(),pb.clone())?;
-      match pb.to_str() {
-          Some(p) => p.into(),
-          None => return Err(anyhow!("path error")),
-      }
-    }
-    ImageSaveType::PicGo(path)=>{
-      if path.starts_with("http"){
-        // "http://127.0.0.1:36677/upload"
-        let res=upload_picgo(path.as_str(),image_path.as_str()).await?;
-        if !res.success{
-          return Err(anyhow!("Image upload failed"));
-        }
-        res.result.first().cloned().ok_or_else(||anyhow!("PicGo returned no image URL"))?
-      }else{
-        let program_path=match constant::IS_MACOS{
-          true=>"/Applications/PicGo.app/Contents/MacOS/PicGo",
-          false=>path.as_str()
-        };
-        let output = Command::new(program_path).arg("upload").arg(image_path).output()?;
-        println!("上传PicGo图片 {:?}",output);
-        "".into()
-      }
-    }
-  };
-  Ok(save_path)
-}
-
-
-async fn upload_picgo(url:&str,path:&str)->anyhow::Result<PicGoResp>{
-  let client = Client::new();
-  let mut json=HashMap::new();
-  json.insert("list", vec![path]);
-  let response = client.post(url)
-      .json(&json)
-      .send().await?;
-  let resp:PicGoResp=response.json().await?;
-  Ok(resp)
-}
-
-fn upload_picgo_blocking(url:&str,path:&str)->anyhow::Result<PicGoResp>{
-  use reqwest::blocking::Client;
-  let client = Client::new();
-  let mut json=HashMap::new();
-  json.insert("list", vec![path]);
-  let response = client.post(url)
-      .json(&json)
-      .send()?;
-  let resp:PicGoResp=response.json()?;
-  Ok(resp)
-}
-
-#[derive(Debug,serde::Serialize,serde::Deserialize)]
-pub struct PicGoResp{
-  success:bool,
-  result:Vec<String>,
-}
-
-#[test]
-#[ignore = "requires a local PicGo installation"]
-fn test_mac_picgo(){
-  let image_path="/Users/cengxiangdong/Documents/test.png";
-  let output = Command::new("/Applications/PicGo.app/Contents/MacOS/PicGo").arg(image_path).output().unwrap();
-  
-  println!("上传PicGo图片 {:?}",output);
-  // let res=upload_picgo("http://127.0.0.1:36677/upload", image_path).unwrap();
-  // println!("{:?}",res);
-}
-
-
-
 
 #[derive(Debug,Clone,serde::Serialize)]
 pub struct PathInfo{

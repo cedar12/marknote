@@ -57,7 +57,8 @@ import { usePreferencesStore } from '../../store/preferences';
 import { DEFAULT_SHORTCUT_PREFERENCES, SHORTCUT_DEFINITIONS, shortcutFromKeyboardEvent, validateShortcutPreferences } from '../../utils/shortcutPreferences';
 
 const { t } = useI18n();
-const emit = defineEmits<{ (event: 'reveal'): void }>();
+const props = defineProps<{ beforeClose?: () => Promise<boolean>; closeBusy?: boolean }>();
+const emit = defineEmits<{ (event: 'reveal'): void; (event: 'close-pending', value: boolean): void }>();
 const appStore = useAppStore();
 const preferencesStore = usePreferencesStore();
 const draft = ref({ ...preferencesStore.shortcuts });
@@ -67,7 +68,9 @@ const recordingBefore = ref('');
 const captureErrors = ref<Record<string, { type: 'invalid' }>>({});
 const saved = ref(false);
 const groups = ['file', 'edit', 'format', 'paragraph', 'view'].map(id => ({ id, items: SHORTCUT_DEFINITIONS.filter(item => item.description[0] === id) }));
-const busy = computed(() => preferencesStore.loadingShortcuts || preferencesStore.savingShortcuts);
+const closePrompt = ref(false);
+const operationBusy = computed(() => preferencesStore.loadingShortcuts || preferencesStore.savingShortcuts || props.closeBusy);
+const busy = computed(() => operationBusy.value || closePrompt.value);
 const dirty = computed(() => SHORTCUT_DEFINITIONS.some(item => draft.value[item.id] !== baseline.value[item.id]));
 const errors = computed(() => ({ ...validateShortcutPreferences(draft.value, appStore.platform), ...captureErrors.value }));
 const hasErrors = computed(() => Object.keys(errors.value).length > 0);
@@ -145,7 +148,7 @@ async function loadShortcuts() {
   try { await preferencesStore.loadShortcutPreferences(); } catch { /* The store retains a recoverable loading error. */ }
 }
 async function saveShortcuts(): Promise<boolean> {
-  if (busy.value || !preferencesStore.shortcutsLoaded) return false;
+  if (operationBusy.value || !preferencesStore.shortcutsLoaded) return false;
   saved.value = false;
   if (hasErrors.value) {
     await nextTick();
@@ -164,28 +167,42 @@ async function saveShortcuts(): Promise<boolean> {
 let unlistenClose: (() => void) | undefined;
 let disposed = false;
 let closing = false;
-let closePrompt = false;
 onMounted(async () => {
   void loadShortcuts();
   const appWindow = getCurrentWindow();
   const unlisten = await appWindow.onCloseRequested(async event => {
-    if (closing || (!dirty.value && !preferencesStore.savingShortcuts)) return;
+    if (closing || (!props.beforeClose && !dirty.value && !preferencesStore.savingShortcuts)) return;
     event.preventDefault();
-    if (closePrompt || preferencesStore.savingShortcuts) return;
-    closePrompt = true;
+    if (closePrompt.value || preferencesStore.savingShortcuts || props.closeBusy) return;
+    closePrompt.value = true;
+    emit('close-pending', true);
+    let focusInvalid: string | null = null;
     try {
-      await ElMessageBox.confirm(t('shortcutUnsavedClose'), t('shortcuts'), {
-        confirmButtonText: t('shortcutSave'), cancelButtonText: t('shortcutDiscard'), distinguishCancelAndClose: true,
-        closeOnClickModal: false,
-      });
-      emit('reveal');
-      await nextTick();
-      if (!await saveShortcuts()) return;
-    } catch (action) {
-      if (action !== 'cancel') return;
-    } finally { closePrompt = false; }
-    closing = true;
-    await appWindow.close();
+      if (props.beforeClose && !await props.beforeClose()) return;
+      if (dirty.value) {
+        try {
+          await ElMessageBox.confirm(t('shortcutUnsavedClose'), t('shortcuts'), {
+            confirmButtonText: t('shortcutSave'), cancelButtonText: t('shortcutDiscard'), distinguishCancelAndClose: true,
+            closeOnClickModal: false,
+          });
+          emit('reveal');
+          await nextTick();
+          if (!await saveShortcuts()) {
+            if (hasErrors.value) focusInvalid = inputId(Object.keys(errors.value)[0]);
+            return;
+          }
+        } catch (action) { if (action !== 'cancel') return; }
+      }
+      closing = true;
+      try { await appWindow.close(); } catch { closing = false; }
+    } finally {
+      closePrompt.value = false;
+      emit('close-pending', false);
+      if (focusInvalid) {
+        await nextTick();
+        if (!disposed && !busy.value) document.getElementById(focusInvalid)?.focus();
+      }
+    }
   });
   if (disposed) unlisten();
   else unlistenClose = unlisten;

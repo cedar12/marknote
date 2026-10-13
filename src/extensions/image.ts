@@ -1,9 +1,13 @@
 import { Image as BuiltInImage } from '@tiptap/extension-image';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
 import ImageWrapper from './wrapper/ImageWrapper.vue';
-import { Plugin, PluginKey } from 'prosemirror-state';
+import { Plugin, PluginKey, SelectionBookmark } from 'prosemirror-state';
 import { saveImage } from '../api/file';
 import {useAppStore} from '../store/app';
+import { useEditorStore } from '../store/editor';
+import * as appLog from '@tauri-apps/plugin-log';
+import { message } from '@tauri-apps/plugin-dialog';
+import i18n from '../i18n';
 
 // @ts-ignore
 const resolveImageEl = (element:HTMLElement):HTMLImageElement => (element.nodeName === 'IMG' ? element : element.querySelector('img'));
@@ -42,7 +46,7 @@ export const Image = BuiltInImage.extend({
         parseHTML: (element) => {
           const img = resolveImageEl(element);
           const src=img.dataset.src || img.getAttribute('src');
-          return decodeURIComponent(src||'');
+          try { return decodeURIComponent(src||''); } catch { return src||''; }
         },
       },
       alt: {
@@ -86,99 +90,64 @@ export const Image = BuiltInImage.extend({
     return VueNodeViewRenderer(ImageWrapper);
   },
 
-  // @ts-ignore
   addProseMirrorPlugins() {
-    return [
-        new Plugin({
-            key: new PluginKey('imageHandler'),
-            props: {
-                handlePaste: (view, event) => {
-                    const appStore=useAppStore();
-                    // @ts-ignore
-                    const items = (event.clipboardData || event.originalEvent.clipboardData).items;
-                    console.log('paste',items);
-                    for (const item of items) {
-                      if (item.type.indexOf("image") === 0) {
-                            event.preventDefault();
-                            const {schema} = view.state;
-                            
-                            const image = item.getAsFile();
-                            const reader = new FileReader();
-                            
-                            reader.onload = (e) => {
-                              const base64=e.target?.result;
-                              // console.log('reader image',base64);
-                              if(base64&&appStore.filepath){
-                                saveImage(appStore.filepath,image.name,base64 as string).then((resp:any)=>{
-                                  if(resp.code===0){
-                                    let src=resp.info;
-                                    // if(src.startsWith('http://')||src.startsWith('https://')){
-
-                                    // }else{
-                                    //   src='img:///'+src;
-                                    // }
-                                    const node = schema.nodes.image.create({
-                                        src: src.replace(/\\/g,'/'),
-                                        alt: image.name
-                                    });
-                                    const transaction = view.state.tr.replaceSelectionWith(node);
-                                    view.dispatch(transaction)
-                                  }
-                                })
-                              }
-                              
-                            };
-                            reader.onerror = function (e) {
-                              console.error(e);
-                            }
-                            reader.readAsDataURL(image);
-                      }
-                    }
-                },
-
-                handleDOMEvents: {
-                    drop: (_view, _event) => {
-                        // const hasFiles =
-                        //     event.dataTransfer &&
-                        //     event.dataTransfer.files &&
-                        //     event.dataTransfer.files.length;
-
-                        // if (!hasFiles) {
-                        //     return false;
-                        // }
-
-                        // const images = Array.from(
-                        //     event.dataTransfer?.files ?? []
-                        // ).filter((file) => /image/i.test(file.type));
-
-                        // if (images.length === 0) {
-                        //     return false;
-                        // }
-
-                        // event.preventDefault();
-
-                        // const { schema } = view.state;
-                        // const coordinates = view.posAtCoords({
-                        //     left: event.clientX,
-                        //     top: event.clientY,
-                        // });
-                        // if (!coordinates) return false;
-
-                        // images.forEach(async (image) => {
-                        //     console.log('drop image',image);
-                        //     // const node = schema.nodes.image.create({
-                        //     //     src: await uploadFunction(image),
-                        //     // });
-                        //     // const transaction = view.state.tr.insert(coordinates.pos, node);
-                        //     // view.dispatch(transaction);
-
-                        // });
-
-                        return true;
-                    },
-                },
+    const pending = new Map<symbol, SelectionBookmark>();
+    return [new Plugin({
+      key: new PluginKey('imageHandler'),
+      state: {
+        init: () => null,
+        apply(transaction) {
+          for (const [id, bookmark] of pending) pending.set(id, bookmark.map(transaction.mapping));
+          return null;
+        },
+      },
+      view: () => ({ destroy: () => pending.clear() }),
+      props: {
+        handlePaste(view, event) {
+          const images = Array.from(event.clipboardData?.items || []).filter(item => item.type.startsWith('image/'))
+            .map(item => item.getAsFile()).filter((image): image is File => !!image);
+          if (!images.length) return false;
+          event.preventDefault();
+          const app=useAppStore(), documentStore=useEditorStore();
+          if (app.lifecycleBusy || app.saving || app.exporting || !view.editable) return true;
+          const path=app.filepath, version=documentStore.renderVersion;
+          const id=Symbol('paste-images');
+          pending.set(id,view.state.selection.getBookmark());
+          app.resourceTasks++;
+          const current=()=>!view.isDestroyed && view.editable && !app.lifecycleBusy
+            && app.filepath===path && documentStore.renderVersion===version && pending.has(id);
+          void (async()=>{
+            try {
+              for (const image of images) {
+                const data=await new Promise<string>((resolve,reject)=>{
+                  const reader=new FileReader();
+                  reader.onload=()=>typeof reader.result==='string' ? resolve(reader.result) : reject(new Error('Invalid image data'));
+                  reader.onerror=()=>reject(reader.error||new Error('Image read failed'));
+                  reader.onabort=()=>reject(new Error('Image read cancelled'));
+                  reader.readAsDataURL(image);
+                });
+                if(!current())break;
+                const response=await saveImage(path,image.name,data) as {code:number;info:string};
+                if(!response || response.code!==0 || !response.info)throw new Error(response?.info||'Image upload failed');
+                if(!current())break;
+                const selection=pending.get(id)!.resolve(view.state.doc);
+                const node=view.state.schema.nodes.image.create({src:response.info.replace(/\\/g,'/'),alt:image.name});
+                const transaction=view.state.tr.setSelection(selection).replaceSelectionWith(node);
+                view.dispatch(transaction);
+                pending.set(id,view.state.selection.getBookmark());
+              }
+            } catch(error) {
+              void appLog.error('Image insert failed: '+String(error));
+              if(current())try { await message(i18n.global.t('imageInsertFailed'),{title:'MarkNote',kind:'error'}); }
+              catch(dialogError){void appLog.error('Image feedback failed: '+String(dialogError));}
+            } finally {
+              pending.delete(id);
+              app.resourceTasks=Math.max(0,app.resourceTasks-1);
             }
-        }),
-    ];
-  }
+          })();
+          return true;
+        },
+      },
+    })];
+  },
 });

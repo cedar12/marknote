@@ -1,4 +1,4 @@
-use std::{path::Path, fs, time::Duration};
+use std::{path::Path, time::Duration};
 
 use headless_chrome::{types::PrintToPdfOptions, LaunchOptions, Browser};
 use anyhow::{Result,anyhow};
@@ -30,29 +30,26 @@ where
   I: AsRef<Path> + Debug,
   O: AsRef<Path> + Debug,
 {
-  let os = input
-      .as_ref()
-      .as_os_str()
-      .to_str()
-      .ok_or_else(|| anyhow!("Invalid Input"))?;
-  let input = format!("file://{os}");
+  let input = url::Url::from_file_path(input.as_ref())
+      .map_err(|_| anyhow!("Invalid Input"))?.to_string();
   info!("Input file: {input}");
 
   let local_pdf = print_to_pdf(&input, pdf_options, launch_options)?;
 
   info!("Output file: {:?}", output.as_ref());
-  fs::write(output.as_ref(), local_pdf)?;
+  let output = output.as_ref().to_str().ok_or_else(|| anyhow!("Invalid Output"))?;
+  crate::cmd::file::write_file_safely(output, &local_pdf)?;
 
   Ok(())
 }
 
 pub fn pdf_options()->PrintToPdfOptions{
   PrintToPdfOptions{
-    display_header_footer: Some(true),
+    display_header_footer: Some(false),
     print_background: Some(true),
     scale: Some(1.0),
     landscape: None,
-    page_ranges: Some("1-100".to_string()),
+    page_ranges: None,
     ignore_invalid_page_ranges: Some(true),
     header_template: Some("".to_string()),
     footer_template: Some("".to_string()),
@@ -77,16 +74,28 @@ pub fn launch_options()->LaunchOptions<'static>{
     enable_gpu: true,
     enable_logging: false,
     window_size: Some((1920, 1080)),
-    port: Some(9222),
-    ignore_certificate_errors: true,
+    port: None,
+    ignore_certificate_errors: false,
     path:None,
     user_data_dir:None,
     extensions:vec![],
     args:vec![],
     disable_default_args:false,
     ignore_default_args:vec![],
-    idle_browser_timeout:Duration::from_secs(3000),
+    idle_browser_timeout:Duration::from_secs(60),
     process_envs:None,
     proxy_server:None,
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn exports_all_pages_and_allocates_its_own_browser_port() {
+    assert!(pdf_options().page_ranges.is_none());
+    assert!(launch_options().port.is_none());
+    assert!(!launch_options().ignore_certificate_errors);
   }
 }

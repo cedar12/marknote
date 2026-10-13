@@ -4,30 +4,28 @@ import { useEditorStore } from './editor';
 import { useAppStore } from './app';
 
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { ask, message, open,save } from '@tauri-apps/plugin-dialog';
+import { ask, message, open } from '@tauri-apps/plugin-dialog';
 import * as appLog from '@tauri-apps/plugin-log';
 import { exit } from '@tauri-apps/plugin-process';
-import {openFile} from '../api/dialog';
-import {collectWordEquations, exportHTML,exportPDF, exportWord, read,readToHTML} from '../api/file';
 import i18n from '../i18n';
 import { openAbout, openPreferences, openWindow } from '../api/window';
 import {
   check as checkUpdate,
 } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
-import { sendNotification } from '@tauri-apps/plugin-notification';
 import { PlatformType, openExplorer } from '../api/utils';
-import {handleHtml} from '../utils';
 
 import { useImageExportStore } from './imageExport';
-import { renderWordDiagrams } from '../utils/wordDiagrams';
-import { renderWordEquations } from '../utils/wordEquations';
+import { useDocumentExportStore } from './documentExport';
 import { pasteFromClipboard } from '../utils/clipboard';
 import { SHORTCUT_DEFINITIONS } from '../utils/shortcutPreferences';
+import { installUpdateSafely } from '../utils/documentLifecycle';
+import { useDocumentSearchStore } from './documentSearch';
 
 const appWindow=getCurrentWindow();
 // @ts-ignore
 const { t } = i18n.global;
+let checkingUpdate=false;
 
 export interface Menu {
   label: string,
@@ -36,11 +34,11 @@ export interface Menu {
   key: string,
   shortcut?: string,
   checked?: boolean,
+  disabled?: boolean,
+  disabledReason?: string,
   platform?:PlatformType[],
   children?: Menu[]
 }
-
-
 interface MenuState {
   visible: boolean,
   key: string | null,
@@ -53,6 +51,8 @@ export const useMenuStore = defineStore('menu', {
   }),
   actions: {
     setKey(item: Menu) {
+      if (useAppStore().lifecycleBusy) return;
+      if(item.disabled)return;
       this.key = item.key;
       if (item.key) {
         const event = (events as any)[item.key];
@@ -68,8 +68,12 @@ export const useMenuStore = defineStore('menu', {
 })
 
 const events = {
-  newWindow() {
-    openWindow();
+  async newWindow() {
+    const app=useAppStore();
+    if(app.lifecycleBusy)return;
+    app.resourceTasks++;
+    try { await openWindow(); }
+    finally { app.resourceTasks=Math.max(0,app.resourceTasks-1); }
   },
   closeWindow() {
     // appWindow.close();
@@ -87,40 +91,39 @@ const events = {
   },
   async openFile() {
     const appStore=useAppStore();
-    if(!await appStore.guardUnsavedChanges()){
-      return;
-    }
-    const editorStore=useEditorStore();
-    editorStore.loading=true;
+    if(appStore.lifecycleBusy||appStore.resourceTasks||appStore.exporting)return;
+    let selected=null;
+    appStore.resourceTasks++;
     try{
-      const resp:any=await openFile(t('openFile'));
-      if (resp.code === 0) {
-        appStore.setFilepath(resp.info);
-        await editorStore.setContent(resp.data);
-      }
+      selected=await open({title:t('openFile'),multiple:false,filters:[{name:'Markdown',extensions:['md','markdown']}]});
     }catch(e){
-      // Closing the native file picker is a normal cancellation path.
-      if(String(e||'').trim()){
-        appLog.error(`open file failed: ${String(e)}`);
-      }
+      appStore.openFailedPath=null;
+      appStore.openError=String(e||t('fileOpenFailed'));
+      void appLog.error(`open file picker failed: ${String(e)}`);
     }finally{
-      editorStore.loading=false;
+      appStore.resourceTasks=Math.max(0,appStore.resourceTasks-1);
     }
+    if(typeof selected==='string'&&selected)await appStore.openMarkdownDocument(selected);
   },
-  openFolder(){
-    async function dir() {
+  async openFolder(){
+    const appStore=useAppStore();
+    if(appStore.lifecycleBusy||appStore.resourceTasks||appStore.exporting)return;
+    appStore.resourceTasks++;
+    try{
       const selected = await open({
-        directory:true,
+        title:t('openFolder'),directory:true,multiple:false,
       });
-      const appStore=useAppStore();
-      if(!Array.isArray(selected)){
+      if(typeof selected==='string'&&selected){
         appStore.folder=selected;
+        appStore.sidebar.active='folder';
+        appStore.sidebar.visible=true;
       }
-      appStore.sidebar.active='folder';
-      appStore.sidebar.visible=true;
-      
+    }catch(error){
+      void appLog.error(`open folder failed: ${String(error)}`);
+      try{await message(t('folderPickerFailed'),{title:'MarkNote',kind:'error'});}catch{}
+    }finally{
+      appStore.resourceTasks=Math.max(0,appStore.resourceTasks-1);
     }
-    dir();
   },
   closeFolder(){
     const appStore=useAppStore();
@@ -151,84 +154,13 @@ const events = {
   },
 
   html(){
-    save({
-      title:`${t('export')} ${t('html')}`,
-      filters:[{name:t('html'),extensions:['html']}]
-    }).then(async (path)=>{
-      if(!path)return;
-      const div=document.querySelector('div.marknote');
-      if(!div)return;
-      const editorStore=useEditorStore();
-      const html=await handleHtml(div);//div?.innerHTML;
-      // const html=editorStore.editor.getHTML();
-      const appStore = useAppStore();
-      if(appStore.filepath&&appStore.isSave){
-        
-        try{
-          await exportHTML(path,html);
-          sendNotification(`${t('export')} ${t('html')}`,path);
-        }catch(e){
-          appLog.error(e);
-        }
-      }
-    });
-    // console.log('html',html);
+    return useDocumentExportStore().exportDocument('html');
   },
   exportPdf(){
-    save({
-      title:`${t('export')} PDF`,
-      filters:[{name:'PDF',extensions:['pdf']}]
-    }).then(async (path)=>{
-      if(!path)return;
-      const div=document.querySelector('div.marknote');
-      if(!div)return;
-      const editorStore=useEditorStore();
-      const html=await handleHtml(div);//div?.innerHTML;
-      // const html=editorStore.editor.getHTML();
-      const appStore = useAppStore();
-      if(appStore.filepath&&appStore.isSave){
-        
-        try{
-          await exportPDF(path,html);
-          sendNotification(`${t('export')} PDF`,path);
-        }catch(e){
-          console.log(e);
-          appLog.error(e.toString());
-        }
-      }
-    });
+    return useDocumentExportStore().exportDocument('pdf');
   },
-  async exportWord(){
-    const title=`${t('export')} ${t('word')}`;
-    try{
-      const path=await save({
-        title,
-        filters:[{name:t('word'),extensions:['docx']}]
-      });
-      if(!path)return;
-
-      const editorStore=useEditorStore();
-      const markdown=editorStore.getMarkdown();
-      if(typeof markdown!=='string'){
-        throw new Error(t('documentNotReady'));
-      }
-      const appStore=useAppStore();
-      const diagramImages=await renderWordDiagrams(markdown);
-      const equations=renderWordEquations(await collectWordEquations(markdown));
-      const response:any=await exportWord(path,markdown,appStore.filepath,diagramImages,equations);
-      if(!response || response.code!==0){
-        throw new Error(response?.info || t('exportFailed'));
-      }
-      sendNotification(title,path);
-    }catch(error){
-      const details=String(error||t('exportFailed'));
-      appLog.error(`Word export failed: ${details}`);
-      try{
-        await message(details,t('exportFailed'));
-      }catch(dialogError){
-        appLog.error(`Word export error dialog failed: ${String(dialogError)}`);
-      }
-    }
+  exportWord(){
+    return useDocumentExportStore().exportDocument('word');
   },
   image(){
     useImageExportStore().open();
@@ -243,38 +175,64 @@ const events = {
 
   undo(){
     const editorStore=useEditorStore();
+    if(editorStore.sourceMode!=='wysiwyg')return editorStore.runSourceCommand('undo');
     editorStore.editor?.commands.focus();
     editorStore.editor?.commands.undo();
   },
   redo(){
     const editorStore=useEditorStore();
+    if(editorStore.sourceMode!=='wysiwyg')return editorStore.runSourceCommand('redo');
     editorStore.editor?.commands.focus();
     editorStore.editor?.commands.redo();
   },
   copy(){
     const editorStore=useEditorStore();
+    if(editorStore.sourceMode!=='wysiwyg')return editorStore.runSourceCommand('copy');
     editorStore.editor?.commands.focus();
     document.execCommand('copy');
   },
   cut(){
     const editorStore=useEditorStore();
+    if(editorStore.sourceMode!=='wysiwyg')return editorStore.runSourceCommand('cut');
     editorStore.editor?.commands.focus();
     document.execCommand('cut');
   },
   async paste(){
     const editorStore=useEditorStore();
+    if(editorStore.sourceMode!=='wysiwyg')return editorStore.runSourceCommand('paste');
     return pasteFromClipboard(editorStore.editor);
   },
   selectAll(){
     const editorStore=useEditorStore();
+    if(editorStore.sourceMode!=='wysiwyg')return editorStore.runSourceCommand('selectAll');
     editorStore.editor?.commands.focus();
     editorStore.editor?.commands.selectAll();
   },
 
   find(){
-    console.log('find...');
     const editorStore=useEditorStore();
+    if(editorStore.sourceMode!=='wysiwyg')return events.searchAll();
     editorStore.findVisbile=true;
+  },
+  searchAll(){
+    const app=useAppStore();
+    app.sidebar.visible=true;
+    app.sidebar.active='search';
+    useDocumentSearchStore().open('document');
+  },
+  searchWorkspace(){
+    const app=useAppStore();
+    app.sidebar.visible=true;
+    app.sidebar.active='search';
+    useDocumentSearchStore().open('workspace');
+  },
+  sourceMode(){
+    const editor=useEditorStore();
+    return editor.setSourceMode(editor.sourceMode==='source'?'wysiwyg':'source');
+  },
+  splitPreview(){
+    const editor=useEditorStore();
+    return editor.setSourceMode(editor.sourceMode==='split'?'wysiwyg':'split');
   },
   
   sidebar(item:Menu){
@@ -285,8 +243,8 @@ const events = {
 
   async quit() {
     const appStore=useAppStore();
-    if(await appStore.guardUnsavedChanges()){
-      await exit();
+    try{await appStore.runApplicationAction(()=>exit());}catch(error){
+      void appLog.error(`application quit failed: ${String(error)}`);
     }
   },
 
@@ -294,74 +252,38 @@ const events = {
     openAbout();
   },
 
-  checkUpdate(){
-    const fn=()=>{
-      return new Promise(async (resolve,reject)=>{
-        // const unlisten = await onUpdaterEvent(({ error, status }) => {
-        //   // This will log all updater events, including status updates and errors.
-        //   console.log('Updater event', error, status)
-        // })
-        
-        try {
-          const manifest = await checkUpdate();
-          if(manifest){
-            console.log('Update', manifest);
-            const yes=await ask(`MarkNote ${manifest?.version} 现在可用，是否现在安装？\n发布时间: ${manifest?.date}\n说明: ${manifest?.body||''}`,'marknote的新版本可用！');
-            if(yes){
-              console.log(
-                `Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
-              )
-          
-              // Install the update. This will also restart the app on Windows!
-              // await installUpdate()
-              await manifest.downloadAndInstall();
-          
-              // On macOS and Linux you will need to restart the app manually.
-              // You could use this step to display another confirmation dialog.
-              await relaunch()
-            }
-            
-          }else{
-            sendNotification({ title: '检查更新', body: '已经是最新版本!' });
-          }
-          
-          /*
-          if (shouldUpdate) {
-            
-            // You could show a dialog asking the user if they want to install the update here.
-            const yes=await ask(`marknote ${manifest?.version} 现在可用，是否现在安装？\n发布时间: ${manifest?.date}\n说明: ${manifest?.body}`,'marknote的新版本可用！');
-            if(yes){
-              console.log(
-                `Installing update ${manifest?.version}, ${manifest?.date}, ${manifest?.body}`
-              )
-          
-              // Install the update. This will also restart the app on Windows!
-              await installUpdate()
-          
-              // On macOS and Linux you will need to restart the app manually.
-              // You could use this step to display another confirmation dialog.
-              await relaunch()
-            }
-          }else{
-            sendNotification({ title: '检查更新', body: '已经是最新版本!' });
-          }*/
-        } catch (error) {
-          // unlisten();
-          reject(error);
-        }
-        // you need to call unlisten if your handler goes out of scope, for example if the component is unmounted.
-        // unlisten()
-        resolve();
-      })
+  async checkUpdate(){
+    const appStore=useAppStore();
+    if(checkingUpdate)return;
+    if(appStore.lifecycleBusy||appStore.exporting||appStore.resourceTasks>0){
+      appStore.reportLifecycleFailure('busy');
+      return;
     }
-    fn().then(()=>{
-      // unlisten();
-    }).catch(error=>{
-      alert(error);
-      console.error(error);
-    })
-    
-    // appWindow.emit('tauri://update');
+    checkingUpdate=true;
+    let manifest;
+    try{
+      manifest=await checkUpdate();
+      if(!manifest){
+        await message(t('updateUpToDate'),{title:t('checkUpdate')});
+        return;
+      }
+      const yes=await ask(t('updateAvailableTip',{version:manifest.version,body:manifest.body||''}),{
+        title:t('updateAvailableTitle'),okLabel:t('updateInstall'),cancelLabel:t('cancel'),
+      });
+      if(!yes)return;
+      await installUpdateSafely(manifest,action=>appStore.runApplicationAction(action),async()=>{
+        // Windows install exits after starting the native updater installer.
+        if(appStore.platform!=='windows')await relaunch();
+      });
+    }catch(error){
+      void appLog.error(`update failed: ${String(error)}`);
+      try{await message(t('updateFailed'),{title:'MarkNote',kind:'error'});}catch(dialogError){
+        void appLog.error(`update feedback failed: ${String(dialogError)}`);
+      }
+    }finally{
+      if(manifest)try{await manifest.close();}catch(error){void appLog.warn(`update resource cleanup failed: ${String(error)}`);}
+      checkingUpdate=false;
+    }
   },
 
   bold(){
@@ -395,22 +317,9 @@ const events = {
   //   editorStore.editor.commands.toggleKatex();
   // },
 
-  quickStart(){
+  async quickStart(){
     const path='./docs/marknote.md';
-    const appStroe=useAppStore();
-    if(!appStroe.isSave){
-      confirm(t('closeTip'), {title:t('closeTitleTip'),cancelLabel:t('save'),okLabel:t('giveUp')}).then(yes=>{
-        console.log('confirm',yes);
-        if(yes===false){
-          appStroe.save();
-        }else{
-          readMarkdownFile(path);
-        }
-      });
-      
-    }else{
-      readMarkdownFile(path);
-    }
+    await useAppStore().openMarkdownDocument(path);
   },
 
   '*':async (item:Menu)=>{
@@ -424,33 +333,9 @@ const events = {
     }else if(item.key.startsWith('recent_')){
       const key=item.key.substring(7);
       const appStore=useAppStore();
-      if(await appStore.guardUnsavedChanges()){
-        await readMarkdownFile(key);
-      }
+      await appStore.openMarkdownDocument(key);
       
     }
     console.log(item);
-  }
-}
-
-
-async function readMarkdownFile(path:string){
-  const editorStore=useEditorStore();
-  editorStore.loading=true;
-  try{
-    const resp:any=await read(path);
-    if (resp.code === 0) {
-      const appStore = useAppStore();
-      appStore.setFilepath(path);
-      await editorStore.setContent(resp.data);
-    }else{
-      appLog.error(resp.info);
-    }
-  }catch(e){
-    if(String(e||'').trim()){
-      appLog.error(`read file failed: ${String(e)}`);
-    }
-  }finally{
-    editorStore.loading=false;
   }
 }

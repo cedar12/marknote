@@ -169,6 +169,7 @@ async function main() {
     console.log(`Outline browser harness: http://127.0.0.1:${port}/${path.basename(temporary)}/index.html`);
     browser = await chromium.launch({ headless: true, ...browserOptions(chromium) });
     const page = await browser.newPage({ viewport: { width: 1100, height: 680 }, reducedMotion: 'reduce' });
+    await page.addInitScript(() => { window.isTauri = false; window.__TAURI_INTERNALS__ = { metadata: { currentWindow: { label: 'main' }, currentWebview: { label: 'main' } }, invoke: async () => undefined }; });
     page.setDefaultTimeout(30000);
     page.on('pageerror', error => { pageErrors.push(error.message); console.error(`Page error: ${error.message}`); });
     page.on('console', message => { if (message.type() === 'error') console.error(`Browser: ${message.text()}`); });

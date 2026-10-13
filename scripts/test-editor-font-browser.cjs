@@ -175,7 +175,11 @@ async function main() {
     const idle = async expected => page.waitForFunction(expected => {
       const state = window.__fontTest.snapshot();
       return !state.saving && Object.entries(expected || {}).every(([key, value]) => state.font[key] === value);
-    }, expected);
+    }, expected).catch(async error => {
+      console.error('Font idle diagnostic:', JSON.stringify(await page.evaluate(() => ({ state: window.__fontTest.snapshot(), input: document.querySelector('#editor-font-family')?.value,
+        options: Array.from(document.querySelectorAll('.el-select-dropdown__item')).map(option => ({ text: option.textContent, classes: option.className })), nativeCalls: window.__nativeFontTest.calls.slice(-20), errors: window.__vueTestErrors || [] }))));
+      throw error;
+    });
     const chooseFamily = async index => {
       await (await familyControl()).click();
       const options = page.getByRole('option');
@@ -225,6 +229,10 @@ async function main() {
     await (await familyControl()).click();
     await (await familyControl()).fill(customFont);
     await page.getByRole('option', { name: customFont, exact: true }).waitFor();
+    // Created text renders before the default-first-option keyboard highlight
+    // settles under load. Wait for that real readiness signal before Enter.
+    await page.waitForFunction(name => Array.from(document.querySelectorAll('.el-select-dropdown__item'))
+      .some(option => option.textContent?.trim() === name && option.classList.contains('hover')), customFont);
     await (await familyControl()).press('Enter');
     await idle({ fontFamily: customFont });
     assert.ok((await api('snapshot')).editorStyle.family.includes(customFont));
