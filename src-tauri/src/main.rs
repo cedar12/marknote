@@ -5,7 +5,7 @@ extern crate lazy_static;
 
 shadow_rs::shadow!(build);
 
-use std::{sync::Mutex, collections::HashMap};
+use std::collections::HashMap;
 
 use tauri::Manager;
 use tauri_plugin_log::{TargetKind, Target};
@@ -19,7 +19,7 @@ mod db;
 mod cmd;
 mod log_conf;
 
-pub struct OpenedUrls(Mutex<Option<Vec<url::Url>>>);
+pub use utils::open_arguments::OpenedUrls;
 
 lazy_static!{
     pub static ref BUILD_MAP:HashMap<String,String>={
@@ -49,25 +49,14 @@ lazy_static!{
 fn main() {
     
     tauri::Builder::default()
-        .manage(OpenedUrls(Default::default()))
+        .manage(OpenedUrls::default())
         .setup(|app| {
             log::info!("start MarkNote");
             #[cfg(desktop)]
             app.handle().plugin(tauri_plugin_global_shortcut::Builder::default().build())?;
             #[cfg(any(windows, target_os = "linux"))]
             {
-                // NOTICE: `args` may include URL protocol (`your-app-protocol://`) or arguments (`--`) if app supports them.
-                let mut urls = Vec::new();
-                let args: Vec<String> = std::env::args().skip(1).collect();
-                for arg in args {
-                    if let Ok(url) = url::Url::parse(&arg) {
-                        urls.push(url);
-                    }
-                }
-
-                if !urls.is_empty() {
-                    app.state::<OpenedUrls>().0.lock().unwrap().replace(urls);
-                }
+                app.state::<OpenedUrls>().replace_command_line(std::env::args());
             }
             let window = app.get_webview_window("main").unwrap();
             
@@ -146,7 +135,9 @@ fn main() {
         .run(|app, event| {
             #[cfg(any(target_os = "macos", target_os = "ios"))]
             if let tauri::RunEvent::Opened { urls } = event {
-                app.state::<OpenedUrls>().0.lock().unwrap().replace(urls);
+                app.state::<OpenedUrls>().replace(
+                    urls.into_iter().map(|url| url.to_string()).collect()
+                );
             }
         });
 }

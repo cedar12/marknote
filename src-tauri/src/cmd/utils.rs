@@ -5,14 +5,12 @@ use tauri::{App, AppHandle, Manager, State};
 use crate::OpenedUrls;
 
 #[tauri::command]
-pub fn cmd_args(state: State<OpenedUrls>) -> Vec<url::Url> {
-    // let args: Vec<String> = std::env::args().collect();
-    let res = state.0.lock().unwrap();
-    if let Some(urls) = res.as_ref() {
-        log::info!("{:?}", urls);
-        return urls.clone();
+pub fn cmd_args(state: State<OpenedUrls>) -> Vec<String> {
+    let arguments = state.arguments();
+    if !arguments.is_empty() {
+        log::info!("{:?}", arguments);
     }
-    vec![]
+    arguments
 }
 
 #[tauri::command]

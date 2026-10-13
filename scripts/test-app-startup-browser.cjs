@@ -11,7 +11,7 @@ function loadPlaywright() {
   throw new Error('Playwright is required.');
 }
 function nativeMock(input) {
-  const {locale,conflict=false,theme}=typeof input==='string'?{locale:input}:input;
+  const {locale,conflict=false,theme,startupArguments,expectedReadPath}=typeof input==='string'?{locale:input}:input;
   window.os='windows';window.isTauri=true;localStorage.setItem('lang',locale);
   if(theme)localStorage.setItem('theme',JSON.stringify(theme));
   const baseline={exists:true,mtimeNs:'1',size:10,hash:'1'.repeat(64)};
@@ -26,8 +26,11 @@ function nativeMock(input) {
       if(command==='plugin:event|listen')return next++;
       if(command.startsWith('plugin:event|'))return;
       if(command==='plugin:notification|is_permission_granted')return true;
-      if(command==='cmd_args')return conflict?['D:\\note.md']:[];
-      if(command==='read_md')return {code:0,info:args.path,data:state.external?'External disk document':'Opened document',version:state.external?{exists:true,mtimeNs:'2',size:9,hash:'2'.repeat(64)}:state.version,canonicalPath:args.path};
+      if(command==='cmd_args')return startupArguments??(conflict?['D:\\note.md']:[]);
+      if(command==='read_md'){
+        if(expectedReadPath!==undefined&&args.path!==expectedReadPath)throw new Error('File not found: '+args.path);
+        return {code:0,info:args.path,data:state.external?'External disk document':'Opened document',version:state.external?{exists:true,mtimeNs:'2',size:9,hash:'2'.repeat(64)}:state.version,canonicalPath:args.path};
+      }
       if(command==='probe_file_version')return {code:0,info:args.path,version:state.external?{exists:true,mtimeNs:'2',size:9,hash:'2'.repeat(64)}:state.version,canonicalPath:args.path};
       if(command==='save_md'){state.external=false;state.version={exists:true,mtimeNs:'3',size:args.md.length,hash:'3'.repeat(64)};return {code:0,info:args.path,version:state.version,canonicalPath:args.path};}
       if(command==='save_as_md')throw '';
@@ -96,6 +99,34 @@ async function main() {
       assert.deepEqual(errors,[]);console.log('PASS production source/split shortcuts, disabled formatting, whole-document search, isolated preview and one Undo in '+locale);
       await page.close();
     }
+    const startupFiles=[
+      ['D:\\work\\EMS升级\\功能清单.md','D:\\work\\EMS升级\\功能清单.md'],
+      ['D:\\我的 文档\\100% # 计划.markdown','D:\\我的 文档\\100% # 计划.markdown'],
+      ['\\\\server\\共享 文档\\100% # 清单.md','\\\\server\\共享 文档\\100% # 清单.md'],
+      ['notes\\本地 清单.md','notes\\本地 清单.md'],
+      ['file:///D:/notes/%E4%B8%AD%E6%96%87%20%25%20%23.md','D:/notes/中文 % #.md'],
+      ['file://server/share/%E4%B8%AD%E6%96%87%20%25%20%23.md','\\\\server\\share\\中文 % #.md'],
+    ];
+    for(const [argument,expectedPath] of startupFiles){
+      const page=await browser.newPage();const errors=[];page.on('pageerror',error=>errors.push(error.message));
+      await page.addInitScript(nativeMock,{locale:'zhCn',startupArguments:[argument],expectedReadPath:expectedPath});
+      await page.goto(`http://127.0.0.1:${server.httpServer.address().port}`);
+      const editor=page.locator('.marknote[contenteditable="true"]');await editor.waitFor();
+      await page.waitForFunction(()=>document.querySelector('.marknote')?.textContent==='Opened document');
+      const reads=await page.evaluate(()=>window.__nativeSmoke.calls.filter(call=>call.command==='read_md'));
+      assert.equal(reads.length,1);assert.equal(reads[0].args.path,expectedPath,'startup reads the original file path once');
+      assert.equal(await page.locator('.document-notice').count(),0,'successful association opens have no failure notice');
+      assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('recent'))[0]),expectedPath);
+      await editor.fill('Association document edited');
+      await page.waitForFunction(()=>window.__nativeSmoke.draft?.markdown==='Association document edited');
+      await page.keyboard.press('Control+s');
+      await page.waitForFunction(()=>window.__nativeSmoke.calls.some(call=>call.command==='save_md'));
+      const saved=await page.evaluate(()=>window.__nativeSmoke.calls.find(call=>call.command==='save_md').args);
+      assert.equal(saved.path,expectedPath,'saving after an association open targets the same file');
+      assert.equal(saved.md,'Association document edited');assert.equal(saved.expectedVersion.hash,'1'.repeat(64));
+      assert.deepEqual(errors,[]);await page.close();
+    }
+    console.log('PASS production association startup and subsequent save preserve Chinese, spaces, %, #, UNC, relative paths and file URLs');
     const ts=require('typescript');const compiled=ts.transpileModule(fs.readFileSync(path.join(root,'src/theme/style/dark.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
     const loaded={exports:{}};new Function('exports',compiled)(loaded.exports);const dark=loaded.exports.default;
     fs.mkdirSync(path.join(root,'outputs'),{recursive:true});

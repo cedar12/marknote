@@ -24,6 +24,7 @@ pub mod image_export;
 pub mod attachments;
 pub mod image_resources;
 pub mod window_size;
+pub mod open_arguments;
 pub use image_resources::{save_image, write_cache_image};
 
 pub mod rule;
