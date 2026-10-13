@@ -4,9 +4,9 @@
       <BlockSourceActions :source="source" :show-code="showCode" @update:show-code="toggleCode" />
     </div>
     <pre v-show="isSelected() && showCode" class="hljs block-source katex-source"><NodeViewContent as="code" /></pre>
-    <button v-if="source.trim()" type="button" class="katex-content" contenteditable="false"
+    <button v-if="source.trim()" ref="previewElement" type="button" class="katex-content" contenteditable="false"
       @pointerdown.stop="preserveEditorFocus" @mousedown.stop="preserveEditorFocus" @focus="selectFormula(false)" @click.stop="selectFormula()" v-html="preview"></button>
-    <button v-else type="button" class="katex-content katex-empty" contenteditable="false" :aria-label="t('mathBlock')"
+    <button v-else ref="previewElement" type="button" class="katex-content katex-empty" contenteditable="false" :aria-label="t('mathBlock')"
       @pointerdown.stop="preserveEditorFocus" @mousedown.stop="preserveEditorFocus" @focus="selectFormula(false)" @click.stop="selectFormula()">{{ t('emptyFormula') }}</button>
   </NodeViewWrapper>
 </template>
@@ -22,6 +22,7 @@ const props = defineProps(nodeViewProps);
 const { t } = useI18n();
 const source = computed(() => props.node.textContent);
 const showCode = ref(!source.value.trim());
+const previewElement = ref<HTMLButtonElement>();
 watch(source, value => {
   if (!value.trim()) showCode.value = true;
 });
@@ -35,18 +36,17 @@ const preserveEditorFocus = (event: Event) => {
 };
 const selectFormula = (focusEditor = true) => {
   const pos = props.getPos();
-  if (!props.editor.isEditable) {
-    // A stale native range can restore the previous block when its source hides.
-    const selection = props.editor.view.dom.ownerDocument.getSelection();
-    if (selection?.anchorNode && props.editor.view.dom.contains(selection.anchorNode)) selection.removeAllRanges();
-    props.editor.commands.setNodeSelection(pos);
+  if (typeof pos !== 'number') return;
+  if (focusEditor && props.editor.isEditable && (!source.value.trim() || showCode.value)) {
+    props.editor.chain().focus().setTextSelection(pos + 1).run();
     return;
   }
-  const chain = props.editor.chain();
-  if (focusEditor) chain.focus();
-  if (!source.value.trim() && props.editor.isEditable) chain.setTextSelection(pos + 1);
-  else chain.setNodeSelection(pos);
-  chain.run();
+  // Keep DOM focus on the preview while its source contentDOM is hidden.
+  // A collapsed model caret exposes the toolbar without selecting the formula.
+  if (focusEditor) previewElement.value?.focus({ preventScroll: true });
+  const selection = props.editor.view.dom.ownerDocument.getSelection();
+  if (selection?.anchorNode && props.editor.view.dom.contains(selection.anchorNode)) selection.removeAllRanges();
+  props.editor.commands.setTextSelection(pos + 1);
 };
 const toggleCode = async (value: boolean) => {
   showCode.value = value;
@@ -84,8 +84,9 @@ const preview = computed(() => katex.renderToString(source.value, {
     text-align: inherit;
     padding: 2em .4em .4em;
     cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
 
-    &:hover,
     &:focus-visible {
       outline: 1px solid var(--contentBorderColor);
     }

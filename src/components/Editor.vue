@@ -1,5 +1,9 @@
 <template>
-  <SourceModeBar />
+  <div v-if="editorStore.sourceSwitching" class="editor-mode-notice" role="status">{{ t('sourceSwitchPending') }}</div>
+  <div v-else-if="editorStore.sourceSwitchError" class="editor-mode-notice" role="alert">
+    {{ t('sourceSwitchFailed') }}
+    <ElButton size="small" :disabled="modeBlocked()" @click="editorStore.setSourceMode('wysiwyg')">{{ t('retry') }}</ElButton>
+  </div>
   <div v-show="editorStore.sourceMode === 'wysiwyg'">
   <nav v-if="segmented" class="segment-navigation" :aria-label="t('largeFileNavigation')">
     <span class="segment-mode">{{ t('largeFileMode') }}</span>
@@ -23,6 +27,7 @@
 <script lang="ts" setup> 
 import {computed,onBeforeUnmount,onMounted,onUpdated,ref,watch,nextTick} from 'vue';
 import {EditorContent} from '@tiptap/vue-3';
+import { ElButton } from 'element-plus';
 import {useEditorStore} from '../store/editor';
 import {useAppStore} from '../store/app';
 import {usePreferencesStore} from '../store/preferences';
@@ -31,8 +36,11 @@ import Menu from '../extensions/menu/index.vue';
 import { useI18n } from 'vue-i18n';
 import { createEditor } from '../utils/editor';
 import * as appLog from '@tauri-apps/plugin-log';
-import SourceModeBar from './source/SourceModeBar.vue';
 import SourceWorkspace from './source/SourceWorkspace.vue';
+import type { SourceMode } from '../utils/sourceDocument';
+import { useDraftsStore } from '../store/drafts';
+import { useFileComparisonStore } from '../store/fileComparison';
+import { useDocumentSearchStore } from '../store/documentSearch';
 
 const appStore=useAppStore();
 const editorStore=useEditorStore();
@@ -40,6 +48,47 @@ const preferencesStore=usePreferencesStore();
 const {t}=useI18n();
 
 const editor=createEditor();
+const drafts = useDraftsStore(), comparison = useFileComparisonStore(), search = useDocumentSearchStore();
+const renderedComposing = ref(false);
+let compositionRetry: ReturnType<typeof setTimeout> | null = null;
+let compositionElement: HTMLElement | null = null;
+let requestedMode: SourceMode | null = null;
+let modeRequestRevision = 0;
+let applyingMode = false;
+const modeBlocked = () => editorStore.sourceOperationBlocked() || renderedComposing.value || appStore.resourceTasks > 0
+  || editorStore.navigatingToHeading || drafts.visible || comparison.visible || search.busy || search.composing || Boolean(search.replacementPreview);
+async function applyRequestedMode() {
+  if (applyingMode || requestedMode === null || !editorStore.editor || modeBlocked()) return;
+  const mode = requestedMode, revision = modeRequestRevision;
+  applyingMode = true;
+  try {
+    const applied = await editorStore.setSourceMode(mode);
+    if (revision === modeRequestRevision && (applied || editorStore.sourceSwitchError)) requestedMode = null;
+  } finally {
+    applyingMode = false;
+    if (requestedMode !== null && revision !== modeRequestRevision) void applyRequestedMode();
+  }
+}
+watch(() => [preferencesStore.editorMode, preferencesStore.editorModeRevision], () => {
+  requestedMode = preferencesStore.editorMode;
+  modeRequestRevision += 1;
+  void applyRequestedMode();
+}, { immediate: true, flush: 'post' });
+watch(() => [editorStore.editor, modeBlocked()], () => { void applyRequestedMode(); }, { flush: 'post' });
+const onRenderedCompositionStart = () => {
+  if (compositionRetry !== null) clearTimeout(compositionRetry);
+  compositionRetry = null;
+  renderedComposing.value = true;
+};
+const onRenderedCompositionEnd = () => {
+  // ProseMirror settles its own composing flag shortly after the DOM event.
+  if (compositionRetry !== null) clearTimeout(compositionRetry);
+  compositionRetry = setTimeout(() => {
+    compositionRetry = null;
+    renderedComposing.value = false;
+    void applyRequestedMode();
+  }, 50);
+};
 const {segmented,segmentIndex,segmentCount} = storeToRefs(editorStore);
 const segmentNavigationMode=computed(()=>preferencesStore.editor.segmentNavigationMode);
 const navigating=ref(false);
@@ -196,6 +245,11 @@ const bindScrollListeners=()=>{
 };
 
 watch(editor,instance=>{
+  compositionElement?.removeEventListener('compositionstart', onRenderedCompositionStart);
+  compositionElement?.removeEventListener('compositionend', onRenderedCompositionEnd);
+  compositionElement = instance?.view.dom || null;
+  compositionElement?.addEventListener('compositionstart', onRenderedCompositionStart);
+  compositionElement?.addEventListener('compositionend', onRenderedCompositionEnd);
   editorStore.setEditor(instance);
   if(instance)void nextTick(bindScrollListeners);
 },{immediate:true,flush:'sync'});
@@ -219,6 +273,11 @@ watch(()=>editorStore.navigatingToHeading,active=>{
 },{flush:'sync'});
 
 onBeforeUnmount(()=>{
+  requestedMode = null;
+  modeRequestRevision += 1;
+  if (compositionRetry !== null) clearTimeout(compositionRetry);
+  compositionElement?.removeEventListener('compositionstart', onRenderedCompositionStart);
+  compositionElement?.removeEventListener('compositionend', onRenderedCompositionEnd);
   stopEndAnchor();
   scrollContainer?.removeEventListener('wheel',onWheel);
   scrollContainer?.removeEventListener('touchstart',onTouchStart);
@@ -288,7 +347,8 @@ onMounted(()=>{
     }
     await nextTick();
     bindScrollListeners();
-    editor.value?.commands.focus();
+    await applyRequestedMode();
+    editorStore.focus();
     editorStore.updateHeadings();
   })
   
@@ -297,9 +357,21 @@ onMounted(()=>{
 </script>
 
 <style lang="scss">
+.editor-mode-notice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--contentTextColor);
+  background: var(--contentBackgroundColor);
+  border-bottom: 1px solid var(--contentBorderColor);
+  overflow-wrap: anywhere;
+}
 .segment-navigation {
   position: sticky;
-  top: 36px;
+  top: 0;
   z-index: 3;
   min-height: 34px;
   padding: 4px 12px;

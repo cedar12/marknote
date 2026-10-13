@@ -387,8 +387,6 @@ const loadMenuData=()=>{
           checked:appStore.sidebar.visible,
           shortcut:appStore.keyBinding?.getKey('view.sidebar')?.key,
         },
-        {label:t('sourceMode'),key:'sourceMode',type:'checkbox',checked:editorStore.sourceMode==='source',shortcut:appStore.keyBinding?.getKey('view.sourceMode')?.key},
-        {label:t('splitPreview'),key:'splitPreview',type:'checkbox',checked:editorStore.sourceMode==='split',shortcut:appStore.keyBinding?.getKey('view.splitPreview')?.key},
         // {
         //   label: t('folder'),
         //   key: 'folderView',

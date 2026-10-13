@@ -55,6 +55,11 @@ const locate = (type, index) => {
 };
 window.__blockTest = {
   sources: {formula,secondFormula,diagram,code},
+  languages() { return lowlight.listLanguages(); },
+  codeState(index=0) {
+    const {node}=locate('codeBlock',index);
+    return {source:node.textContent,language:node.attrs.language};
+  },
   async select({type,index=0,node=false,end=false}) {
     const {pos,node:block}=locate(type,index);
     editor.commands.focus();
@@ -78,6 +83,25 @@ window.__blockTest = {
   },
   snapshot() {
     return {document:editor.state.doc.toJSON(),selection:editor.state.selection.toJSON(),undo:undoDepth(editor.state),redo:redoDepth(editor.state)};
+  },
+  async clickState(index=0) {
+    await nextTick();
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    const {pos,node}=locate('katex',index);
+    const native=window.getSelection();
+    const inPreview=node=>Boolean((node?.nodeType===Node.ELEMENT_NODE?node:node?.parentElement)?.closest('.katex-content'));
+    return {
+      position:pos,contentSize:node.content.size,source:node.textContent,
+      selection:editor.state.selection.toJSON(),editorFocused:editor.view.hasFocus(),
+      previewFocused:document.querySelectorAll('.marknote-katex')[index]?.querySelector('.katex-content')===document.activeElement,
+      nativeCollapsed:native?.isCollapsed??true,nativeText:native?.toString()??'',
+      nativeRanges:Array.from({length:native?.rangeCount??0},(_,index)=>{
+        const range=native.getRangeAt(index);
+        return {collapsed:range.collapsed,startInPreview:inPreview(range.startContainer),endInPreview:inPreview(range.endContainer)};
+      }),
+      selectedWrappers:document.querySelectorAll('.ProseMirror-selectednode').length,
+      trace:window.__selectionTrace.slice(),
+    };
   },
   diagnostics() {
     const native=window.getSelection();
@@ -167,6 +191,103 @@ async function main() {
     const copy = block => block.locator('.block-source-actions button').last();
     const record = name => {passed.push(name);console.log('PASS '+name);};
     const unchanged = (before,after) => assert.deepEqual(after,before,'action retains document, selection and undo history');
+    const unchangedContent = (before,after) => {
+      assert.deepEqual(after.document,before.document,'click retains the original formula and whole document');
+      assert.equal(after.undo,before.undo,'click does not add an undo entry');
+      assert.equal(after.redo,before.redo,'click does not discard redo history');
+    };
+    const clearSelectionTrace = () => page.evaluate(()=>{window.__selectionTrace.length=0;});
+    const assertCollapsedFormula = async (index,source) => {
+      const state=await api('clickState',index);
+      assert.equal(state.source,source,'rendered click does not modify TeX source');
+      assert.equal(state.selection.type,'text','rendered click uses a TextSelection rather than NodeSelection');
+      assert.equal(state.selection.anchor,state.selection.head,'rendered click leaves a collapsed caret');
+      assert(state.selection.anchor>=state.position+1 && state.selection.anchor<=state.position+state.contentSize+1,'caret remains in the clicked formula textblock');
+      assert.equal(state.selectedWrappers,0,'rendered formula has no ProseMirror-selectednode class');
+      assert.equal(state.nativeCollapsed,true,'native DOM selection stays collapsed');
+      assert.equal(state.nativeText,'','rendered math has no selected DOM text');
+      for(const range of state.nativeRanges){
+        assert.equal(range.collapsed,true);
+        assert.equal(range.startInPreview,false,'native caret does not enter rendered MathML');
+        assert.equal(range.endInPreview,false,'native range does not select rendered MathML');
+      }
+      for(const selection of state.trace){
+        assert.equal(selection.type,'text','pointer interaction never transiently selects the whole node');
+        assert.equal(selection.anchor,selection.head,'pointer interaction never transiently selects rendered formula text');
+      }
+      assert.equal(state.previewFocused,true,'click focuses the rendered preview while its source is hidden or read-only');
+      assert.equal(await math(index).locator('.katex-toolbar').isVisible(),true,'clicked formula toolbar remains available');
+    };
+    const assertBorderlessHover = async block => {
+      await block.locator('.katex-content').hover();
+      const styles=await block.evaluate(element=>[element,element.querySelector('.katex-content')].map(node=>{
+        const style=getComputedStyle(node);
+        return {outlineStyle:style.outlineStyle,outlineWidth:parseFloat(style.outlineWidth),borderWidths:['Top','Right','Bottom','Left'].map(side=>parseFloat(style['border'+side+'Width']))};
+      }));
+      for(const style of styles){
+        assert(style.outlineStyle==='none'||style.outlineWidth===0,'hover has no visible outline');
+        assert.deepEqual(style.borderWidths,[0,0,0,0],'hover has no visible border');
+      }
+    };
+    const showSource = async (block,visible=true) => {
+      const toggle=codeButton(block);
+      if(await toggle.count() && await toggle.getAttribute('aria-pressed')!==String(visible))await toggle.click();
+      await block.locator('pre.block-source').waitFor({state:visible?'visible':'hidden'});
+    };
+    const sourceGeometry = block => block.evaluate(element=>{
+      const code=element.querySelector('pre.block-source code');
+      const walker=document.createTreeWalker(code,NodeFilter.SHOW_TEXT);
+      let first;
+      while(walker.nextNode()){
+        const text=walker.currentNode;
+        const start=text.textContent.search(/\S/);
+        if(start<0)continue;
+        const range=document.createRange();
+        range.setStart(text,start);range.setEnd(text,start+1);
+        const rect=range.getBoundingClientRect();
+        if(rect.width>0&&rect.height>0){first=rect;break;}
+      }
+      if(!first)throw new Error('Visible first source character not found');
+      const blockRect=element.getBoundingClientRect();
+      const pre=code.closest('pre').getBoundingClientRect();
+      const rect=node=>{
+        const box=node.getBoundingClientRect();
+        return {left:box.left,right:box.right,top:box.top,bottom:box.bottom,width:box.width,height:box.height};
+      };
+      return {
+        first:rect({getBoundingClientRect:()=>first}),
+        firstRelativeTop:first.top-blockRect.top,preRelativeTop:pre.top-blockRect.top,blockHeight:blockRect.height,
+        language:rect(element.querySelector('.codeblock-wrapper .el-select')),
+        actions:Array.from(element.querySelectorAll('.codeblock-wrapper button')).map(rect),
+        viewport:innerWidth,
+      };
+    });
+    const assertToolbarAboveSource = async block => {
+      const geometry=await sourceGeometry(block);
+      for(const control of [geometry.language,...geometry.actions]){
+        assert(control.width>0&&control.height>0,'the toolbar control has usable geometry');
+        assert(control.bottom<=geometry.first.top+0.5,'language and source actions are above the first source line');
+        assert(control.left>=-0.5&&control.right<=geometry.viewport+0.5,'code toolbar controls fit the viewport');
+      }
+      for(const action of geometry.actions)assert(geometry.language.right<=action.left+0.5,'language select does not overlap source/copy actions');
+      return geometry;
+    };
+    const selectLanguage = async (block,language) => {
+      const input=block.locator('.codeblock-wrapper .el-select input');
+      await input.click();
+      await input.fill(language);
+      const popup=page.getByRole('listbox');
+      await popup.waitFor({state:'visible'});
+      await page.getByRole('option',{name:language,exact:true}).waitFor({state:'visible'});
+      const bounds=await popup.evaluate(element=>{
+        const rect=element.getBoundingClientRect();return {left:rect.left,right:rect.right,viewport:innerWidth};
+      });
+      assert(bounds.left>=-0.5&&bounds.right<=bounds.viewport+0.5,'the real language popup fits the viewport');
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('Enter');
+      await popup.waitFor({state:'hidden'});
+      await page.waitForFunction(language=>window.__blockTest.codeState(1).language===language,language);
+    };
     const readSourceStyles = () => page.evaluate(() => {
       const read = selector => {
         const style=getComputedStyle(document.querySelector(selector));
@@ -212,6 +333,43 @@ async function main() {
       await math(1).screenshot({path:path.join(process.env.MARKNOTE_BLOCK_SOURCE_SCREENSHOT_DIR,'formula-preview-light.png')});
     }
     record('Formula previews render once without duplicated raw text under production styles');
+    for(const theme of ['light','dark']){
+      await api('theme',theme);
+      await api('select',{type:'paragraph',index:0});
+      await page.mouse.move(0,0);
+      for(const index of [0,1])await assertBorderlessHover(math(index));
+      await api('select',{type:'paragraph',index:0});
+      await page.keyboard.press('Tab');
+      const keyboardRing=await math(0).locator('.katex-content').evaluate(element=>{
+        const style=getComputedStyle(element);
+        return {focused:element===document.activeElement,visible:element.matches(':focus-visible'),outlineStyle:style.outlineStyle,outlineWidth:parseFloat(style.outlineWidth)};
+      });
+      assert.equal(keyboardRing.focused,true,'keyboard Tab can focus the rendered formula');
+      assert.equal(keyboardRing.visible,true,'keyboard formula focus remains visible');
+      assert(keyboardRing.outlineStyle!=='none'&&keyboardRing.outlineWidth>0,'keyboard focus retains its outline');
+    }
+    await api('theme','light');
+    record('Light and dark rendered formula hover has no border while keyboard focus retains its visible outline');
+    for(const [index,source] of [[0,sources.formula],[1,sources.secondFormula]]){
+      await api('select',{type:'paragraph',index:0});
+      const before=await api('snapshot');
+      const preview=math(index).locator('.katex-content');
+      for(const action of ['click','click','dblclick']){
+        await clearSelectionTrace();
+        await preview[action]();
+        await assertCollapsedFormula(index,source);
+        unchangedContent(before,await api('snapshot'));
+        assert.equal(await math(index).locator('.katex-source').isVisible(),false,'rendered click does not open formula source');
+        assert.equal(await math(1-index).locator('.katex-toolbar').isVisible(),false,'click does not focus another formula toolbar');
+      }
+      await page.keyboard.type('x');
+      await page.keyboard.press('Backspace');
+      await page.keyboard.press('Delete');
+      unchangedContent(before,await api('snapshot'));
+      await assertCollapsedFormula(index,source);
+      assert.equal(await math(index).locator('.katex-source').isVisible(),false,'typing on a hidden preview does not open or edit source');
+    }
+    record('Click, repeated click and double click focus a collapsed formula caret without selecting rendered math');
     await math(0).locator('.katex-content').focus();
     await math(0).locator('.katex-toolbar').waitFor({state:'visible'});
     assert.equal(await math(0).locator('.katex-content').evaluate(element=>element===document.activeElement),true);
@@ -269,6 +427,55 @@ async function main() {
     assert.equal(await codeButton(plain).count(),0);
     record('Formula and Mermaid source styles match, Mermaid keeps its toggle and plain code retains copy');
 
+    const longestLanguage=(await api('languages')).sort((a,b)=>b.length-a.length||a.localeCompare(b))[0];
+    await api('theme','dark');
+    await page.setViewportSize({width:390,height:760});
+    await api('select',{type:'codeBlock',index:1});
+    await selectLanguage(plain,longestLanguage);
+    assert.equal((await api('codeState',1)).source,sources.code,'language selection retains exact source');
+    for(const theme of ['light','dark'])for(const width of [1050,390]){
+      await api('theme',theme);
+      await page.setViewportSize({width,height:760});
+      for(const [block,index] of [[plain,1],[mermaid,0]]){
+        await api('select',{type:'codeBlock',index});
+        await showSource(block,true);
+        const active=await assertToolbarAboveSource(block);
+        await api('select',{type:'paragraph',index:0});
+        assert.equal(await block.locator('.codeblock-wrapper').isVisible(),false,'inactive controls are hidden');
+        const inactive=await sourceGeometry(block);
+        await api('select',{type:'codeBlock',index});
+        const reactivated=await assertToolbarAboveSource(block);
+        for(const state of [inactive,reactivated]){
+          assert(Math.abs(state.firstRelativeTop-active.firstRelativeTop)<=0.5,'focus does not move the first source line');
+          assert(Math.abs(state.preRelativeTop-active.preRelativeTop)<=0.5,'focus preserves the source surface position');
+          assert(Math.abs(state.blockHeight-active.blockHeight)<=0.5,'focus preserves the block height');
+        }
+        if(process.env.MARKNOTE_BLOCK_SOURCE_SCREENSHOT_DIR && ((theme==='light'&&width===1050&&index===1)||(theme==='dark'&&width===390))){
+          await block.screenshot({path:path.join(process.env.MARKNOTE_BLOCK_SOURCE_SCREENSHOT_DIR,index===1?'code-toolbar-'+theme+'-'+width+'-long-language.png':'mermaid-toolbar-'+theme+'-'+width+'-source.png')});
+        }
+      }
+    }
+    record('Light/dark and wide/narrow code toolbars stay above source with long language labels and reserve inactive height');
+    await api('select',{type:'codeBlock',index:1,end:true});
+    await showSource(plain,true);
+    const editedCode=sources.code+'\n// edited through the source';
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('// edited through the source');
+    assert.equal((await api('codeState',1)).source,editedCode,'the source remains directly editable below the toolbar');
+    await native();
+    const editedBefore=await api('snapshot');
+    await copy(plain).click();
+    assert.deepEqual(await writes(),[editedCode],'copy uses the exact edited code under a long language selection');
+    unchanged(editedBefore,await api('snapshot'));
+    await api('replaceSource',{type:'codeBlock',index:1,text:sources.code});
+    await selectLanguage(plain,'javascript');
+    assert.deepEqual(await api('codeState',1),{source:sources.code,language:'javascript'},'the language workflow explicitly restores its fixture');
+    await api('select',{type:'codeBlock',index:0});
+    await showSource(mermaid,false);
+    await api('theme','light');
+    await page.setViewportSize({width:1050,height:800});
+    record('Real language popup and keyboard selection preserve source editing and exact copying');
+
     for (const [block,type,index,source] of [[math(1),'katex',1,sources.secondFormula],[mermaid,'codeBlock',0,sources.diagram],[plain,'codeBlock',1,sources.code]]) {
       await api('select',{type,index,node:true});
       await native();
@@ -320,12 +527,28 @@ async function main() {
     record('Keyboard Tab, Enter and Space access copying and retain button focus');
 
     await api('editable',false);
-    for (const [block,type,index,source] of [[math(1),'katex',1,sources.secondFormula],[mermaid,'codeBlock',0,sources.diagram],[plain,'codeBlock',1,sources.code]]) {
+    await page.setViewportSize({width:390,height:760});
+    for (const [block,type,index,source] of [[math(0),'katex',0,sources.formula+' + 1'],[math(1),'katex',1,sources.secondFormula],[mermaid,'codeBlock',0,sources.diagram],[plain,'codeBlock',1,sources.code]]) {
       if(type==='katex'){
+        const beforeClick=await api('snapshot');
+        const sourcePressed=await codeButton(block).getAttribute('aria-pressed');
+        await clearSelectionTrace();
         await block.locator('.katex-content').click();
         try { await block.locator('.katex-toolbar').waitFor({state:'visible',timeout:5000}); }
         catch(error) { console.error('Read-only formula diagnostics:',await api('diagnostics')); throw error; }
-      }else await api('select',{type,index,node:true});
+        await assertCollapsedFormula(index,source);
+        unchangedContent(beforeClick,await api('snapshot'));
+        assert.equal(await codeButton(block).getAttribute('aria-pressed'),sourcePressed,'read-only preview click preserves the chosen source display state');
+        assert.equal(await block.locator('.katex-source').isVisible(),sourcePressed==='true','read-only focus restores only the previously chosen source display state');
+        await clearSelectionTrace();
+        await block.locator('.katex-content').dblclick();
+        await assertCollapsedFormula(index,source);
+        unchangedContent(beforeClick,await api('snapshot'));
+      }else {
+        await api('select',{type,index,node:true});
+        await showSource(block,true);
+        await assertToolbarAboveSource(block);
+      }
       await native();
       const readonlyBefore=await api('snapshot');
       await copy(block).click();
@@ -344,6 +567,7 @@ async function main() {
     await page.setViewportSize({width:390,height:760});
     await singleFormulaPreview();
     await api('select',{type:'katex',index:0,node:true});
+    if(await codeButton(math(0)).getAttribute('aria-pressed')!=='true')await codeButton(math(0)).click();
     await math(0).locator('.katex-source').waitFor({state:'visible'});
     await matchingSourceStyles();
     assert.equal(await codeButton(math(0)).getAttribute('aria-label'),'代码');

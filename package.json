@@ -1,7 +1,7 @@
 {
   "name": "marknote",
   "private": true,
-  "version": "0.0.10-alpha.2",
+  "version": "0.0.10-alpha.3",
   "packageManager": "yarn@4.9.2",
   "type": "module",
   "scripts": {
@@ -14,6 +14,7 @@
     "test:document-search": "node scripts/test-document-search.cjs",
     "test:file-comparison": "node scripts/test-file-comparison.cjs",
     "test:source-editor:browser": "node scripts/test-source-editor-browser.cjs",
+    "test:editor-mode:browser": "node scripts/test-editor-mode-browser.cjs",
     "test:document-search:browser": "node scripts/test-document-search-browser.cjs",
     "test:file-comparison:browser": "node scripts/test-file-comparison-browser.cjs",
     "test:attachments": "node scripts/test-attachments.cjs",
@@ -27,7 +28,7 @@
     "test:file-version:browser": "node scripts/test-file-version-browser.cjs",
     "test:image-close:browser": "node scripts/test-image-close-browser.cjs",
     "test:unit": "yarn test:document-lifecycle && yarn test:file-version && yarn test:source-document && yarn test:document-search && yarn test:file-comparison && yarn test:editor-correctness && yarn test:draft-recovery && yarn test:attachments && yarn test:folder-settings && yarn test:editor-state-cache && yarn test:large-file && yarn test:outline && yarn test:markdown-preferences && yarn test:shortcut-preferences && yarn test:sidebar-preferences && yarn test:update-release",
-    "test:browser": "yarn test:app-startup:browser && yarn test:source-editor:browser && yarn test:document-search:browser && yarn test:file-comparison:browser && yarn test:file-version:browser && yarn test:folder-settings:browser && yarn test:image-close:browser && yarn test:large-editor:browser && yarn test:editor-correctness:browser && yarn test:document-export:browser && yarn test:draft-recovery:browser && yarn test:image-insertion:browser && yarn test:editor-performance:browser && yarn test:outline:browser && yarn test:preferences:browser && yarn test:shortcuts:browser && yarn test:editor-font:browser && yarn test:block-source:browser && yarn test:image-export:browser && yarn test:image-capture:browser && yarn test:sidebar-preferences:browser",
+    "test:browser": "yarn test:app-startup:browser && yarn test:source-editor:browser && yarn test:editor-mode:browser && yarn test:document-search:browser && yarn test:file-comparison:browser && yarn test:file-version:browser && yarn test:folder-settings:browser && yarn test:image-close:browser && yarn test:large-editor:browser && yarn test:editor-correctness:browser && yarn test:document-export:browser && yarn test:draft-recovery:browser && yarn test:image-insertion:browser && yarn test:editor-performance:browser && yarn test:outline:browser && yarn test:preferences:browser && yarn test:shortcuts:browser && yarn test:editor-font:browser && yarn test:block-source:browser && yarn test:image-export:browser && yarn test:image-capture:browser && yarn test:sidebar-preferences:browser",
     "test:document-lifecycle": "node scripts/test-document-lifecycle.cjs",
     "test:editor-correctness": "node scripts/test-editor-correctness.cjs",
     "test:editor-correctness:browser": "node scripts/test-editor-correctness-browser.cjs",

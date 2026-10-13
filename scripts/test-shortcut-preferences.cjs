@@ -48,6 +48,7 @@ function fixture({ tauri = true, cached = null } = {}) {
     '../utils/shortcutPreferences': fixtureShortcuts,
     '../utils/markdownPreferences': markdown,
     '../utils/editorFont': editorFont,
+    '../utils/editorModePreferences': loadModule('src/utils/editorModePreferences.ts', {}, { localStorage: storage }),
     './editor': { useEditorStore: () => ({ editor: undefined, reindexOtherSegments() {} }) },
     '@tauri-apps/api/core': { isTauri: () => tauri },
     '@tauri-apps/api/event': { emit: async (name, value) => { calls.emits.push({ name, value: plain(value) }); await api.emit(name, value); } },

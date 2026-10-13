@@ -7,7 +7,7 @@ const MarkdownIt = require('markdown-it');
 const { createPinia, setActivePinia } = require('pinia');
 
 const root = path.resolve(__dirname, '..');
-function loadModule(relativePath, imports = {}) {
+function loadModule(relativePath, imports = {}, globals = {}) {
   const code = ts.transpileModule(fs.readFileSync(path.join(root, relativePath), 'utf8'), {
     compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS },
   }).outputText;
@@ -16,6 +16,7 @@ function loadModule(relativePath, imports = {}) {
     module, exports: module.exports,
     require(name) { return name in imports ? imports[name] : require(name); },
     localStorage: { getItem() { return null; }, setItem() {} },
+    ...globals,
   }, { filename: relativePath });
   return module.exports;
 }
@@ -31,6 +32,10 @@ function fixture() {
   const document = { unchanged: true };
   const selection = { from: 12, to: 12 };
   const history = { undoDepth: 3 };
+  const storedValues = new Map();
+  const storage = { failure: false, getItem: key => storedValues.get(key) ?? null,
+    setItem(key, value) { if (this.failure) throw new Error('Local storage unavailable'); storedValues.set(key, value); } };
+  const editorMode = loadModule('src/utils/editorModePreferences.ts', {}, { localStorage: storage });
   const editor = { state: { doc: document, selection, history }, storage: { markdown: { options: {}, parser: { md: new MarkdownIt() } } } };
   const api = {
     getConfig: async () => ({ code: 0, data: {} }),
@@ -40,6 +45,7 @@ function fixture() {
   const { usePreferencesStore } = loadModule('src/store/preferences.ts', {
     '../utils/markdownPreferences': preferences,
     '../utils/editorFont': editorFont,
+    '../utils/editorModePreferences': editorMode,
     '../utils/shortcutPreferences': shortcuts,
     './editor': { useEditorStore: () => ({ editor, reindexOtherSegments() { calls.reindexes += 1; } }) },
     '@tauri-apps/api/core': { isTauri: () => true },
@@ -48,8 +54,8 @@ function fixture() {
       getConfig: () => { calls.reads += 1; return api.getConfig(); },
       saveMarkdownPreferences: options => { calls.writes.push(options); return api.saveMarkdownPreferences(options); },
     },
-  });
-  return { store: usePreferencesStore(), calls, api, editor, document, selection, history };
+  }, { localStorage: storage });
+  return { store: usePreferencesStore(), calls, api, editor, document, selection, history, storage, editorMode };
 }
 
 function values(value) { return JSON.parse(JSON.stringify(value)); }
@@ -60,6 +66,54 @@ function defer() {
 }
 
 async function main() {
+  for (const value of [undefined, null, '', 'Source', 'rendered', 'true', true, ' source ', '{"mode":"source"}']) {
+    const mode = loadModule('src/utils/editorModePreferences.ts', {}, { localStorage: { getItem: () => value } });
+    assert.equal(mode.isSourceMode(value), false);
+    assert.equal(mode.readEditorMode(), 'wysiwyg', 'invalid persisted modes use the safe default');
+  }
+  for (const value of ['wysiwyg', 'source', 'split']) {
+    const mode = loadModule('src/utils/editorModePreferences.ts', {}, { localStorage: { getItem: () => value } });
+    assert.equal(mode.isSourceMode(value), true);
+    assert.equal(mode.readEditorMode(), value);
+  }
+  const deniedMode = loadModule('src/utils/editorModePreferences.ts', {}, { localStorage: { getItem() { throw new Error('Denied'); } } });
+  assert.equal(deniedMode.readEditorMode(), 'wysiwyg');
+  const modes = fixture();
+  await modes.store.saveEditorMode('source');
+  assert.equal(modes.store.editorMode, 'source');
+  assert.equal(modes.editorMode.readEditorMode(), 'source', 'store and real reader share the persisted preference');
+  assert.equal(modes.store.editorModeRevision, 1);
+  assert.equal(modes.calls.emits[0].name, modes.editorMode.EDITOR_MODE_PREFERENCES_EVENT);
+  assert.equal(modes.calls.emits[0].value, 'source');
+  modes.storage.failure = true;
+  await assert.rejects(modes.store.saveEditorMode('split'), /Local storage unavailable/);
+  assert.equal(modes.store.editorMode, 'source');
+  assert.equal(modes.editorMode.readEditorMode(), 'source');
+  assert.equal(modes.store.editorModeRevision, 1);
+  assert.equal(modes.calls.emits.length, 1, 'failed persistence does not broadcast an unsaved mode');
+  assert.match(modes.store.editorModeSaveError, /Local storage unavailable/);
+  assert.equal(modes.store.savingEditorMode, false);
+  modes.storage.failure = false;
+  modes.api.emit = async () => { throw new Error('Event channel unavailable'); };
+  await modes.store.saveEditorMode('split');
+  assert.equal(modes.store.editorMode, 'split');
+  assert.equal(modes.editorMode.readEditorMode(), 'split');
+  assert.equal(modes.store.editorModeSaveError, null);
+  assert.match(modes.store.editorModeSyncError, /Event channel unavailable/);
+  assert.equal(modes.store.savingEditorMode, false);
+  modes.api.emit = async () => {};
+  await modes.store.saveEditorMode('split');
+  assert.equal(modes.store.editorModeSyncError, null, 'retry sends the already-persisted mode');
+  const modeRevision = modes.store.editorModeRevision;
+  modes.store.applyEditorMode('split');
+  assert.equal(modes.store.editorModeRevision, modeRevision, 'duplicate incoming storage/native mode events do not request another view switch');
+  modes.store.applyEditorMode('invalid');
+  assert.equal(modes.store.editorModeRevision, modeRevision);
+  await assert.rejects(modes.store.saveEditorMode('invalid'), /Invalid editor mode/);
+  assert.equal(modes.store.editorMode, 'split');
+  assert.equal(modes.editor.state.doc, modes.document);
+  assert.equal(modes.editor.state.selection, modes.selection);
+  assert.equal(modes.editor.state.history, modes.history, 'saving a mode preference does not edit the current document');
   assert.deepEqual(values(normalizeMarkdownPreferences({ html: 'false', breaks: 0, bulletListMarker: 'invalid', other: true })), values(defaults));
   for (const marker of ['-', '*', '+']) assert.equal(normalizeMarkdownPreferences({ bulletListMarker: marker }).bulletListMarker, marker);
 

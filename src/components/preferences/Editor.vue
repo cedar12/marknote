@@ -1,5 +1,6 @@
 <template>
   <div class="preferences-editor">
+    <EditorMode />
     <section class="preferences-item editor-font-settings" :aria-label="t('editorFont')" :aria-busy="preferencesStore.savingEditorFont">
       <div class="header"><span>{{ t('editorFont') }}</span></div>
       <div class="content">
@@ -67,6 +68,7 @@ import { usePreferencesStore, type SegmentNavigationMode, type EditorFontPrefere
 import { DEFAULT_EDITOR_FONT, EDITOR_FONT_PRESETS, MIN_EDITOR_FONT_SIZE, MAX_EDITOR_FONT_SIZE } from '../../utils/editorFont';
 import { useI18n } from 'vue-i18n';
 import { ElButton, ElInputNumber, ElSelect, ElOption } from 'element-plus';
+import EditorMode from './EditorMode.vue';
 
 const appStore = useAppStore();
 const preferencesStore = usePreferencesStore();

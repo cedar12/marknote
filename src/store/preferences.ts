@@ -7,6 +7,8 @@ import { DEFAULT_MARKDOWN_PREFERENCES, MARKDOWN_PREFERENCES_KEY, normalizeMarkdo
 
 import { EDITOR_FONT_PREFERENCES_KEY, MIN_EDITOR_FONT_SIZE, MAX_EDITOR_FONT_SIZE, applyEditorFontToDocument, isValidEditorFontFamily, normalizeEditorFont, readEditorFont, type EditorFontPreferences } from '../utils/editorFont';
 import { DEFAULT_SHORTCUT_PREFERENCES, SHORTCUT_PREFERENCES_KEY, SHORTCUT_PREFERENCES_EVENT, normalizeShortcutPreferences, readShortcutPreferences, shortcutPlatform, validateShortcutPreferences, type ShortcutPreferences } from '../utils/shortcutPreferences';
+import { EDITOR_MODE_PREFERENCES_KEY, EDITOR_MODE_PREFERENCES_EVENT, isSourceMode, readEditorMode } from '../utils/editorModePreferences';
+import type { SourceMode } from '../utils/sourceDocument';
 
 export type { MarkdownPreferences, BulletListMarker } from '../utils/markdownPreferences';
 export { DEFAULT_MARKDOWN_PREFERENCES } from '../utils/markdownPreferences';
@@ -36,6 +38,11 @@ export const usePreferencesStore = defineStore('preferences', {
     savingEditorFont: boolean,
     editorFontSaveError: string | null,
     editorFontSyncError: string | null,
+    editorMode: SourceMode,
+    editorModeRevision: number,
+    savingEditorMode: boolean,
+    editorModeSaveError: string | null,
+    editorModeSyncError: string | null,
     markdown: MarkdownPreferences,
     loadingMarkdown: boolean,
     savingMarkdown: boolean,
@@ -59,6 +66,11 @@ export const usePreferencesStore = defineStore('preferences', {
       savingEditorFont: false,
       editorFontSaveError: null,
       editorFontSyncError: null,
+      editorMode: readEditorMode(),
+      editorModeRevision: 0,
+      savingEditorMode: false,
+      editorModeSaveError: null,
+      editorModeSyncError: null,
       markdown: { ...DEFAULT_MARKDOWN_PREFERENCES },
       loadingMarkdown: false,
       savingMarkdown: false,
@@ -76,6 +88,37 @@ export const usePreferencesStore = defineStore('preferences', {
   },
 
   actions: {
+    applyEditorMode(value: unknown, force = false) {
+      if (!isSourceMode(value)) return;
+      if (!force && this.editorMode === value) return;
+      this.editorMode = value;
+      this.editorModeRevision += 1;
+    },
+    async saveEditorMode(value: SourceMode) {
+      if (this.savingEditorMode) return;
+      this.editorModeSaveError = null;
+      this.editorModeSyncError = null;
+      if (!isSourceMode(value)) {
+        this.editorModeSaveError = 'invalid';
+        throw new Error('Invalid editor mode');
+      }
+      this.savingEditorMode = true;
+      try {
+        localStorage.setItem(EDITOR_MODE_PREFERENCES_KEY, value);
+        this.applyEditorMode(value, true);
+      } catch (error) {
+        this.editorModeSaveError = String(error);
+        this.savingEditorMode = false;
+        throw error;
+      }
+      try {
+        if (isTauri()) await emit(EDITOR_MODE_PREFERENCES_EVENT, value);
+      } catch (error) {
+        this.editorModeSyncError = String(error);
+      } finally {
+        this.savingEditorMode = false;
+      }
+    },
     applyShortcutPreferences(value: unknown, platform = shortcutPlatform()) {
       shortcutRevision += 1;
       this.shortcuts = normalizeShortcutPreferences(value, platform);

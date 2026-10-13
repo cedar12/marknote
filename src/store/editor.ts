@@ -262,7 +262,7 @@ export const useEditorStore = defineStore('editor', {
     registerSourceHandlers(handlers: SourceHandlers | null) { sourceHandlers = handlers; },
     sourceOperationBlocked() {
       const app = useAppStore();
-      return app.lifecycleBusy || app.saving || app.exporting || app.loading || this.loading || this.renderingDocument || this.segmentLoading || this.sourceComposing;
+      return app.lifecycleBusy || app.saving || app.exporting || app.loading || this.loading || this.renderingDocument || this.segmentLoading || this.sourceComposing || Boolean(this.editor?.view.composing);
     },
     async setSourceMode(mode: SourceMode): Promise<boolean> {
       if (mode === this.sourceMode) return true;

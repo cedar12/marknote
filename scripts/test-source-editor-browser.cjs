@@ -10,26 +10,24 @@ function loadPlaywright() {
   }
   throw new Error('Playwright is required.');
 }
-const harness = String.raw`<template><main class="el-scrollbar__wrap"><SourceModeBar/><div v-show="document.sourceMode==='wysiwyg'"><EditorContent :editor="editor"/></div><SourceWorkspace v-show="document.sourceMode!=='wysiwyg'"/></main></template>
+const harness = String.raw`<template><aside v-if="showSettings" class="test-editor-settings"><EditorMode/></aside><main class="el-scrollbar__wrap"><EditorPage/></main></template>
 <script setup>
-import { nextTick, watch, onMounted } from 'vue';
-import { EditorContent } from '@tiptap/vue-3';
+import { nextTick, onMounted, ref } from 'vue';
 import { undoDepth } from '@tiptap/pm/history';
-import { createEditor } from '/src/utils/editor';
 import { useAppStore } from '/src/store/app';
 import { useEditorStore } from '/src/store/editor';
 import { useDraftsStore } from '/src/store/drafts';
 import { useDocumentExportStore } from '/src/store/documentExport';
 import { KeyBindingBuilder } from '/src/utils/keyBinding';
 import { DEFAULT_SHORTCUT_PREFERENCES } from '/src/utils/shortcutPreferences';
-import SourceModeBar from '/src/components/source/SourceModeBar.vue';
-import SourceWorkspace from '/src/components/source/SourceWorkspace.vue';
+import EditorPage from '/src/components/Editor.vue';
+import EditorMode from '/src/components/preferences/EditorMode.vue';
+import { usePreferencesStore } from '/src/store/preferences';
 import themes, { setTheme } from '/src/theme';
 import i18n from '/src/i18n';
 const app = useAppStore(), document = useEditorStore(), drafts = useDraftsStore(), exports = useDocumentExportStore();
+const preferences = usePreferencesStore(), showSettings = ref(false);
 app.loading=false; app.autoSave=false;
-const editor = createEditor();
-watch(editor, value => { if (value) document.setEditor(value); }, { immediate: true });
 let savedState, parserOriginal, parseLengths=[];
 onMounted(async () => {
   await drafts.init();
@@ -38,7 +36,9 @@ onMounted(async () => {
 });
 window.__source = {
   ready() { return drafts.registered && !!document.editor; },
-  async fixture(markdown) { app.lifecycleBusy=false;document.sourceMode='wysiwyg';document.editor.setEditable(true,false);await drafts.clearCurrent();await document.setContent(markdown);app.setFilepath('D:\\notes\\source.md',{exists:true,mtimeNs:'1',size:markdown.length,hash:'1'.repeat(64)},'D:\\notes\\source.md');app.isSave=true;await nextTick(); },
+  async fixture(markdown) { app.lifecycleBusy=false;preferences.applyEditorMode('wysiwyg');document.sourceMode='wysiwyg';document.editor.setEditable(true,false);await drafts.clearCurrent();await document.setContent(markdown);app.setFilepath('D:\\notes\\source.md',{exists:true,mtimeNs:'1',size:markdown.length,hash:'1'.repeat(64)},'D:\\notes\\source.md');app.isSave=true;await nextTick(); },
+  async settings(value) { showSettings.value=value;await nextTick(); },
+  async preference(value) { await preferences.saveEditorMode(value);await nextTick(); },
   async mode(value) { const result=await document.setSourceMode(value);await nextTick();return result; },
   async editWys(text) { document.editor.commands.insertContent(text);await nextTick(); },
   rememberWys() { savedState=document.editor.state; },
@@ -61,7 +61,7 @@ window.__source = {
   translate(key) { return i18n.global.t(key); },
   snapshot() { return { markdown:document.getMarkdown(),source:document.sourceText,mode:document.sourceMode,selection:document.sourceSelection,history:document.sourceDocument.historyInfo(),pmUndo:undoDepth(document.editor.state),revision:app.editRevision,isSave:app.isSave,composing:document.sourceComposing,switching:document.sourceSwitching,error:document.sourceSwitchError,segmented:document.segmented,segments:document.segmentCount,parseLengths:[...parseLengths],json:document.editor.getJSON(),draftError:drafts.errorKey }; },
 };
-</script><style>body{margin:0}.el-scrollbar__wrap{height:700px;overflow:auto}.marknote{line-height:1.5}.source-mode-bar{position:sticky;top:0}</style>`;
+</script><style>body{margin:0}.el-scrollbar__wrap{height:700px;overflow:auto}.marknote{line-height:1.5}.test-editor-settings{position:fixed;right:0;top:0;width:320px;max-width:100vw;padding:12px;box-sizing:border-box;z-index:10;background:var(--contentBackgroundColor);color:var(--contentTextColor);border:1px solid var(--contentBorderColor)}</style>`;
 function nativeMock() {
   window.os='windows';window.isTauri=true;
   const state={calls:[],draft:null,saved:null,clipboard:'',pick:'D:\\notes\\export.html'};window.__sourceNative=state;
@@ -99,13 +99,16 @@ async function main() {
     fs.writeFileSync(path.join(temporary,'main.js'),"import {createApp} from 'vue';import {createPinia} from 'pinia';import i18n from '/src/i18n';import '/src/styles.css';import '/src/scss/element-plus.scss';import '/src/scss/editor.scss';import '/src/scss/codeTheme.scss';import '/src/directives/loading/index.scss';import light from '/src/theme/style/light';import Harness from './Harness.vue';for(const [key,value] of Object.entries(light.style))document.documentElement.style.setProperty('--'+key,value);i18n.global.locale.value='en';createApp(Harness).use(createPinia()).use(i18n).mount('#test');");
     fs.writeFileSync(path.join(temporary,'index.html'),'<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"></head><body><div id="test"></div><script type="module" src="./main.js"></script></body></html>');
     const config={root,configFile:false,plugins:[vue()],logLevel:'error',build:{outDir:path.join(temporary,'dist'),emptyOutDir:true,minify:false,rollupOptions:{input:path.join(temporary,'index.html')}},preview:{host:'127.0.0.1',port:0}};
-    await build(config);server=await preview(config);
+    await build(config);console.log('Source settings migration harness built; starting Chrome checks');server=await preview(config);
     const executablePath=process.env.MARKNOTE_BROWSER_PATH||[chromium.executablePath(),'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe','C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'].find(fs.existsSync);
     browser=await chromium.launch({headless:true,...(executablePath?{executablePath}:{})});
     const page=await browser.newPage({viewport:{width:1100,height:740}});const errors=[];page.on('pageerror',error=>{errors.push(error.message);console.error(error.message);});
     await page.addInitScript(nativeMock);await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/${path.basename(temporary)}/index.html`);await page.waitForFunction(()=>window.__source?.ready());
     const api=(method,argument)=>page.evaluate(({method,argument})=>window.__source[method](argument),{method,argument});
     const field=page.locator('[data-source-editor]');
+    assert.equal(await page.locator('.source-mode-bar,.source-mode-choices').count(),0,'editor page has no mode selector');
+    await api('settings',true);await page.locator('#editor-mode-preference').click();await page.getByRole('option',{name:await api('translate','editorModeSource'),exact:true}).click();await field.waitFor({state:'visible'});
+    assert.equal(await page.evaluate(()=>localStorage.getItem('editorModePreferences')),'source','the mode is chosen and persisted in settings');await api('settings',false);
     const raw='#  Original\r\n\r\n__bold__  and [link][id]\n\n[id]: <relative.md> "Title"\r\n\r\n<!-- preserved -->\n';
     await api('fixture',raw);assert.equal((await api('snapshot')).markdown,raw,'freshly opened documents retain original Markdown');
     await api('editWys','WYS edit ');await api('rememberWys');const wys=await api('snapshot');

@@ -187,7 +187,7 @@ onMounted(() => { store.registerSourceHandlers({ focus, command }); restore(); s
 onBeforeUnmount(() => { clearTimeout(timer); renderVersion++; store.registerSourceHandlers(null); store.sourceComposing = false; });
 </script>
 <style scoped lang="scss">
-.source-workspace { display:grid;grid-template-columns:minmax(0,1fr);height:calc(100vh - var(--titleBarHeight,30px) - 38px);min-height:260px;min-width:0;color:var(--contentTextColor);background:var(--contentBackgroundColor); }
+.source-workspace { display:grid;grid-template-columns:minmax(0,1fr);height:calc(100vh - var(--titleBarHeight,30px));min-height:260px;min-width:0;color:var(--contentTextColor);background:var(--contentBackgroundColor); }
 .source-split { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
 .source-pane,.source-preview-pane { min-width:0;min-height:0;display:flex;flex-direction:column; }
 .source-preview-pane { border-left:1px solid var(--contentBorderColor); }

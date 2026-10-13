@@ -22,6 +22,7 @@ import { FILE_SAVED_EVENT, fileIdentity, filePathFromArgument, normalizeFileVers
 import { rememberWindowSize, restoreWindowSize } from '../api/window';
 import { readSidebarVisible, writeSidebarVisible } from '../utils/sidebarPreferences';
 import { normalizeSidebarWidth, SIDEBAR_WIDTH_KEY } from '../utils/folderNavigation';
+import { EDITOR_MODE_PREFERENCES_KEY, EDITOR_MODE_PREFERENCES_EVENT, readEditorMode } from '../utils/editorModePreferences';
 
 const appWindow=getCurrentWindow();
 // @ts-ignore
@@ -570,6 +571,9 @@ export const useAppStore = defineStore('app', {
       listen('editorFontPreferences', event => {
         preferencesStore.applyEditorFont(event.payload);
       });
+      listen(EDITOR_MODE_PREFERENCES_EVENT, event => {
+        preferencesStore.applyEditorMode(event.payload);
+      });
       // Browser storage events also update other open windows if native broadcasting fails.
       window.addEventListener('storage', event => {
         if (event.storageArea === localStorage && (event.key === SHORTCUT_PREFERENCES_KEY || event.key === null)) {
@@ -577,6 +581,9 @@ export const useAppStore = defineStore('app', {
         }
         if (event.storageArea === localStorage && (event.key === EDITOR_FONT_PREFERENCES_KEY || event.key === null)) {
           preferencesStore.applyEditorFont(readEditorFont());
+        }
+        if (event.storageArea === localStorage && (event.key === EDITOR_MODE_PREFERENCES_KEY || event.key === null)) {
+          preferencesStore.applyEditorMode(readEditorMode());
         }
       });
       void preferencesStore.loadMarkdownPreferences().catch(error => {

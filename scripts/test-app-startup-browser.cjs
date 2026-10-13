@@ -15,15 +15,17 @@ function nativeMock(input) {
   window.os='windows';window.isTauri=true;localStorage.setItem('lang',locale);
   if(theme)localStorage.setItem('theme',JSON.stringify(theme));
   const baseline={exists:true,mtimeNs:'1',size:10,hash:'1'.repeat(64)};
-  const state={calls:[],draft:null,external:false,version:baseline,confirm:false};window.__nativeSmoke=state;
-  let next=1;const callbacks=new Map();
+  const state={calls:[],draft:null,external:false,version:baseline,confirm:false,
+    async mode(value){localStorage.setItem('editorModePreferences',value);for(const [id,listener] of listeners)if(listener.event==='editorModePreferences')await callbacks.get(listener.handler)?.({event:listener.event,id,payload:value});}
+  };window.__nativeSmoke=state;
+  let next=1;const callbacks=new Map(),listeners=new Map();
   window.__TAURI_INTERNALS__={
     metadata:{currentWindow:{label:'main'},currentWebview:{label:'main'}},
     transformCallback(callback,once=false){const id=next++;callbacks.set(id,value=>{if(once)callbacks.delete(id);return callback(value);});return id;},
     unregisterCallback(id){callbacks.delete(id);},convertFileSrc(value){return value;},
     async invoke(command,args={}) {
       state.calls.push({command,args});
-      if(command==='plugin:event|listen')return next++;
+      if(command==='plugin:event|listen'){const id=next++;listeners.set(id,{event:args.event,handler:args.handler});return id;}
       if(command.startsWith('plugin:event|'))return;
       if(command==='plugin:notification|is_permission_granted')return true;
       if(command==='cmd_args')return startupArguments??(conflict?['D:\\note.md']:[]);
@@ -48,7 +50,7 @@ function nativeMock(input) {
       throw new Error('Unexpected native command: '+command);
     },
   };
-  window.__TAURI_EVENT_PLUGIN_INTERNALS__={unregisterListener(){}};
+  window.__TAURI_EVENT_PLUGIN_INTERNALS__={unregisterListener(_event,id){listeners.delete(id);}};
   window.Notification=class { static permission='granted';static async requestPermission(){return 'granted';} };
 }
 async function main() {
@@ -74,9 +76,10 @@ async function main() {
       assert.equal(draft.sourcePath,null);assert(draft.id&&draft.owner);assert.deepEqual(errors,[]);
       assert.equal(await page.locator('.draft-recovery-dialog').count(),0);
       console.log('PASS production startup, editor input and automatic draft snapshot in '+locale);
-      await editor.focus();await page.keyboard.press('Control+Shift+M');
+      assert.equal(await page.locator('.source-mode-bar,.source-mode-choices').count(),0,'editing page has no mode controls');
+      await page.evaluate(()=>window.__nativeSmoke.mode('source'));
       const source=page.locator('[data-source-editor]');await source.waitFor({state:'visible'});
-      await source.focus();await page.keyboard.press('Shift+Tab');assert.equal(await page.locator('.source-mode-choices button').last().evaluate(element=>element===document.activeElement),true,'source Shift+Tab returns keyboard focus to the mode controls');await source.focus();
+      await source.focus();const shiftTab=await source.evaluate(element=>{const event=new KeyboardEvent('keydown',{key:'Tab',shiftKey:true,bubbles:true,cancelable:true});element.dispatchEvent(event);return event.defaultPrevented;});assert.equal(shiftTab,false,'source Shift+Tab remains native backward focus navigation');
       const raw='# Source document\n\nunique_needle and unique_needle\n\n[reference]: target.md\n';
       await source.fill(raw);await page.waitForFunction(text=>window.__nativeSmoke.draft?.markdown===text,raw);
       await page.locator('.titlebar-tool').first().click();
@@ -84,7 +87,10 @@ async function main() {
       assert.equal(await format.isDisabled(),true,'rendered formatting explains its disabled source state');
       assert.ok(await format.getAttribute('title'));await page.keyboard.press('Escape');
       assert.equal(await page.locator('.marknote-menus').count(),0);
-      await source.focus();await page.keyboard.press('Control+Alt+P');
+      const view=page.locator('.menus-level-1 > .menu-item > button').filter({hasText:locale==='en'?'View':'视图'});
+      await page.locator('.titlebar-tool').first().click();await view.hover();
+      assert.equal(await page.getByRole('button',{name:locale==='en'?'Source':'源码',exact:true}).count(),0,'View menu does not expose the editor-mode choices');await page.keyboard.press('Escape');
+      await page.evaluate(()=>window.__nativeSmoke.mode('split'));
       await page.waitForFunction(()=>document.querySelector('.source-preview-content')?.textContent.includes('Source document'));
       await source.focus();await page.keyboard.press('Control+Shift+F');
       const query=page.locator('#document-search-query');await query.waitFor({state:'visible'});await query.fill('unique_needle');
@@ -95,8 +101,8 @@ async function main() {
       await replacement.getByRole('button',{name:locale==='en'?'Confirm replacement':'确认替换',exact:true}).click();await replacement.waitFor({state:'hidden'});
       await page.waitForFunction(text=>document.querySelector('[data-source-editor]').value===text,raw.replaceAll('unique_needle','replaced'));
       await source.focus();await page.keyboard.press('Control+z');assert.equal(await source.inputValue(),raw,'production source Undo restores the complete replacement');
-      await page.locator('.source-mode-choices button').first().click();await editor.waitFor({state:'visible'});assert((await editor.textContent()).includes('unique_needle'));
-      assert.deepEqual(errors,[]);console.log('PASS production source/split shortcuts, disabled formatting, whole-document search, isolated preview and one Undo in '+locale);
+      await page.evaluate(()=>window.__nativeSmoke.mode('wysiwyg'));await editor.waitFor({state:'visible'});assert((await editor.textContent()).includes('unique_needle'));
+      assert.deepEqual(errors,[]);console.log('PASS production mode preference events, no editing controls, disabled formatting, whole-document search, isolated preview and one Undo in '+locale);
       await page.close();
     }
     const startupFiles=[

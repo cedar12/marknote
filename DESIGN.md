@@ -80,8 +80,10 @@ Interactive controls require clear default, hover, keyboard-focus, active, disab
 Use explicit action labels. Destructive choices such as discarding edits are separated from the safe Save path and use the real verb rather than a generic confirmation label.
 
 Mermaid and block math share compact source-toggle and copy buttons above the focused block. Their source editors use the same `hljs` code theme, editor code font, and `src/extensions/wrapper/blockSource.scss` spacing; copy feedback uses the shared `BlockSourceActions` component. Empty math blocks open the source editor for immediate input.
+Code blocks reserve a separate toolbar row above their source for language selection and source/copy actions. Hiding inactive controls retains the row height so focus does not move the first source line. The language field can shrink while actions remain visible in narrow windows; math keeps its own toolbar layout.
 
 Block math previews render one native MathML formula. The raw formula source appears only in the dedicated source editor.
+Math previews have no hover border. Clicking focuses the block with a collapsed caret and leaves the rendered formula unselected; hidden source keeps DOM focus on the preview. Keyboard focus remains visible, and opening source or an empty formula focuses its editable content.
 
 ### Navigation and data display
 
@@ -91,7 +93,7 @@ Document windows reopen at the last closed window's remembered width and height,
 
 Disk conflicts use one persistent, theme-aware notice with Review differences, Reload, Save As and Overwrite. Reload and Overwrite require native confirmations naming the file; pending actions keep the notice geometry stable. The read-only comparison uses line numbers, explicit add/remove symbols and localized partial-result feedback. Folder filters identify their loaded-item scope, with compact empty/error/retry states. Sidebar controls are real buttons; its resize separator exposes keyboard instructions and current width. Large-file statistics expose a labeled whole-document/current-segment scope and an explicit calculating state.
 
-Document mode uses a compact three-button strip: Rendered, Source and Split preview. Source is the complete Markdown document in a labeled, theme-aware textarea with independent undo, selection and scroll. Split preview shares the code and content typography, remains read-only and stacks vertically in narrow windows; bounded previews identify the visible line range. Source statistics explicitly identify their Markdown scope. Rendered formatting actions explain their disabled state while source is active.
+Choose Rendered, Source or Split preview in Preferences > Editor > Editor mode, using the existing labeled settings select and stable save/synchronization feedback. The editing surface has no mode-switch strip. The saved preference is restored on startup and shared across document windows; a busy window applies it after its current operation or input composition ends. Source is the complete Markdown document in a labeled, theme-aware textarea with independent undo, selection and scroll. Split preview shares the code and content typography, remains read-only and stacks vertically in narrow windows; bounded previews identify the visible line range. Source statistics explicitly identify their Markdown scope. Rendered formatting actions explain their disabled state while source is active.
 
 The search sidebar has a labeled document/workspace scope, literal query, case switch, cancellable status and a scrollable list of escaped snippets with file and line/column labels. Whole-document replacement previews examples before explicit confirmation; workspace search remains read-only. Search limits, stale results, skipped files and retries remain visible. Replacement and conflict dialogs trap focus, isolate background controls and return focus to the initiating surface.
 

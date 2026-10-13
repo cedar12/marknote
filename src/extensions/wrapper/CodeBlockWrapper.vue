@@ -1,8 +1,9 @@
 <template>
   <NodeViewWrapper class="marknote-codeblock" :class="{'marknote-mermaid':isMermaid()}" ref="wrapperRef">
-    <div class="codeblock-wrapper" contenteditable="false" v-show="isFocus()">
+    <div class="codeblock-wrapper" :class="{ active: isFocus() }" :aria-hidden="!isFocus()" contenteditable="false">
       <ElSelect class="left-wrapper" clearable filterable size="small" v-model="value" placeholder="    " 
-        :disabled="!isEditable" @change="props.updateAttributes({ language: value })">
+        :disabled="!props.editor.isEditable" :fit-input-width="true" v-control-a11y="{ label: t('codeLanguage') }"
+        @change="onChangeLanguage">
         <ElOption v-for="item in options()" :key="item" :label="item" :value="item"></ElOption>
       </ElSelect>
       <div class="right-wrapper">
@@ -23,13 +24,15 @@ import { NodeViewContent, NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3';
 import mermaid from 'mermaid';
 import { listen } from '@tauri-apps/api/event';
 import BlockSourceActions from './BlockSourceActions.vue';
+import { useI18n } from 'vue-i18n';
+import { vControlA11y } from '../../directives/controlA11y';
 
 
 
 const instance=getCurrentInstance();
 const props = defineProps(nodeViewProps);
+const { t } = useI18n();
 
-const isEditable = ref(props.editor.isEditable);
 const value = ref(props.node.attrs.language || '');
 const showCode=ref(false);
 
@@ -46,6 +49,10 @@ const options=()=>{
 
   return [...list,'mermaid'];
 }
+const onChangeLanguage = () => {
+  if (props.editor.isEditable) props.updateAttributes({ language: value.value });
+  else value.value = props.node.attrs.language || '';
+};
 
 
 
@@ -92,24 +99,24 @@ onMounted(async ()=>{
   position: relative;
   .codeblock-wrapper {
     display: flex;
+    align-items: center;
     justify-content: space-between;
+    gap: 8px;
     width: 100%;
     box-sizing: border-box;
-    padding: 4px 4px 0 4px;
-    position: absolute;
-    top: 0;
-    height:0px;
+    padding: 4px;
+    min-height: 32px;
+    visibility: hidden;
+    &.active { visibility: visible; }
     .left-wrapper{
-      position:absolute;
-      
-      height: 20px !important;
+      flex: 0 1 110px;
+      min-width: 0;
+      &:focus-within { outline: 2px solid var(--primaryBorderColor); outline-offset: 1px; }
     }
     .right-wrapper{
-      position:absolute;
-      right:4px;
+      flex: none;
     }
     .el-select {
-      margin-top: -0.4em;
       width: 110px;
       --el-select-border-color-hover: #ffffff00;
       --el-select-input-focus-border-color: #ffffff00;
@@ -122,13 +129,10 @@ onMounted(async ()=>{
       box-shadow: none;
     }
   }
-  div{
-    height: auto !important;
-  }
   .mermaid-render{
     display:flex;
     justify-content: center;
-    padding-top: 2em;
+    padding-top: .4em;
   }
   
 }
