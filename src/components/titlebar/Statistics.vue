@@ -1,20 +1,14 @@
 <template>
-  <el-popover :visible="visible" role="dialog" :title="t('statisticsScope')" placement="bottom-start" :width="'auto'" :offset="-4" trigger="click"
+  <el-popover :visible="visible" role="dialog" :title="t('statisticsTitle')" placement="bottom-start" :width="'auto'" :offset="-4" trigger="click"
     popper-class="titlebar-words-popover" popper-style="min-width:auto;">
     <template #reference>
       <button ref="trigger" v-click-outside="closePopover" type="button" class="titlebar-words" :aria-label="accessibleLabel" :title="accessibleLabel" :aria-expanded="visible" @click="visible=!visible" @keydown.esc="closePopover">
         <span>{{ count }}</span><span>{{ t(mode) }}</span>
-        <span v-if="store.segmented || store.sourceMode!=='wysiwyg'" class="statistics-scope">{{ scopeLabel }}</span>
       </button>
     </template>
     <div ref="options" class="titlebar-statistics-options" @keydown.esc="closePopover">
       <button type="button" :aria-pressed="mode==='words'" @click="mode='words'">{{ t('words') }}</button>
       <button type="button" :aria-pressed="mode==='chars'" @click="mode='chars'">{{ t('chars') }}</button>
-      <template v-if="store.segmented && store.sourceMode==='wysiwyg'">
-        <div class="statistics-group-label" aria-hidden="true"></div>
-        <button type="button" :aria-pressed="store.statisticsScope==='document'" @click="store.setStatisticsScope('document')">{{ t('statisticsDocument') }}</button>
-        <button type="button" :aria-pressed="store.statisticsScope==='segment'" @click="store.setStatisticsScope('segment')">{{ t('statisticsCurrentSegment') }}</button>
-      </template>
     </div>
   </el-popover>
 </template>
@@ -37,10 +31,9 @@ const closePopover = (event?: Event) => {
   visible.value = false;
   if (event?.type === 'keydown') trigger.value?.focus();
 };
-const statistics = computed(() => store.sourceMode!=='wysiwyg' ? store.sourceStatistics : !store.segmented || store.statisticsScope === 'document' ? store.documentStatistics : store.currentStatistics);
+const statistics = computed(() => store.sourceMode!=='wysiwyg' ? store.sourceStatistics : store.documentStatistics);
 const count = computed(() => statistics.value ? mode.value === 'words' ? statistics.value.words : statistics.value.characters : store.statisticsError ? '—' : '…');
-const scopeLabel = computed(() => t(store.sourceMode!=='wysiwyg' ? 'statisticsSource' : store.statisticsScope === 'document' ? 'statisticsDocument' : 'statisticsCurrentSegment'));
-const accessibleLabel = computed(() => !statistics.value ? t(store.statisticsError ? 'statisticsUnavailable' : 'statisticsCalculating') : `${count.value} ${t(mode.value)}${store.segmented || store.sourceMode!=='wysiwyg' ? ', ' + scopeLabel.value : ''}`);
+const accessibleLabel = computed(() => !statistics.value ? t(store.statisticsError ? 'statisticsUnavailable' : 'statisticsCalculating') : `${count.value} ${t(mode.value)}`);
 </script>
 
 <style scoped lang="scss">
@@ -57,7 +50,6 @@ const accessibleLabel = computed(() => !statistics.value ? t(store.statisticsErr
   cursor: pointer;
   &:focus-visible { outline: 2px solid var(--primaryTextColor); outline-offset: -2px; }
 }
-.statistics-scope { font-size: 11px; opacity: .8; }
 .titlebar-statistics-options {
   display: flex;
   flex-direction: column;
@@ -74,5 +66,4 @@ const accessibleLabel = computed(() => !statistics.value ? t(store.statisticsErr
     &[aria-pressed="true"] { font-weight: 700; }
   }
 }
-.statistics-group-label { padding: 5px 8px; border-top: 1px solid var(--contentBorderColor); }
 </style>

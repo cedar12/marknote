@@ -23,9 +23,13 @@ import { Heading } from '/src/extensions/heading';
 import { Markdown } from '/src/extensions/markdown';
 import { SearchAndReplace } from '/src/extensions/searchAndReplace';
 import { useEditorStore } from '/src/store/editor';
+import { useAppStore } from '/src/store/app';
 import Statistics from '/src/components/titlebar/Statistics.vue';
 import i18n from '/src/i18n';
+import light from '/src/theme/style/light';
+import dark from '/src/theme/style/dark';
 const store = useEditorStore();
+useAppStore().loading = false;
 const editor = new Editor({ content: '', injectCSS: false,
   extensions: [StarterKit.configure({ heading: false }), Heading, Image.configure({ inline: true }), CharacterCount, Markdown, SearchAndReplace],
   onUpdate(event) { store.markCurrentSegmentEdited(); store.updateHeadings(event); store.updateCurrentStatistics(event.transaction); },
@@ -35,6 +39,14 @@ const prototype = Object.getPrototypeOf(editor.state.doc);
 const descendants = prototype.descendants;
 let scans = 0;
 prototype.descendants = function(callback) { scans++; return descendants.call(this, callback); };
+const parser = editor.storage.markdown.parser;
+const parse = parser.parse;
+let failNextParse = false;
+parser.parse = function(...args) {
+  if (failNextParse) { failNextParse = false; throw new Error('Test detached statistics parse failure'); }
+  return parse.apply(this, args);
+};
+let statisticsFrame, statisticsJob;
 window.__largeEditor = {
   async setContent(content) { await store.setContent(content); await nextTick(); },
   async showSegment(index) { const result = await store.showSegment(index); await nextTick(); return result; },
@@ -48,6 +60,25 @@ window.__largeEditor = {
   parsingOptions(value) { editor.storage.markdown.parser.md.set(value); store.reindexOtherSegments(); },
   reindex() { store.reindexOtherSegments(); },
   async locale(value) { i18n.global.locale.value = value; await nextTick(); },
+  async theme(value) {
+    for (const [key, color] of Object.entries((value === 'dark' ? dark : light).style)) document.documentElement.style.setProperty('--' + key, color);
+    document.documentElement.classList.toggle('dark', value === 'dark'); await nextTick();
+  },
+  async pauseStatistics() {
+    store.segmentStatistics[(store.segmentIndex + 1) % store.segments.length] = null;
+    const frame = window.requestAnimationFrame;
+    window.requestAnimationFrame = callback => { statisticsFrame = callback; return 0; };
+    try { statisticsJob = store.indexDocumentStatistics(); } finally { window.requestAnimationFrame = frame; }
+    await nextTick();
+  },
+  async releaseStatistics(fail = false) {
+    failNextParse = fail;
+    const callback = statisticsFrame; statisticsFrame = undefined;
+    if (!callback) throw new Error('No detached statistics frame to release');
+    callback(performance.now()); await statisticsJob; await nextTick();
+  },
+  async retryStatistics() { await store.indexDocumentStatistics(); await nextTick(); },
+  async sourceMode(value) { const result = await store.setSourceMode(value); await nextTick(); return result; },
   translate(key) { return i18n.global.t(key); },
   currentCount() { return { characters: editor.storage.characterCount.characters(), words: editor.storage.characterCount.words() }; },
   expectedDocumentCount() {
@@ -68,10 +99,11 @@ window.__largeEditor = {
     segments: [...store.segments], markdown: store.getMarkdown(), scroll: document.querySelector('main').scrollTop,
     selection: { anchor: editor.state.selection.anchor, head: editor.state.selection.head }, undo: undoDepth(editor.state), redo: redoDepth(editor.state),
     cache: store.segmentCacheInfo(), current: { ...store.currentStatistics }, document: store.documentStatistics,
-    pending: store.statisticsPending, mapping: { ...store.attachmentMapping }, mappingEntries: Object.entries(store.attachmentMapping), stateVersion: store.documentGeneration }; },
+    pending: store.statisticsPending, statisticsError: store.statisticsError, sourceMode: store.sourceMode, sourceStatistics: store.sourceStatistics,
+    mapping: { ...store.attachmentMapping }, mappingEntries: Object.entries(store.attachmentMapping), stateVersion: store.documentGeneration }; },
 };
 </script><style>
-body{margin:0;font-family:sans-serif}header{height:32px;background:var(--primaryBackgroundColor);color:var(--primaryTextColor)}
+body{margin:0;font-family:sans-serif;background:var(--contentBackgroundColor);color:var(--contentTextColor)}header{height:32px;background:var(--primaryBackgroundColor);color:var(--primaryTextColor)}
 main{height:560px;overflow:auto}.tiptap{padding:16px;overflow-wrap:anywhere}p{line-height:1.5}
 </style>`;
 async function main() {
@@ -83,7 +115,7 @@ async function main() {
   let browser;
   try {
     fs.writeFileSync(path.join(temporary, 'Harness.vue'), harness);
-    fs.writeFileSync(path.join(temporary, 'main.js'), "import {createApp} from 'vue';import {createPinia} from 'pinia';import i18n from '/src/i18n';import 'element-plus/dist/index.css';import light from '/src/theme/style/light';import Harness from './Harness.vue';for(const [key,value] of Object.entries(light.style))document.documentElement.style.setProperty('--'+key,value);i18n.global.locale.value='en';createApp(Harness).use(createPinia()).use(i18n).mount('#test');");
+    fs.writeFileSync(path.join(temporary, 'main.js'), "import {createApp} from 'vue';import {createPinia} from 'pinia';import i18n from '/src/i18n';import 'element-plus/dist/index.css';import 'element-plus/theme-chalk/dark/css-vars.css';import light from '/src/theme/style/light';import Harness from './Harness.vue';for(const [key,value] of Object.entries(light.style))document.documentElement.style.setProperty('--'+key,value);i18n.global.locale.value='en';createApp(Harness).use(createPinia()).use(i18n).mount('#test');");
     fs.writeFileSync(path.join(temporary, 'index.html'), '<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"></head><body><div id="test"></div><script type="module" src="./main.js"></script></body></html>');
     const config = { root, configFile: false, plugins: [vue()], logLevel: 'error', build: { outDir: path.join(temporary, 'dist'), emptyOutDir: true, minify: false, rollupOptions: { input: path.join(temporary, 'index.html') } }, preview: { host: '127.0.0.1', port: 0, strictPort: false } };
     await build(config);
@@ -91,13 +123,13 @@ async function main() {
     const executablePath = process.env.MARKNOTE_BROWSER_PATH || [chromium.executablePath(), path.join(process.env.ProgramFiles || 'C:\\Program Files', 'Google', 'Chrome', 'Application', 'chrome.exe'), path.join(process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', 'Microsoft', 'Edge', 'Application', 'msedge.exe')].find(candidate => fs.existsSync(candidate));
     browser = await chromium.launch({ headless: true, ...(executablePath ? { executablePath } : {}) });
     const page = await browser.newPage({ viewport: { width: 1000, height: 650 } });
-    await page.addInitScript(() => { window.isTauri = false; window.__TAURI_INTERNALS__ = { metadata: { currentWindow: { label: 'main' }, currentWebview: { label: 'main' } }, invoke: async () => undefined }; });
+    await page.addInitScript(() => { localStorage.setItem('statisticsScope', 'segment'); window.isTauri = false; window.__TAURI_INTERNALS__ = { metadata: { currentWindow: { label: 'main' }, currentWebview: { label: 'main' } }, invoke: async () => undefined }; });
     const errors = [];
     page.on('pageerror', error => { errors.push(error.message); console.error(error.message); });
     await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/${path.basename(temporary)}/index.html`);
     await page.waitForFunction(() => Boolean(window.__largeEditor));
     const api = (method, argument) => page.evaluate(({ method, argument }) => window.__largeEditor[method](argument), { method, argument });
-    const source = Array.from({ length: 11 }, (_, index) => '# Segment ' + index + '\n\n' + ('segment ' + index + ' body ').repeat(11000) + '\n\n').join('');
+    const source = Array.from({ length: 11 }, (_, index) => '# Segment ' + index + ' 中文段落\n\n' + ('segment ' + index + ' body ').repeat(11000) + '\n\n').join('');
     await api('setContent', source);
     const original = await api('snapshot');
     assert.equal(original.segmented, true);
@@ -130,20 +162,61 @@ async function main() {
     assert.deepEqual((await api('snapshot')).current, await api('currentCount'));
     assert.deepEqual((await api('snapshot')).document, await api('expectedDocumentCount'), 'whole-document and current statistics use exactly the same PM text semantics');
     const statisticsTrigger = page.locator('.titlebar-words');
-    await statisticsTrigger.focus();
-    await page.keyboard.press('Enter');
-    await page.getByRole('button', { name: 'Current segment', exact: true }).click();
-    await page.getByRole('button', { name: await api('translate', 'chars'), exact: true }).click();
-    assert.equal(await statisticsTrigger.locator('span').first().textContent(), String((await api('snapshot')).current.characters));
-    await page.keyboard.press('Escape');
-    assert.equal(await statisticsTrigger.getAttribute('aria-expanded'), 'false');
-    assert.equal(await statisticsTrigger.evaluate(element => element === document.activeElement), true);
-    await api('locale', 'zhCn');
-    await statisticsTrigger.click();
-    await page.getByRole('button', { name: '全文', exact: true }).click();
-    assert.equal(await statisticsTrigger.locator('span').first().textContent(), String((await api('snapshot')).document.characters));
-    await page.keyboard.press('Escape');
-    await page.setViewportSize({ width: 360, height: 650 });
+    const count = () => statisticsTrigger.locator('span').first().textContent();
+    const expectCount = async (statistics, mode) => {
+      const expected = String(mode === 'words' ? statistics.words : statistics.characters);
+      assert.equal(await count(), expected);
+      const label = expected + ' ' + await api('translate', mode);
+      assert.equal(await statisticsTrigger.getAttribute('aria-label'), label, 'accessible label contains only count and unit');
+      assert.equal(await statisticsTrigger.getAttribute('title'), label, 'title has no range label');
+      assert.equal(await statisticsTrigger.locator('span').count(), 2, 'the trigger displays only count and unit');
+      assert.equal(await page.locator('.statistics-scope,.statistics-group-label').count(), 0, 'statistics have no inline scope badge or scope group');
+    };
+    const chooseUnit = async mode => {
+      await statisticsTrigger.focus(); await page.keyboard.press('Enter');
+      const options = page.locator('.titlebar-statistics-options');
+      await options.waitFor({ state: 'visible' });
+      assert.equal(await options.getByRole('button').count(), 2, 'only word and character choices remain');
+      assert.deepEqual(await options.getByRole('button').allTextContents(), [await api('translate', 'words'), await api('translate', 'chars')]);
+      for (const key of ['statisticsDocument', 'statisticsCurrentSegment']) assert.equal(await options.getByRole('button', { name: await api('translate', key), exact: true }).count(), 0);
+      assert.equal(await page.locator('.titlebar-words-popover .el-popover__title').textContent(), await api('translate', 'statisticsTitle'));
+      await options.getByRole('button', { name: await api('translate', mode), exact: true }).click();
+      await page.keyboard.press('Escape');
+      assert.equal(await statisticsTrigger.getAttribute('aria-expanded'), 'false');
+      assert.equal(await statisticsTrigger.evaluate(element => element === document.activeElement), true);
+    };
+    const whole = (await api('snapshot')).document;
+    assert.notEqual(whole.characters, (await api('snapshot')).current.characters, 'the fixture distinguishes complete and current counts');
+    for (const locale of ['en', 'zhCn']) {
+      await api('locale', locale);
+      for (const mode of ['chars', 'words']) { await chooseUnit(mode); await expectCount(whole, mode); }
+      await api('showSegment', 1); await expectCount(whole, 'words');
+      await api('showSegment', 0); await expectCount(whole, 'words');
+    }
+    assert.equal(await page.evaluate(() => localStorage.getItem('statisticsScope')), 'segment', 'the old scope preference remains present while the UI ignores it');
+    await chooseUnit('chars');
+    await api('pauseStatistics');
+    assert.equal((await api('snapshot')).pending, true);
+    assert.equal(await count(), '…', 'incomplete document indexing shows pending rather than a partial count');
+    assert.equal(await statisticsTrigger.getAttribute('aria-label'), await api('translate', 'statisticsCalculating'));
+    await api('releaseStatistics', true);
+    assert.equal((await api('snapshot')).statisticsError, true);
+    assert.equal(await count(), '—', 'a failed complete count does not fall back to the current segment');
+    assert.equal(await statisticsTrigger.getAttribute('aria-label'), await api('translate', 'statisticsUnavailable'));
+    await api('retryStatistics'); await expectCount(whole, 'chars');
+    await api('showSegment', 1); await api('insertAtEnd', ' 全文计数更新');
+    const editedWhole = (await api('snapshot')).document;
+    assert.deepEqual(editedWhole, await api('expectedDocumentCount'), 'editing another segment updates the complete count');
+    await expectCount(editedWhole, 'chars'); await api('showSegment', 0); await expectCount(editedWhole, 'chars');
+    const raw = (await api('snapshot')).markdown;
+    assert.equal(await api('sourceMode', 'source'), true);
+    const rawCounts = (await api('snapshot')).sourceStatistics;
+    assert.equal(rawCounts.characters, raw.length, 'source statistics cover the complete raw buffer');
+    for (const mode of ['chars', 'words']) { await chooseUnit(mode); await expectCount(rawCounts, mode); }
+    assert.equal(await api('sourceMode', 'wysiwyg'), true);
+    await chooseUnit('chars'); await expectCount(editedWhole, 'chars');
+    await api('theme', 'dark');
+    await page.setViewportSize({ width: 390, height: 650 });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'statistics controls fit a narrow viewport');
     await statisticsTrigger.click();
     await page.waitForFunction(() => {
@@ -152,10 +225,11 @@ async function main() {
     });
     const evidence = path.join(root, 'outputs', 'editor-performance');
     fs.mkdirSync(evidence, { recursive: true });
-    await page.screenshot({ path: path.join(evidence, 'statistics-chinese-narrow.png') });
+    await page.screenshot({ path: path.join(evidence, 'statistics-chinese-dark-narrow.png') });
     await page.keyboard.press('Escape');
     await page.setViewportSize({ width: 1000, height: 650 });
-    console.log('PASS complete/current statistics, real keyboard popup, scope switching and Chinese/narrow layout');
+    await api('theme', 'light');
+    console.log('PASS complete bilingual statistics ignore legacy scope; units, pending/failure/recovery, source count and Chinese/narrow layout remain correct');
 
     const heading = await api('headingEdit', 'Renamed heading');
     assert.equal(heading.text, 'Renamed heading');

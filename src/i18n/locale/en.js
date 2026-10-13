@@ -309,6 +309,7 @@ export default {
   statisticsDocument: "Whole document",
   statisticsCurrentSegment: "Current segment",
   statisticsScope: "Statistics scope",
+  statisticsTitle: "Document statistics",
   statisticsCalculating: "Calculating statistics…",
   statisticsUnavailable: "Statistics unavailable",
   fileConflictTitle: "File changed on disk",

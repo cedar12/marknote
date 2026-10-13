@@ -190,6 +190,7 @@ async function main() {
     // The source toggle is the first action; copying is the last action.
     const copy = block => block.locator('.block-source-actions button').last();
     const record = name => {passed.push(name);console.log('PASS '+name);};
+    const toolbarGaps=[];
     const unchanged = (before,after) => assert.deepEqual(after,before,'action retains document, selection and undo history');
     const unchangedContent = (before,after) => {
       assert.deepEqual(after.document,before.document,'click retains the original formula and whole document');
@@ -264,11 +265,15 @@ async function main() {
     });
     const assertToolbarAboveSource = async block => {
       const geometry=await sourceGeometry(block);
-      for(const control of [geometry.language,...geometry.actions]){
+      const controls=[geometry.language,...geometry.actions];
+      for(const control of controls){
         assert(control.width>0&&control.height>0,'the toolbar control has usable geometry');
         assert(control.bottom<=geometry.first.top+0.5,'language and source actions are above the first source line');
         assert(control.left>=-0.5&&control.right<=geometry.viewport+0.5,'code toolbar controls fit the viewport');
       }
+      const gap=geometry.first.top-Math.max(...controls.map(control=>control.bottom));
+      assert(gap>=1.5&&gap<=12.5,'the gap from active controls to the first source glyph stays between 2px and 12px (0.5px tolerance); measured '+gap+'px');
+      toolbarGaps.push(gap);
       for(const action of geometry.actions)assert(geometry.language.right<=action.left+0.5,'language select does not overlap source/copy actions');
       return geometry;
     };
@@ -293,11 +298,16 @@ async function main() {
         const style=getComputedStyle(document.querySelector(selector));
         return Object.fromEntries(['paddingTop','paddingRight','paddingBottom','paddingLeft','backgroundColor','color','fontFamily','fontSize','boxShadow','borderRadius','whiteSpace','tabSize'].map(key=>[key,style[key]]));
       };
-      return {formula:read('.marknote-katex pre.block-source'),diagram:read('.marknote-mermaid pre.block-source'),formulaCode:read('.marknote-katex pre.block-source code'),diagramCode:read('.marknote-mermaid pre.block-source code')};
+      return {formula:read('.marknote-katex pre.block-source'),diagram:read('.marknote-mermaid pre.block-source'),plain:read('.marknote-codeblock:not(.marknote-mermaid) pre.block-source'),formulaCode:read('.marknote-katex pre.block-source code'),diagramCode:read('.marknote-mermaid pre.block-source code')};
     });
     const matchingSourceStyles = async () => {
       const styles=await readSourceStyles();
-      assert.deepEqual(styles.formula,styles.diagram,'formula and Mermaid source surfaces share computed styles');
+      assert.equal(styles.formula.paddingTop,'14px','formula source retains its original top padding');
+      assert.equal(styles.diagram.paddingTop,'6px','Mermaid source uses compact local top padding');
+      assert.equal(styles.plain.paddingTop,'6px','ordinary code source uses compact local top padding');
+      const {paddingTop:formulaTop,...formulaShared}=styles.formula;
+      const {paddingTop:diagramTop,...diagramShared}=styles.diagram;
+      assert.deepEqual(formulaShared,diagramShared,'formula and Mermaid source retain shared visual styles apart from the intentional top padding');
       assert.deepEqual(styles.formulaCode,styles.diagramCode,'formula and Mermaid source code share computed styles');
     };
     const singleFormulaPreview = async () => {
@@ -425,7 +435,7 @@ async function main() {
     await api('select',{type:'codeBlock',index:1});
     assert.equal(await plain.locator('pre').isVisible(),true);
     assert.equal(await codeButton(plain).count(),0);
-    record('Formula and Mermaid source styles match, Mermaid keeps its toggle and plain code retains copy');
+    record('Shared source styles retain formula padding and compact code padding, Mermaid keeps its toggle and plain code retains copy');
 
     const longestLanguage=(await api('languages')).sort((a,b)=>b.length-a.length||a.localeCompare(b))[0];
     await api('theme','dark');
@@ -455,7 +465,7 @@ async function main() {
         }
       }
     }
-    record('Light/dark and wide/narrow code toolbars stay above source with long language labels and reserve inactive height');
+    record('Light/dark and wide/narrow code toolbars stay compact above source with long language labels and reserve inactive height ('+Math.min(...toolbarGaps).toFixed(2)+'–'+Math.max(...toolbarGaps).toFixed(2)+'px gap)');
     await api('select',{type:'codeBlock',index:1,end:true});
     await showSource(plain,true);
     const editedCode=sources.code+'\n// edited through the source';

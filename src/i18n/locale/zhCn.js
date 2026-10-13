@@ -310,6 +310,7 @@ export default {
   statisticsDocument: "全文",
   statisticsCurrentSegment: "当前段",
   statisticsScope: "统计范围",
+  statisticsTitle: "字词统计",
   statisticsCalculating: "正在统计…",
   statisticsUnavailable: "统计暂不可用",
   fileConflictTitle: "文件已在磁盘上更改",

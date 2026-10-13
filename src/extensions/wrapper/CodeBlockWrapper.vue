@@ -104,8 +104,8 @@ onMounted(async ()=>{
     gap: 8px;
     width: 100%;
     box-sizing: border-box;
-    padding: 4px;
-    min-height: 32px;
+    padding: 2px 4px;
+    min-height: 28px;
     visibility: hidden;
     &.active { visibility: visible; }
     .left-wrapper{
@@ -128,6 +128,10 @@ onMounted(async ()=>{
       background-color: transparent;
       box-shadow: none;
     }
+  }
+  > pre.block-source {
+    margin: 0;
+    padding-top: 6px;
   }
   .mermaid-render{
     display:flex;
