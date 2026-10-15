@@ -1,4 +1,4 @@
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import light from './style/light';
 import dark from './style/dark';
 import { listThemes, type ThemeEntry } from '../api/theme';
@@ -36,6 +36,7 @@ function cachedThemes(): ThemeEntry[] {
 
 const themes = reactive<ThemeEntry[]>([...builtInThemes, ...cachedThemes()]);
 export default themes;
+export const activeThemeType = ref<ThemeType>('light');
 let catalogRevision = 0;
 
 export function applyThemeCatalog(entries: ThemeEntry[]) {
@@ -71,6 +72,7 @@ export function setTheme(value: ThemeItem) {
   mermaid.initialize({ theme: value.type === 'light' ? 'default' : 'dark' });
   document.documentElement.classList.remove('light', 'dark');
   document.documentElement.classList.add(value.type);
+  activeThemeType.value = value.type;
 }
 
 export type ThemeType = 'light' | 'dark';

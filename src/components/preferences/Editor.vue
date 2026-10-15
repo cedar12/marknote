@@ -34,9 +34,11 @@
     <div class="preferences-item">
       <div class="header flex"><span>{{ t('codeTheme') }}</span></div>
       <div class="content">
-        <ElSelect v-model="editorStore.codeTheme" :aria-label="t('codeTheme')" @change="onChange">
+        <ElSelect id="code-highlight-theme" :model-value="editorStore.activeCodeTheme" :aria-label="t('codeTheme')"
+          v-font-hint="{ label: t('codeTheme'), hint: 'code-highlight-theme-hint' }" @change="onChange">
           <ElOption v-for="item in options" :key="item" :label="item" :value="item" />
         </ElSelect>
+        <p id="code-highlight-theme-hint" class="editor-font-hint">{{ t('codeThemeAutoHint') }}</p>
       </div>
     </div>
     <div class="preferences-item">
@@ -69,6 +71,8 @@ import { DEFAULT_EDITOR_FONT, EDITOR_FONT_PRESETS, MIN_EDITOR_FONT_SIZE, MAX_EDI
 import { useI18n } from 'vue-i18n';
 import { ElButton, ElInputNumber, ElSelect, ElOption } from 'element-plus';
 import EditorMode from './EditorMode.vue';
+import { activeThemeType } from '../../theme';
+import { CODE_THEME_OPTIONS, isCodeTheme } from '../../utils/codeTheme';
 
 const appStore = useAppStore();
 const preferencesStore = usePreferencesStore();
@@ -115,8 +119,10 @@ async function onFontSizeChange(value: number | undefined | null) {
   await saveFont({ fontSize: value });
 }
 
-const options = ['github', 'github-dark', 'idea', 'intellij-light', 'vs', 'xcode', 'googlecode', 'atom-one-dark', 'atom-one-light', 'codepen-embed', 'nnfx-dark', 'nnfx-light'];
+const options = computed(() => CODE_THEME_OPTIONS.filter(theme => theme.type === activeThemeType.value).map(theme => theme.value));
 const onChange = (value: string) => {
+  if (!isCodeTheme(value)) return;
+  editorStore.codeTheme = value;
   localStorage.setItem('codeTheme', value);
   appStore.emit('codeTheme', value);
 };

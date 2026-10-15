@@ -47,6 +47,7 @@ No separate PRD, ADR, permission policy, retention policy, billing flow, or lega
 | Keyboard shortcuts | `usePreferencesStore`, `KeyBindingBuilder` and Shortcuts settings panel | SQLite `shortcut_preferences` JSON + shared `shortcutPreferences` definitions | platform-aware key recording / clear / per-action and full restore / explicit save | normalization/store tests + real-browser rebinding, conflict, persistence, sync and failure recovery |
 | Markdown preferences | `usePreferencesStore` and Markdown settings panel | SQLite `markdown_preferences` JSON + editor runtime | parsing / output / clipboard | unit + browser + Rust module tests |
 | Theme management | Theme catalog and Tauri theme commands | app data `themes` directory + immutable bundled resources | built-in / bundled / installed | browser + Rust file lifecycle tests |
+| Code highlight theme | Shared palette resolver and editor active-code-theme getter | `src/utils/codeTheme.ts` + active application theme type + localStorage `codeTheme` style choice | matching family variant / GitHub fallback for unpaired palettes / restore saved style on return | palette resolver tests + real-browser settings, startup, system and cross-window theme checks |
 | Block source actions | Shared `BlockSourceActions`, `CodeBlockWrapper` and `KatexWrapper` | node text + Tauri clipboard-manager | code copy / Mermaid and math source toggle / read-only | `scripts/test-block-source-browser.cjs` + desktop smoke test |
 
 ## Flow ledger

@@ -181,6 +181,7 @@ export default {
   quickStart:'Quick Start',
 
   codeTheme:'Code Highlight Theme',
+  codeThemeAutoHint: 'Code highlighting follows the app’s light or dark theme, using a matching variant when available.',
   language:'Language',
 
   editor:'Editor',
@@ -361,6 +362,7 @@ export default {
   sourceFormattingHint: "Choose rendered editing in Preferences → Editor to use formatting and paragraph actions.",
   editorMode: "Editor mode",
   codeLanguage: "Code language",
+  codeLanguageAuto: "Auto detect",
   editorModePreferenceHint: "Choose rendered editing, source or split preview. This setting is remembered and shared with other windows; saving or typing finishes before switching.",
   editorModeSaveFailed: "Could not save the editor mode. The previous setting is retained. Retry.",
   editorModeSyncFailed: "Editor mode saved, but some windows may not be synchronized. Retry.",

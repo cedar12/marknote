@@ -30,12 +30,12 @@ function browserOptions(chromium) {
 
 const harness = String.raw`<template>
   <Preferences />
-  <div id="test-runtime-editor" hidden><EditorContent :editor="editor" /></div>
+  <div id="test-runtime-editor" :class="'code-theme-' + editorStore.activeCodeTheme" hidden><EditorContent :editor="editor" /></div>
 </template>
 <script setup>
 import { nextTick, watch, onBeforeUnmount } from 'vue';
 import { EditorContent } from '@tiptap/vue-3';
-import { closeHistory } from '@tiptap/pm/history';
+import { closeHistory, undoDepth, redoDepth } from '@tiptap/pm/history';
 import { createEditor } from '/src/utils/editor';
 import { pasteFromClipboard } from '/src/utils/clipboard';
 import { usePreferencesStore } from '/src/store/preferences';
@@ -62,8 +62,11 @@ window.__preferencesTest = {
       options: editor.value ? { ...editor.value.storage.markdown.options } : null,
       theme: app.theme ? { ...app.theme } : null,
       themes: themes.map(item => ({ ...item })),
+      codeTheme: editorStore.codeTheme,
+      activeCodeTheme: editorStore.activeCodeTheme,
       document: editor.value?.getJSON(),
       selection: editor.value ? { from: editor.value.state.selection.from, to: editor.value.state.selection.to } : null,
+      history: editor.value ? { undo: undoDepth(editor.value.state), redo: redoDepth(editor.value.state) } : null,
       headings: editorStore.headings.map(item => ({ ...item })),
       segmentIndex: editorStore.segmentIndex,
       selectedHeading: editor.value?.state.selection.$from.parent.type.name === 'heading' ? editor.value.state.selection.$from.parent.textContent : null,
@@ -121,6 +124,18 @@ window.__preferencesTest = {
     editor.value.commands.setContent('');
     editorStore.updateHeadings();
     await nextTick();
+  },
+  async codeThemeFixture() {
+    editor.value.commands.setContent({ type: 'doc', content: [
+      { type: 'paragraph', content: [{ type: 'text', text: 'Theme fixture paragraph' }] },
+      { type: 'codeBlock', attrs: { language: 'javascript' }, content: [{ type: 'text', text: 'const greeting = "theme";\nconsole.log(greeting);' }] },
+    ] });
+    editor.value.commands.setTextSelection(1);
+    const originalDocument = editor.value.getJSON();
+    editor.value.view.dispatch(closeHistory(editor.value.state.tr));
+    editor.value.commands.insertContent('Edited ');
+    await nextTick();
+    return { originalDocument };
   },
   serialize() { return editor.value.storage.markdown.getMarkdown(); },
   async save(patch) { await preferences.saveMarkdownPreferences(patch); await nextTick(); },
@@ -278,6 +293,7 @@ async function main() {
       "import '/src/scss/element-plus.scss';",
       "import 'element-plus/theme-chalk/dark/css-vars.css';",
       "import '/src/styles.css';",
+      "import '/src/scss/codeTheme.scss';",
       "import Harness from './Harness.vue';",
       "const app = createApp(Harness);",
       "app.config.errorHandler = error => { console.error(error); window.__vueTestErrors ||= []; window.__vueTestErrors.push(String(error)); };",
@@ -288,7 +304,7 @@ async function main() {
     const config = {
       root,
       configFile: false,
-      plugins: [{ name: 'preferences-test-unrelated-tabs', enforce: 'pre', resolveId(source, importer) { if (importer?.replaceAll('\\', '/').endsWith('/src/components/Preferences.vue') && /^\.\/preferences\/(General|Editor|Image)\.vue$/.test(source)) return stubId; }, load(id) { if (id === stubId) return "export default { template: '<div data-unrelated-settings-stub></div>' };"; } }, vue()],
+      plugins: [{ name: 'preferences-test-unrelated-tabs', enforce: 'pre', resolveId(source, importer) { if (importer?.replaceAll('\\', '/').endsWith('/src/components/Preferences.vue') && /^\.\/preferences\/(General|Image)\.vue$/.test(source)) return stubId; }, load(id) { if (id === stubId) return "export default { template: '<div data-unrelated-settings-stub></div>' };"; } }, vue()],
       build: { outDir: path.join(temporary, 'dist'), emptyOutDir: true, minify: false, rollupOptions: { input: path.join(temporary, 'index.html') } },
       preview: { host: '127.0.0.1', port: 0, strictPort: false },
       logLevel: 'error',
@@ -764,6 +780,112 @@ async function main() {
     assert.equal((await api('snapshot')).options.linkify, true);
     assert.ok((await api('render', 'https://example.com')).includes('href="https://example.com"'));
     record('external Markdown preference events update the actual editor parser');
+
+    await api('setLocale', 'en');
+    await page.setViewportSize({ width: 1100, height: 780 });
+    await autoSwitch.locator('..').click();
+    await idleThemes();
+    assert.equal(await autoSwitch.getAttribute('aria-checked'), 'false');
+    const codeFixture = await api('codeThemeFixture');
+    const codeBefore = await api('snapshot');
+    const codeThemeInput = () => page.locator('.preferences-editor input#code-highlight-theme');
+    const showCodeThemes = async () => {
+      await tab('editor');
+      await codeThemeInput().waitFor();
+    };
+    const expectCodeTheme = async (active, preference) => {
+      await page.waitForFunction(({ active, preference }) => {
+        const state = window.__preferencesTest.snapshot();
+        return state.activeCodeTheme === active && state.codeTheme === preference;
+      }, { active, preference });
+      assert.equal(await page.locator('#test-runtime-editor').getAttribute('class'), `code-theme-${active}`);
+      assert.equal(await page.evaluate(() => localStorage.getItem('codeTheme')), preference);
+    };
+    const selectCodeTheme = async value => {
+      await showCodeThemes();
+      await codeThemeInput().click();
+      await page.getByRole('option', { name: value, exact: true }).click();
+      await expectCodeTheme(value, value);
+      assert.equal(await codeThemeInput().inputValue(), value);
+    };
+    const selectApplicationTheme = async mode => {
+      await tab('theme');
+      await idleThemes();
+      await card(await label(mode === 'dark' ? 'themeDark' : 'themeLight')).locator('.theme-select').click();
+      await idleThemes();
+    };
+    const keywordColor = () => page.locator('#test-runtime-editor .hljs-keyword').first().evaluate(element => getComputedStyle(element).color);
+    const expectPaletteOptions = async (mode, active) => {
+      const expected = mode === 'light'
+        ? ['default', 'github', 'atom-one-light', 'nnfx-light', 'idea', 'intellij-light', 'vs', 'xcode', 'googlecode']
+        : ['dark', 'github-dark', 'atom-one-dark', 'nnfx-dark', 'codepen-embed', 'nord'];
+      await showCodeThemes();
+      assert.equal(await codeThemeInput().inputValue(), active, 'settings must show the palette currently applied to code blocks');
+      assert.equal(await codeThemeInput().getAttribute('aria-label'), await label('codeTheme'));
+      assert.equal(await codeThemeInput().getAttribute('aria-describedby'), 'code-highlight-theme-hint');
+      await codeThemeInput().click();
+      const options = page.locator('.el-select-dropdown:visible [role="option"]');
+      await options.first().waitFor();
+      assert.deepEqual((await options.allTextContents()).map(text => text.trim()).sort(), expected.sort());
+      await page.keyboard.press('Escape');
+    };
+
+    await selectCodeTheme('github');
+    assert.equal(await keywordColor(), 'rgb(215, 58, 73)', 'light GitHub syntax colors must be loaded');
+    await expectPaletteOptions('light', 'github');
+    await selectApplicationTheme('dark');
+    await expectCodeTheme('github-dark', 'github');
+    assert.equal(await keywordColor(), 'rgb(255, 123, 114)', 'theme changes must update actual code token colors');
+    await expectPaletteOptions('dark', 'github-dark');
+    await selectApplicationTheme('light');
+    await expectCodeTheme('github', 'github');
+    assert.equal(await keywordColor(), 'rgb(215, 58, 73)');
+    record('application theme selection updates scoped code syntax colors and settings show only matching palettes without overwriting the saved choice');
+
+    await selectCodeTheme('idea');
+    await page.evaluate(() => window.__nativeTest.emit('theme', window.__nativeTest.theme('External Dark', 'external-dark', 'dark')));
+    await expectCodeTheme('github-dark', 'idea');
+    await expectPaletteOptions('dark', 'github-dark');
+    await page.evaluate(() => window.__nativeTest.emit('theme', window.__nativeTest.theme('External Light', 'external-light', 'light')));
+    await expectCodeTheme('idea', 'idea');
+    await expectPaletteOptions('light', 'idea');
+    record('external theme events choose a suitable fallback for an unpaired palette and restore the original palette when switching back');
+
+    await selectApplicationTheme('dark');
+    await selectCodeTheme('nord');
+    await selectApplicationTheme('light');
+    await expectCodeTheme('github', 'nord');
+    await selectApplicationTheme('dark');
+    await expectCodeTheme('nord', 'nord');
+    await showCodeThemes();
+    const codeAfter = await api('snapshot');
+    assert.deepEqual(codeAfter.document, codeBefore.document, 'theme changes must preserve the editor document');
+    assert.deepEqual(codeAfter.selection, codeBefore.selection, 'theme changes must preserve the editor selection');
+    assert.deepEqual(codeAfter.history, codeBefore.history, 'theme changes must preserve undo and redo history');
+    assert.equal(await api('undo'), true);
+    assert.deepEqual((await api('snapshot')).document, codeFixture.originalDocument);
+    record('dark palette preferences restore after a light fallback; theme and palette changes preserve document, selection, and undo history');
+
+    await selectApplicationTheme('light');
+    await selectCodeTheme('nnfx-light');
+    await selectApplicationTheme('dark');
+    await expectCodeTheme('nnfx-dark', 'nnfx-light');
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => Boolean(window.__preferencesTest?.snapshot().options));
+    assert.equal((await api('snapshot')).theme.value, 'dark');
+    await expectCodeTheme('nnfx-dark', 'nnfx-light');
+    await expectPaletteOptions('dark', 'nnfx-dark');
+    await selectApplicationTheme('light');
+    await expectCodeTheme('nnfx-light', 'nnfx-light');
+    record('a saved dark application theme applies the matching palette on startup and preserves the original light preference across reload');
+
+    await autoSwitch.locator('..').click();
+    await idleThemes();
+    await page.evaluate(() => window.__nativeTest.emit('tauri://theme-changed', 'dark'));
+    await expectCodeTheme('nnfx-dark', 'nnfx-light');
+    await page.evaluate(() => window.__nativeTest.emit('tauri://theme-changed', 'light'));
+    await expectCodeTheme('nnfx-light', 'nnfx-light');
+    record('automatic native system-theme events update code highlighting in both directions');
 
     assert.deepEqual(pageErrors, [], 'browser should not report uncaught errors');
     assert.deepEqual(await page.evaluate(() => window.__vueTestErrors || []), [], 'Vue should not report render or event errors');

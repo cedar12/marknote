@@ -90,10 +90,25 @@
     //     line-height: 1.1;
     // }
 
+    .marknote-codeblock {
+        margin-block: 1em;
+    }
+
     pre {
-        // border:1px solid var(--contentBorderColor);
-        box-shadow: 0 0 2px var(--contentBorderColor);
+        box-sizing: border-box;
+        margin-block: 1em;
+        padding: 12px 16px;
+        border: 1px solid var(--contentBackgroundColorActive, var(--contentBorderColor));
+        box-shadow: none;
         border-radius: 4px;
+        font-size: .875em;
+        line-height: 1.6;
+        tab-size: var(--tabSize, 4);
+
+        code {
+            font-size: inherit;
+            line-height: inherit;
+        }
     }
 
     code.inline {

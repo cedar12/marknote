@@ -177,6 +177,7 @@ export default {
   quickStart:'开始',
 
   codeTheme:'代码高亮主题',
+  codeThemeAutoHint: '代码高亮随应用明暗主题自动切换，优先使用同系列配色。',
   language:'语言',
 
   editor:'编辑器',
@@ -362,6 +363,7 @@ export default {
   sourceFormattingHint: "请在“首选项 → 编辑器”中选择所见即所得模式，再使用格式和段落操作。",
   editorMode: "编辑模式",
   codeLanguage: "代码语言",
+  codeLanguageAuto: "自动检测",
   editorModePreferenceHint: "选择所见即所得、源码或分屏预览。设置会保留并同步到其他窗口，正在保存或输入时会在操作结束后切换。",
   editorModeSaveFailed: "编辑模式保存失败，原设置已保留。请重试。",
   editorModeSyncFailed: "编辑模式已保存，但部分窗口可能尚未同步。请重试。",

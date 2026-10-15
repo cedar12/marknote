@@ -30,7 +30,7 @@ export const staticDocumentStyles = `
 .image-export-document { box-sizing:border-box; min-height:0; overflow:visible; overflow-wrap:anywhere; padding:32px; }
 .image-export-document > h1::before,.image-export-document > h2::before,.image-export-document > h3::before,
 .image-export-document > h4::before,.image-export-document > h5::before,.image-export-document > h6::before { display:none; }
-.image-export-document pre { padding:14px 1em; white-space:pre-wrap; overflow-wrap:anywhere; tab-size:var(--tabSize,4); }
+.image-export-document pre { padding:12px 16px; white-space:pre-wrap; overflow-wrap:anywhere; tab-size:var(--tabSize,4); }
 .image-export-document pre code { display:block; white-space:inherit; }
 .image-export-document .image-export-diagram { display:block; margin:1em auto; max-width:100%; height:auto; }
 .image-export-document .katex-mathml { display:none; }

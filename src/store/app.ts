@@ -23,6 +23,7 @@ import { rememberWindowSize, restoreWindowSize } from '../api/window';
 import { readSidebarVisible, writeSidebarVisible } from '../utils/sidebarPreferences';
 import { normalizeSidebarWidth, SIDEBAR_WIDTH_KEY } from '../utils/folderNavigation';
 import { EDITOR_MODE_PREFERENCES_KEY, EDITOR_MODE_PREFERENCES_EVENT, readEditorMode } from '../utils/editorModePreferences';
+import { isCodeTheme } from '../utils/codeTheme';
 
 const appWindow=getCurrentWindow();
 // @ts-ignore
@@ -712,6 +713,7 @@ export const useAppStore = defineStore('app', {
       });
       listen<string>('codeTheme', async (event) => {
         const value=event.payload;
+        if (!isCodeTheme(value)) return;
         const editorStore=useEditorStore();
         editorStore.codeTheme=value;
         localStorage.setItem("codeTheme", value);

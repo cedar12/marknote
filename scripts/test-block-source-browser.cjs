@@ -272,7 +272,7 @@ async function main() {
         assert(control.left>=-0.5&&control.right<=geometry.viewport+0.5,'code toolbar controls fit the viewport');
       }
       const gap=geometry.first.top-Math.max(...controls.map(control=>control.bottom));
-      assert(gap>=1.5&&gap<=12.5,'the gap from active controls to the first source glyph stays between 2px and 12px (0.5px tolerance); measured '+gap+'px');
+      assert(gap>=12&&gap<=24,'the toolbar leaves room for symmetric source padding without crowding the first glyph; measured '+gap+'px');
       toolbarGaps.push(gap);
       for(const action of geometry.actions)assert(geometry.language.right<=action.left+0.5,'language select does not overlap source/copy actions');
       return geometry;
@@ -303,11 +303,13 @@ async function main() {
     const matchingSourceStyles = async () => {
       const styles=await readSourceStyles();
       assert.equal(styles.formula.paddingTop,'14px','formula source retains its original top padding');
-      assert.equal(styles.diagram.paddingTop,'6px','Mermaid source uses compact local top padding');
-      assert.equal(styles.plain.paddingTop,'6px','ordinary code source uses compact local top padding');
-      const {paddingTop:formulaTop,...formulaShared}=styles.formula;
-      const {paddingTop:diagramTop,...diagramShared}=styles.diagram;
-      assert.deepEqual(formulaShared,diagramShared,'formula and Mermaid source retain shared visual styles apart from the intentional top padding');
+      assert.equal(styles.formula.paddingBottom,'14px','formula source keeps symmetric padding');
+      for(const kind of ['diagram','plain']){
+        assert.equal(styles[kind].paddingTop,'12px','code source uses the shared top padding');
+        assert.equal(styles[kind].paddingBottom,styles[kind].paddingTop,'code source has equal top and bottom padding');
+      }
+      const withoutPadding = styles => Object.fromEntries(Object.entries(styles).filter(([key])=>!key.startsWith('padding')));
+      assert.deepEqual(withoutPadding(styles.formula),withoutPadding(styles.diagram),'formula and Mermaid source retain shared typography and syntax theme');
       assert.deepEqual(styles.formulaCode,styles.diagramCode,'formula and Mermaid source code share computed styles');
     };
     const singleFormulaPreview = async () => {
@@ -435,7 +437,7 @@ async function main() {
     await api('select',{type:'codeBlock',index:1});
     assert.equal(await plain.locator('pre').isVisible(),true);
     assert.equal(await codeButton(plain).count(),0);
-    record('Shared source styles retain formula padding and compact code padding, Mermaid keeps its toggle and plain code retains copy');
+    record('Code and formula source retain symmetric padding, Mermaid keeps its toggle and plain code retains copy');
 
     const longestLanguage=(await api('languages')).sort((a,b)=>b.length-a.length||a.localeCompare(b))[0];
     await api('theme','dark');
@@ -451,7 +453,7 @@ async function main() {
         await showSource(block,true);
         const active=await assertToolbarAboveSource(block);
         await api('select',{type:'paragraph',index:0});
-        assert.equal(await block.locator('.codeblock-wrapper').isVisible(),false,'inactive controls are hidden');
+        assert.equal(await block.locator('.codeblock-wrapper').isVisible(),index===1,'ordinary code keeps language and copy available; Mermaid controls follow focus');
         const inactive=await sourceGeometry(block);
         await api('select',{type:'codeBlock',index});
         const reactivated=await assertToolbarAboveSource(block);
@@ -465,7 +467,7 @@ async function main() {
         }
       }
     }
-    record('Light/dark and wide/narrow code toolbars stay compact above source with long language labels and reserve inactive height ('+Math.min(...toolbarGaps).toFixed(2)+'–'+Math.max(...toolbarGaps).toFixed(2)+'px gap)');
+    record('Light/dark and wide/narrow code toolbars preserve symmetric source spacing and stable height with long language labels ('+Math.min(...toolbarGaps).toFixed(2)+'–'+Math.max(...toolbarGaps).toFixed(2)+'px gap)');
     await api('select',{type:'codeBlock',index:1,end:true});
     await showSource(plain,true);
     const editedCode=sources.code+'\n// edited through the source';
@@ -485,6 +487,23 @@ async function main() {
     await api('theme','light');
     await page.setViewportSize({width:1050,height:800});
     record('Real language popup and keyboard selection preserve source editing and exact copying');
+
+    await api('select',{type:'paragraph',index:0});
+    await native();
+    const outsideCode=await api('snapshot');
+    await copy(plain).click();
+    assert.deepEqual(await writes(),[sources.code]);
+    unchanged(outsideCode,await api('snapshot'));
+    await api('replaceSource',{type:'codeBlock',index:1,text:sources.diagram});
+    await api('select',{type:'paragraph',index:0});
+    await selectLanguage(plain,'mermaid');
+    await plain.locator('.mermaid-render svg').waitFor({state:'visible'});
+    assert.equal(await plain.locator('.codeblock-wrapper').isVisible(),true,'changing an unfocused code block to Mermaid keeps its controls reachable');
+    assert.equal((await api('codeState',1)).source,sources.diagram,'language changes preserve the exact diagram source');
+    await selectLanguage(plain,'javascript');
+    assert.equal(await plain.locator('pre.block-source').isVisible(),true,'switching back restores the ordinary source surface');
+    await api('replaceSource',{type:'codeBlock',index:1,text:sources.code});
+    record('Persistent toolbar copies without moving an outside caret and switches to/from Mermaid without a text edit');
 
     for (const [block,type,index,source] of [[math(1),'katex',1,sources.secondFormula],[mermaid,'codeBlock',0,sources.diagram],[plain,'codeBlock',1,sources.code]]) {
       await api('select',{type,index,node:true});

@@ -7,7 +7,7 @@
       <Folder></Folder>
     </div> -->
     <Sidebar></Sidebar>
-    <div class="layout-content" :class="`code-theme-${editor.codeTheme} ${appStore.exporting?'exporting':''}`" >
+    <div class="layout-content" :class="`code-theme-${editor.activeCodeTheme} ${appStore.exporting?'exporting':''}`" >
       <ContextMenu :menu="menuItems">
         <ElScrollbar v-loading="appStore.exporting||editor.loading" class="layout-scrollbar" height="calc(100vh - var(--titleBarHeight))">
           <Editor></Editor>

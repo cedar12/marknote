@@ -24,6 +24,8 @@ import { SegmentEditorCache } from '../utils/segmentCache';
 import { rebaseMarkdownAttachments, rebaseMarkdownAttachmentOffsets } from '../utils/attachments';
 import { SourceDocument, type SourceMode, type SourceReplacement, type SourceSelection } from '../utils/sourceDocument';
 import { useAppStore } from './app';
+import { activeThemeType } from '../theme';
+import { resolveCodeTheme } from '../utils/codeTheme';
 
 export { LARGE_FILE_THRESHOLD } from '../utils/largeFile';
 export type { Heading } from '../utils/outline';
@@ -116,6 +118,9 @@ export const useEditorStore = defineStore('editor', {
   },
 
   getters: {
+    activeCodeTheme(state): string {
+      return resolveCodeTheme(state.codeTheme, activeThemeType.value);
+    },
     editor(): Editor {
       return editorRef.value as Editor;
     },
