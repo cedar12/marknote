@@ -104,6 +104,8 @@ const { useEditorStore } = loadTypeScript('src/store/editor.ts', {
   '../utils/segmentCache': segmentCache,
   '../utils/attachments': attachments,
   '../utils/sourceDocument': sourceDocument,
+  '../utils/codeTheme': loadTypeScript('src/utils/codeTheme.ts'),
+  '../theme': { activeThemeType: { value: 'light' } },
   './app': { useAppStore: () => ({ loading: false, lifecycleBusy: false, exporting: false, resourceTasks: 0, markEdited() {} }) },
   './preferences': { usePreferencesStore: () => ({ markdown: markdownPreferences.DEFAULT_MARKDOWN_PREFERENCES }) },
   '../utils/markdownPreferences': markdownPreferences,

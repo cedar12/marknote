@@ -262,7 +262,10 @@ const events = {
     checkingUpdate=true;
     let manifest;
     try{
-      manifest=await checkUpdate();
+      manifest=await checkUpdate({
+        timeout:15000,
+        headers:{'Cache-Control':'no-cache','Pragma':'no-cache'},
+      });
       if(!manifest){
         await message(t('updateUpToDate'),{title:t('checkUpdate')});
         return;

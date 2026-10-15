@@ -116,6 +116,7 @@ function appFixture() {
     }) },
     '../utils/editorFont': { readEditorFont: () => ({}) },
     '../utils/editorModePreferences': load('src/utils/editorModePreferences.ts'),
+    '../utils/codeTheme': load('src/utils/codeTheme.ts'),
     '../utils/keyBinding': { KeyBindingBuilder: class { update() {} } },
     '../utils/shortcutPreferences': { SHORTCUT_PREFERENCES_EVENT: 'shortcuts' },
     '../utils/sidebarPreferences': load('src/utils/sidebarPreferences.ts'),
